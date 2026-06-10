@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+<title>Fortis Golf</title>
+<style>
+:root{--bg:#0b1220;--panel:#121c2e;--panel2:#17243a;--text:#f7fafc;--muted:#a7b1c2;--accent:#68d391;--danger:#fc8181;--line:#26364f;--gold:#f6d365}
+*{box-sizing:border-box} body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Arial,sans-serif;background:linear-gradient(180deg,#07111f,#0b1220 35%,#111827);color:var(--text);padding-bottom:80px} 
+header{position:sticky;top:0;z-index:20;background:rgba(11,18,32,.92);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);padding:14px 16px} h1{margin:0;font-size:20px;letter-spacing:.2px}.sub{color:var(--muted);font-size:12px;margin-top:3px}.wrap{max-width:980px;margin:0 auto;padding:14px}.card{background:rgba(18,28,46,.94);border:1px solid var(--line);border-radius:18px;padding:15px;margin:12px 0;box-shadow:0 10px 30px rgba(0,0,0,.22)}h2{font-size:17px;margin:0 0 12px}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.grid4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}label{display:block;color:var(--muted);font-size:12px;margin-bottom:5px}input,select,button{width:100%;border-radius:12px;border:1px solid #33445f;background:#0f1a2b;color:var(--text);padding:12px;font-size:16px}button{background:linear-gradient(135deg,#2f855a,#38a169);border:0;font-weight:700;cursor:pointer}.btn2{background:#1f2f48;border:1px solid #33445f}.btn-danger{background:#742a2a}.btn-gold{background:linear-gradient(135deg,#b7791f,#d69e2e);color:#15100a}.hidden{display:none!important}.pill{display:inline-block;border:1px solid var(--line);background:#0f1a2b;border-radius:999px;padding:5px 9px;font-size:12px;color:var(--muted);margin:2px}.leader{display:grid;gap:8px}.leader-row{display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:center;background:#0e1728;border:1px solid var(--line);padding:10px;border-radius:13px}.score{font-size:22px;font-weight:800;color:var(--accent)}table{width:100%;border-collapse:collapse;font-size:13px}th,td{border-bottom:1px solid var(--line);padding:8px;text-align:center}th{color:var(--muted);font-weight:600}.scroll{overflow:auto}.hole-title{display:flex;justify-content:space-between;gap:8px;align-items:center}.big{font-size:28px;font-weight:900}.team{background:#0e1728;border:1px solid var(--line);border-radius:14px;padding:10px;margin:8px 0}.winner{color:var(--accent);font-weight:800}.loser{color:var(--danger);font-weight:800}.nav{position:fixed;left:0;right:0;bottom:0;background:rgba(11,18,32,.94);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(4,1fr);gap:6px;padding:8px;z-index:30}.nav button{font-size:12px;padding:9px 5px;background:#18243a}.nav button.active{background:#2f855a}.small{font-size:12px;color:var(--muted)}.mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}.ok{color:var(--accent)}.bad{color:var(--danger)}@media(max-width:700px){.grid,.grid4{grid-template-columns:1fr}.wrap{padding:10px}.card{border-radius:16px;padding:13px}th,td{padding:7px 5px;font-size:12px}}
+.match-card{background:#0e1728;border:1px solid var(--line);border-radius:14px;padding:10px;margin:8px 0}.toggle{display:flex;align-items:center;gap:8px}.toggle input{width:auto}.status{font-size:12px;color:var(--muted)}.warn{color:var(--gold)}
+</style>
+</head>
+<body>
+<header><h1>Fortis Golf</h1><div class="sub">Fortis 4-player + automatic individual matchup handicaps</div></header>
+<div class="wrap">
+<section id="setup" class="page">
+  <div class="card"><h2>New Round</h2>
+    <div class="grid">
+      <div><label>Game Type</label><input value="Fortis 4-Player + Individual Battles" disabled></div>
+      <div><label>Course</label><select id="course"></select></div>
+      <div id="comboBox" class="hidden"><label>TPE Combo</label><select id="combo"><option>A+B</option><option>A+C</option><option>A+D</option><option>B+C</option><option>B+D</option><option>C+D</option></select></div>
+      <div><label>Round Name / Note</label><input id="roundNote" placeholder="Sunday game"></div>
+    </div>
+  </div>
+  <div class="card"><h2>Players + Hole 1 Driving Rank</h2>
+    <div class="grid4" id="playerInputs"></div>
+    <div class="grid" style="margin-top:12px"><button class="btn2" onclick="renderMatchupSetup()">Load Individual Matchups</button><button onclick="startRound()">Start Round</button></div>
+    <p class="small">Fortis game is always on. The 6 individual battles are created automatically; switch any matchup to No if they are not participating.</p>
+  </div>
+  <div class="card"><h2>Individual Matchups</h2><div id="matchupSetup" class="small">Enter four player names, then tap Load Individual Matchups.</div></div>
+  <div class="card"><h2>Locked Rules</h2>
+    <span class="pill">TPE: choose A+B / A+C / A+D / B+C / B+D / C+D</span>
+    <span class="pill">Par 3 = never gets handicap stroke</span>
+    <span class="pill">Birdie +1, Eagle +5 uses gross score only</span>
+    <span class="pill">Every 3-hole win moves handicap 1 hole</span>
+    <span class="pill">Handicaps pop up next time</span>
+  </div>
+</section>
+<section id="score" class="page hidden"><div id="scoreContent"></div></section>
+<section id="summary" class="page hidden"><div id="summaryContent"></div></section>
+<section id="data" class="page hidden">
+  <div class="card"><h2>Current Matchup Handicaps</h2><div id="matchupDb"></div></div>
+  <div class="card"><h2>Matchup History</h2><div id="matchupHistory"></div></div>
+  <div class="card"><h2>Course Database</h2><div id="courseDb"></div></div>
+  <div class="card"><h2>Saved Data</h2><p class="small">Rounds and handicaps are stored in this phone/browser using localStorage.</p><div class="grid"><button class="btn2" onclick="exportData()">Export Backup JSON</button><button class="btn-danger" onclick="clearData()">Clear Saved Data</button></div><textarea id="backup" style="margin-top:10px;width:100%;height:120px;border-radius:12px;background:#0f1a2b;color:white;border:1px solid #33445f"></textarea></div>
+</section>
+</div>
+<div class="nav"><button id="navSetup" class="active" onclick="showPage('setup')">Setup</button><button id="navScore" onclick="showPage('score')">Score</button><button id="navSummary" onclick="showPage('summary')">Summary</button><button id="navData" onclick="showPage('data')">Data</button></div>
+<script>
+const COURSE_DATA = {"DH": [{"hole": 1, "par": 5, "hcp": 9, "strokeEligible": true}, {"hole": 2, "par": 4, "hcp": 3, "strokeEligible": true}, {"hole": 3, "par": 3, "hcp": 15, "strokeEligible": false}, {"hole": 4, "par": 4, "hcp": 13, "strokeEligible": true}, {"hole": 5, "par": 4, "hcp": 5, "strokeEligible": true}, {"hole": 6, "par": 3, "hcp": 7, "strokeEligible": false}, {"hole": 7, "par": 4, "hcp": 1, "strokeEligible": true}, {"hole": 8, "par": 5, "hcp": 17, "strokeEligible": true}, {"hole": 9, "par": 4, "hcp": 11, "strokeEligible": true}, {"hole": 10, "par": 4, "hcp": 4, "strokeEligible": true}, {"hole": 11, "par": 4, "hcp": 10, "strokeEligible": true}, {"hole": 12, "par": 5, "hcp": 6, "strokeEligible": true}, {"hole": 13, "par": 3, "hcp": 8, "strokeEligible": false}, {"hole": 14, "par": 4, "hcp": 16, "strokeEligible": true}, {"hole": 15, "par": 4, "hcp": 14, "strokeEligible": true}, {"hole": 16, "par": 3, "hcp": 12, "strokeEligible": false}, {"hole": 17, "par": 5, "hcp": 18, "strokeEligible": true}, {"hole": 18, "par": 4, "hcp": 2, "strokeEligible": true}], "SR": [{"hole": 1, "par": 4, "hcp": 11, "strokeEligible": true}, {"hole": 2, "par": 3, "hcp": 17, "strokeEligible": false}, {"hole": 3, "par": 4, "hcp": 5, "strokeEligible": true}, {"hole": 4, "par": 3, "hcp": 15, "strokeEligible": false}, {"hole": 5, "par": 4, "hcp": 1, "strokeEligible": true}, {"hole": 6, "par": 5, "hcp": 3, "strokeEligible": true}, {"hole": 7, "par": 4, "hcp": 9, "strokeEligible": true}, {"hole": 8, "par": 4, "hcp": 13, "strokeEligible": true}, {"hole": 9, "par": 5, "hcp": 7, "strokeEligible": true}, {"hole": 10, "par": 4, "hcp": 14, "strokeEligible": true}, {"hole": 11, "par": 3, "hcp": 16, "strokeEligible": false}, {"hole": 12, "par": 4, "hcp": 4, "strokeEligible": true}, {"hole": 13, "par": 5, "hcp": 8, "strokeEligible": true}, {"hole": 14, "par": 4, "hcp": 12, "strokeEligible": true}, {"hole": 15, "par": 4, "hcp": 10, "strokeEligible": true}, {"hole": 16, "par": 3, "hcp": 18, "strokeEligible": false}, {"hole": 17, "par": 4, "hcp": 2, "strokeEligible": true}, {"hole": 18, "par": 5, "hcp": 6, "strokeEligible": true}], "TPE A": [{"hole": 1, "par": 5, "hcp": 2, "strokeEligible": true}, {"hole": 2, "par": 5, "hcp": 6, "strokeEligible": true}, {"hole": 3, "par": 4, "hcp": 9, "strokeEligible": true}, {"hole": 4, "par": 3, "hcp": 7, "strokeEligible": false}, {"hole": 5, "par": 4, "hcp": 3, "strokeEligible": true}, {"hole": 6, "par": 3, "hcp": 8, "strokeEligible": false}, {"hole": 7, "par": 4, "hcp": 1, "strokeEligible": true}, {"hole": 8, "par": 4, "hcp": 5, "strokeEligible": true}, {"hole": 9, "par": 4, "hcp": 4, "strokeEligible": true}], "TPE B": [{"hole": 1, "par": 5, "hcp": 4, "strokeEligible": true}, {"hole": 2, "par": 3, "hcp": 6, "strokeEligible": false}, {"hole": 3, "par": 4, "hcp": 5, "strokeEligible": true}, {"hole": 4, "par": 4, "hcp": 2, "strokeEligible": true}, {"hole": 5, "par": 4, "hcp": 7, "strokeEligible": true}, {"hole": 6, "par": 4, "hcp": 3, "strokeEligible": true}, {"hole": 7, "par": 3, "hcp": 9, "strokeEligible": false}, {"hole": 8, "par": 5, "hcp": 8, "strokeEligible": true}, {"hole": 9, "par": 4, "hcp": 1, "strokeEligible": true}], "TPE C": [{"hole": 1, "par": 4, "hcp": 5, "strokeEligible": true}, {"hole": 2, "par": 5, "hcp": 1, "strokeEligible": true}, {"hole": 3, "par": 4, "hcp": 2, "strokeEligible": true}, {"hole": 4, "par": 3, "hcp": 6, "strokeEligible": false}, {"hole": 5, "par": 4, "hcp": 3, "strokeEligible": true}, {"hole": 6, "par": 4, "hcp": 4, "strokeEligible": true}, {"hole": 7, "par": 5, "hcp": 7, "strokeEligible": true}, {"hole": 8, "par": 3, "hcp": 8, "strokeEligible": false}, {"hole": 9, "par": 4, "hcp": 9, "strokeEligible": true}], "TPE D": [{"hole": 1, "par": 4, "hcp": 4, "strokeEligible": true}, {"hole": 2, "par": 3, "hcp": 5, "strokeEligible": false}, {"hole": 3, "par": 4, "hcp": 3, "strokeEligible": true}, {"hole": 4, "par": 4, "hcp": 7, "strokeEligible": true}, {"hole": 5, "par": 4, "hcp": 8, "strokeEligible": true}, {"hole": 6, "par": 5, "hcp": 6, "strokeEligible": true}, {"hole": 7, "par": 5, "hcp": 2, "strokeEligible": true}, {"hole": 8, "par": 4, "hcp": 1, "strokeEligible": true}, {"hole": 9, "par": 3, "hcp": 9, "strokeEligible": false}]};
+const STATE_KEY='fortisGolfState.v1';
+const STORAGE='fortis_golf_v3';
+const SEED_MATCHUPS=[['Paul','Davie',7],['Davie','Sam',5],['Davie','Adam',7],['Warren','Paul',2]];
+let state=loadState();
+let round=null;
+function pairKey(a,b){return [cleanName(a),cleanName(b)].sort((x,y)=>x.localeCompare(y)).join('||')}
+function cleanName(n){return (n||'').trim()}
+function loadState(){
+  let raw=localStorage.getItem(STORAGE); let s=raw?JSON.parse(raw):{rounds:[],matchups:{},history:[],version:3};
+  if(!s.rounds)s.rounds=[]; if(!s.matchups)s.matchups={}; if(!s.history)s.history=[];
+  for(const [giver,receiver,holes] of SEED_MATCHUPS){let k=pairKey(giver,receiver); if(!s.matchups[k])s.matchups[k]={giver,receiver,holes}}
+  return s;
+}
+function saveState(){localStorage.setItem(STORAGE,JSON.stringify(state))}
+function init(){
+  const course=document.getElementById('course'); course.innerHTML='<option>DH</option><option>SR</option><option>TPE</option>'; course.onchange=()=>document.getElementById('comboBox').classList.toggle('hidden',course.value!=='TPE');
+  const defaults=['Paul','Davie','Nick','Andy']; const box=document.getElementById('playerInputs'); box.innerHTML='';
+  for(let i=0;i<4;i++){box.insertAdjacentHTML('beforeend',`<div><label>Player ${i+1}</label><input id="p${i}" value="${defaults[i]}" oninput="renderMatchupSetup()"><label style="margin-top:8px">Hole 1 Driving Rank</label><select id="r${i}"><option>${i+1}</option><option>${(i+1)%4+1}</option><option>${(i+2)%4+1}</option><option>${(i+3)%4+1}</option></select></div>`)}
+  renderMatchupSetup(); renderCourseDb(); renderSummary(); renderDataViews(); saveState();
+}
+function getPlayers(){return [0,1,2,3].map(i=>cleanName(document.getElementById('p'+i).value)||`Player ${i+1}`)}
+function getRanks(){return [0,1,2,3].map(i=>+document.getElementById('r'+i).value)}
+function buildCourse(){let c=document.getElementById('course').value;if(c!=='TPE')return COURSE_DATA[c].map((h,i)=>({...h,display:`${c} ${h.hole}`,roundHole:i+1}));let [a,b]=document.getElementById('combo').value.split('+');let arr=[...COURSE_DATA['TPE '+a],...COURSE_DATA['TPE '+b]];return arr.map((h,i)=>({...h,display:`${i<9?a:b}${h.hole}`,roundHole:i+1}));}
+function showPage(id){document.querySelectorAll('.page').forEach(p=>p.classList.add('hidden'));document.getElementById(id).classList.remove('hidden');document.querySelectorAll('.nav button').forEach(b=>b.classList.remove('active'));document.getElementById('nav'+id[0].toUpperCase()+id.slice(1)).classList.add('active'); if(id==='summary')renderSummary(); if(id==='data')renderDataViews();}
+function getMatchup(a,b){let k=pairKey(a,b); return state.matchups[k]||{giver:a,receiver:b,holes:0}}
+function matchupText(m){return (+m.holes===0)?'0 holes':`${m.giver} gives ${m.receiver} ${m.holes} holes`}
+function allPairs(players){let out=[];for(let i=0;i<players.length;i++)for(let j=i+1;j<players.length;j++)out.push([players[i],players[j]]);return out}
+function renderMatchupSetup(){
+  const players=getPlayers(); let html='';
+  allPairs(players).forEach((p,idx)=>{const m=getMatchup(p[0],p[1]); html+=`<div class="match-card"><div class="toggle"><input type="checkbox" id="mOn${idx}" checked><b>${p[0]} vs ${p[1]}</b></div><div class="grid" style="margin-top:8px"><div><label>Giver</label><select id="mGiver${idx}"><option ${m.giver===p[0]?'selected':''}>${p[0]}</option><option ${m.giver===p[1]?'selected':''}>${p[1]}</option></select></div><div><label>Receiver</label><select id="mReceiver${idx}"><option ${m.receiver===p[0]?'selected':''}>${p[0]}</option><option ${m.receiver===p[1]?'selected':''}>${p[1]}</option></select></div><div><label>Current holes given</label><input id="mHoles${idx}" type="number" min="0" max="18" value="${m.holes||0}"></div><div><label>Saved</label><input value="${matchupText(m)}" disabled></div></div></div>`});
+  document.getElementById('matchupSetup').innerHTML=html;
+}
+function readMatchupSetup(players){return allPairs(players).map((p,idx)=>{let on=document.getElementById('mOn'+idx)?.checked??true;let giver=document.getElementById('mGiver'+idx)?.value||p[0];let receiver=document.getElementById('mReceiver'+idx)?.value||p[1];if(giver===receiver)receiver=(giver===p[0]?p[1]:p[0]);let holes=+(document.getElementById('mHoles'+idx)?.value||0);return {players:p,on,giver,receiver,holes}})}
+function startRound(){let players=getPlayers();let ranks=getRanks(); if(new Set(ranks).size!==4){alert('Hole 1 driving ranks must be 1,2,3,4 with no duplicates.');return} renderMatchupSetup(); let matchups=readMatchupSetup(players); round={id:Date.now(),type:'Fortis 4-Player',note:document.getElementById('roundNote').value,courseName:document.getElementById('course').value,combo:document.getElementById('course').value==='TPE'?document.getElementById('combo').value:null,course:buildCourse(),players,initialRanks:ranks,matchups,scores:Array.from({length:18},()=>Array(4).fill('')),created:new Date().toISOString(),handicapApplied:false};renderScore();showPage('score');}
+function playerPoint(score,par){let diff=score-par;if(diff<=-2)return 16;if(diff===-1)return 8;if(diff===0)return 4;if(diff===1)return 2;if(diff===2)return 1;return 0}
+function bonusPoint(score,par){let d=score-par; if(d<=-2)return 5; if(d===-1)return 1; return 0}
+function calcFortis(r){let totals=Array(4).fill(0), rows=[], prevRanks=r.initialRanks.map((rank,i)=>({i,rank}));
+ for(let h=0;h<18;h++){let hole=r.course[h], scores=r.scores[h].map(x=>x===''?null:+x);let order;
+   if(h===0){order=[...prevRanks].sort((a,b)=>a.rank-b.rank).map(x=>x.i)} else {let prevScores=r.scores[h-1].map(x=>x===''?999:+x); order=[0,1,2,3].sort((a,b)=>prevScores[a]-prevScores[b] || prevRanks.find(x=>x.i===a).rank-prevRanks.find(x=>x.i===b).rank)}
+   prevRanks=order.map((i,idx)=>({i,rank:idx+1})); let team1=[order[0],order[3]],team2=[order[1],order[2]];
+   let pts=scores.map(s=>s==null?null:playerPoint(s,hole.par)); let t1=team1.reduce((a,i)=>a+(pts[i]??0),0), t2=team2.reduce((a,i)=>a+(pts[i]??0),0); let diff=(pts.some(x=>x===null)?0:t1-t2);
+   if(!pts.some(x=>x===null)){team1.forEach(i=>totals[i]+=diff);team2.forEach(i=>totals[i]-=diff)}
+   rows.push({hole,order,team1,team2,pts,t1,t2,diff,totals:[...totals]});
+ } return {totals,rows};}
+function eligibleStrokeHoles(course,n){return [...course].filter(h=>h.strokeEligible).sort((a,b)=>a.hcp-b.hcp).slice(0,n).map(h=>h.roundHole)}
+function calcIndividualBattle(r, m){
+  if(!m.on)return null; let gi=r.players.indexOf(m.giver), ri=r.players.indexOf(m.receiver); let strokeHoles=eligibleStrokeHoles(r.course,+m.holes||0); let match=0, bonusG=0, bonusR=0, holesPlayed=0;
+  for(let h=0;h<18;h++){let sG=r.scores[h][gi], sR=r.scores[h][ri], hole=r.course[h]; if(sG===''||sR==='')continue; holesPlayed++; let nG=+sG, nR=+sR-(strokeHoles.includes(h+1)?1:0); if(nG<nR)match++; else if(nR<nG)match--; bonusG+=bonusPoint(+sG,hole.par); bonusR+=bonusPoint(+sR,hole.par);}
+  return {...m,giverIndex:gi,receiverIndex:ri,strokeHoles,match,bonusG,bonusR,holesPlayed};
+}
+function renderScore(){if(!round){document.getElementById('scoreContent').innerHTML='<div class="card">No active round yet.</div>';return} let c=calcFortis(round);let current=c.rows.findIndex((row,h)=>round.scores[h].some(x=>x==='')); if(current<0)current=17;let h=round.course[current];let html=`<div class="card"><div class="hole-title"><div><div class="small">${round.courseName}${round.combo?' '+round.combo:''}</div><div class="big">Hole ${current+1} <span class="small">${h.display} · Par ${h.par} · HCP ${h.hcp}</span></div></div><button class="btn2" onclick="saveRound()">Save Round</button></div></div>`;
+ html+=leaderHtml(c.totals,round.players);
+ html+=`<div class="card"><h2>Enter Gross Scores</h2><div class="grid4">`;
+ for(let i=0;i<4;i++){html+=`<div><label>${round.players[i]}</label><input type="number" min="1" max="15" value="${round.scores[current][i]}" onchange="setScore(${current},${i},this.value)"></div>`}
+ html+=`</div><div class="grid" style="margin-top:12px"><button class="btn2" onclick="jumpHole(${Math.max(0,current-1)})">Previous hole</button><button onclick="jumpHole(${Math.min(17,current+1)})">Next hole</button></div></div>`;
+ let row=c.rows[current]; html+=`<div class="card"><h2>Current Fortis Pairing</h2><div class="team">Team 1: <b>${row.team1.map(i=>round.players[i]).join(' + ')}</b> · Points ${row.t1}</div><div class="team">Team 2: <b>${row.team2.map(i=>round.players[i]).join(' + ')}</b> · Points ${row.t2}</div><div class="small">#1 + #4 vs #2 + #3. From hole 2, ranking uses previous hole score; ties use previous rank.</div></div>`;
+ html+=individualLiveHtml(round); html+=scoreTable(c); document.getElementById('scoreContent').innerHTML=html;}
+function leaderHtml(totals,players){let idx=[0,1,2,3].sort((a,b)=>totals[b]-totals[a]);return `<div class="card"><h2>Fortis Live Leaderboard</h2><div class="leader">`+idx.map((i,k)=>`<div class="leader-row"><div>${k+1}. <b>${players[i]}</b></div><div class="score">${totals[i]}</div><div class="small">pts</div></div>`).join('')+`</div></div>`}
+function individualLiveHtml(r){let active=r.matchups.filter(m=>m.on); let html=`<div class="card"><h2>Individual Battles</h2>`; if(!active.length)return html+'<p class="small">No individual battles active.</p></div>'; active.forEach(m=>{let b=calcIndividualBattle(r,m); let leader=b.match>0?b.giver:b.match<0?b.receiver:'Tie'; let res=b.match===0?'Tie':`${leader} +${Math.abs(b.match)}`; html+=`<div class="match-card"><b>${m.giver} vs ${m.receiver}</b><br><span class="small">${m.giver} gives ${m.receiver} ${m.holes} holes · Stroke holes: ${b.strokeHoles.join(', ')||'none'}</span><br><span class="status">Match: <b>${res}</b> · Bonus: ${m.giver} ${b.bonusG}, ${m.receiver} ${b.bonusR}</span></div>`}); return html+'</div>'}
+function scoreTable(c){let html=`<div class="card scroll"><h2>Hole History</h2><table><thead><tr><th>Hole</th><th>Par</th>${round.players.map(p=>`<th>${p}</th>`).join('')}<th>Team Diff</th></tr></thead><tbody>`;c.rows.forEach((r,h)=>{html+=`<tr><td>${h+1}</td><td>${r.hole.par}</td>${round.players.map((p,i)=>`<td>${round.scores[h][i]||''}<br><span class="small">${r.pts[i]??''}</span></td>`).join('')}<td>${r.diff}</td></tr>`});return html+'</tbody></table></div>'}
+function setScore(h,i,v){round.scores[h][i]=v===''?'':+v;renderScore()}
+function jumpHole(h){renderScore(); window.scrollTo(0,0)}
+function adjustMatchup(m, match){let steps=Math.floor(Math.abs(match)/3); let before={giver:m.giver,receiver:m.receiver,holes:+m.holes||0}; if(steps===0)return {before,after:before,steps};
+ let after={...before}; if(match>0){ // giver beat receiver: giver gives more next time
+   after.holes=before.holes+steps;
+ } else if(match<0){ // receiver beat giver: reduce giver's allowance, then flip if below zero
+   after.holes=before.holes-steps; if(after.holes<0){after={giver:before.receiver,receiver:before.giver,holes:Math.abs(after.holes)}}
+ }
+ if(after.holes===0){after.giver=before.giver; after.receiver=before.receiver}
+ return {before,after,steps};
+}
+function applyHandicapUpdates(r){
+  let updates=[]; for(const m of r.matchups){let b=calcIndividualBattle(r,m); if(!b||b.holesPlayed<18)continue; let adj=adjustMatchup(m,b.match); let k=pairKey(m.giver,m.receiver); state.matchups[k]=adj.after; updates.push({date:new Date().toISOString(),roundId:r.id,course:r.courseName+(r.combo?' '+r.combo:''),players:[m.giver,m.receiver],result:b.match,before:adj.before,after:adj.after,steps:adj.steps,bonus:[b.bonusG,b.bonusR]});}
+  state.history.push(...updates); r.handicapApplied=true; return updates;
+}
+function saveRound(){if(!round)return;let ix=state.rounds.findIndex(r=>r.id===round.id); if(ix>=0)state.rounds[ix]=round; else state.rounds.push(round); let msg='Round saved on this device.'; if(!round.handicapApplied){let complete=round.scores.every(row=>row.every(x=>x!=='')); if(complete){let updates=applyHandicapUpdates(round); msg+=' Individual handicaps updated: '+updates.length;} else msg+=' Finish all 18 holes to update individual handicaps.';} else msg+=' Handicaps were already applied for this round.'; saveState(); renderSummary(); renderDataViews(); alert(msg);}
+function renderSummary(){let html='<div class="card"><h2>Saved Rounds</h2>'; if(!state.rounds.length)html+='<p class="small">No saved rounds yet.</p>'; else state.rounds.slice().reverse().forEach(r=>{let total=''; let c=calcFortis(r);let winner=[0,1,2,3].sort((a,b)=>c.totals[b]-c.totals[a])[0];total=`Winner: ${r.players[winner]} (${c.totals[winner]} pts)`; html+=`<div class="team"><b>${r.type}</b> · ${new Date(r.created).toLocaleDateString()}<br><span class="small">${r.courseName}${r.combo?' '+r.combo:''} · ${r.players.join(', ')} · ${total} · ${r.handicapApplied?'handicaps applied':'not applied'}</span></div>`}); html+='</div>'; html+=currentMatchupsHtml(); document.getElementById('summaryContent').innerHTML=html;}
+function currentMatchupsHtml(){let rows=Object.values(state.matchups).sort((a,b)=>(a.giver+a.receiver).localeCompare(b.giver+b.receiver)); let html='<div class="card"><h2>Current Handicap Matrix</h2><div class="scroll"><table><tr><th>Giver</th><th>Receiver</th><th>Holes</th></tr>'; rows.forEach(m=>html+=`<tr><td>${m.giver}</td><td>${m.receiver}</td><td>${m.holes}</td></tr>`); return html+'</table></div></div>'}
+function renderDataViews(){document.getElementById('matchupDb').innerHTML=currentMatchupsHtml(); let hist=state.history.slice().reverse(); let hh='<div class="scroll"><table><tr><th>Date</th><th>Course</th><th>Matchup</th><th>Result</th><th>Before</th><th>After</th></tr>'; hist.forEach(x=>{let result=x.result>0?`${x.before.giver} +${x.result}`:x.result<0?`${x.before.receiver} +${Math.abs(x.result)}`:'Tie'; hh+=`<tr><td>${new Date(x.date).toLocaleDateString()}</td><td>${x.course}</td><td>${x.players.join(' vs ')}</td><td>${result}</td><td>${matchupText(x.before)}</td><td>${matchupText(x.after)}</td></tr>`}); document.getElementById('matchupHistory').innerHTML=hh+'</table></div>'; renderCourseDb();}
+function renderCourseDb(){let html='';Object.keys(COURSE_DATA).forEach(c=>{html+=`<h2>${c}</h2><div class="scroll"><table><tr><th>Hole</th><th>Par</th><th>HCP</th><th>Stroke Eligible</th></tr>`+COURSE_DATA[c].map(h=>`<tr><td>${h.hole}</td><td>${h.par}</td><td>${h.hcp}</td><td>${h.strokeEligible?'Yes':'No - Par 3'}</td></tr>`).join('')+'</table></div>'});document.getElementById('courseDb').innerHTML=html;}
+function exportData(){document.getElementById('backup').value=JSON.stringify(state,null,2)}
+function clearData(){if(confirm('Clear all saved rounds and matchup handicaps on this device?')){localStorage.removeItem(STORAGE);state=loadState();saveState();renderSummary();renderDataViews();exportData();alert('Cleared. Seed handicaps were reloaded.')}}
+init();
+</script>
+</body></html>
