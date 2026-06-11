@@ -91,9 +91,6 @@ function setupCourseSelect(){
   sel.onchange();
 }
 
-  sel.onchange=setCombos;
-  setCombos();
-}
 function currentPlayers(){return [0,1,2,3].map(i=>document.getElementById('p'+i).value.trim()||`Player ${i+1}`)}
 function loadLastGroup(){let rid=db.rounds?.[0]?.id; if(!rid)return alert('No previous round found.'); let names=[...new Set(db.scores.filter(s=>s.round_id===rid).map(s=>s.player_name))].slice(0,4); if(names.length<4)return alert('Could not find 4 players from last round.'); names.forEach((n,i)=>document.getElementById('p'+i).value=n); renderMatchups(); alert('Loaded last group: '+names.join(', '));}
 function pairKey(a,b){return [a,b].sort().join('___')}
