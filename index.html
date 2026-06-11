@@ -66,26 +66,30 @@ async function loadAll(){try{db.courses=await sb('courses?select=*&order=id'); d
 function makePlayers(){let names=['Paul','Davie','Nick','Andy'], box=document.getElementById('playerInputs'); box.innerHTML=''; for(let i=0;i<4;i++) box.insertAdjacentHTML('beforeend',`<div><label>Player ${i+1}</label><input id="p${i}" value="${names[i]}"><label>Hole 1 Driving Rank</label><select id="r${i}"><option>${i+1}</option><option>${(i+1)%4+1}</option><option>${(i+2)%4+1}</option><option>${(i+3)%4+1}</option></select></div>`)}
 function setupCourseSelect(){
   let sel=document.getElementById('course');
-  let comboBox=document.getElementById('comboBox');
-  let combo=document.getElementById('combo');
-  let comboLabel=document.getElementById('comboLabel');
   sel.innerHTML='';
   ['DH','SR','TPE','TC'].forEach(c=>sel.add(new Option(c,c)));
 
-  function setCombos(){
+  sel.onchange=()=>{
+    const comboBox=document.getElementById('comboBox');
+    const combo=document.getElementById('combo');
+
     combo.innerHTML='';
+
     if(sel.value==='TPE'){
-      comboLabel.textContent='TPE Combo';
-      ['A+B','A+C','A+D','B+C','B+D','C+D'].forEach(c=>combo.add(new Option(c,c)));
+      ['A+B','A+C','A+D','B+C','B+D','C+D'].forEach(x=>combo.add(new Option(x,x)));
       comboBox.classList.remove('hidden');
-    } else if(sel.value==='TC'){
-      comboLabel.textContent='TC Combo';
-      ['E+C','E+W','C+W'].forEach(c=>combo.add(new Option(c,c)));
+      comboBox.querySelector('label').innerText='TPE Combo';
+    }else if(sel.value==='TC'){
+      ['E+C','E+W','C+W'].forEach(x=>combo.add(new Option(x,x)));
       comboBox.classList.remove('hidden');
-    } else {
+      comboBox.querySelector('label').innerText='TC Combo';
+    }else{
       comboBox.classList.add('hidden');
     }
-  }
+  };
+
+  sel.onchange();
+}
 
   sel.onchange=setCombos;
   setCombos();
@@ -97,42 +101,36 @@ function findMatchup(a,b){let rec=db.matchups.find(m=>pairKey(m.giver,m.receiver
 function renderMatchups(){let p=currentPlayers(), pairs=[]; for(let i=0;i<4;i++) for(let j=i+1;j<4;j++) pairs.push(findMatchup(p[i],p[j])); let html=''; pairs.forEach((m,idx)=>{html+=`<div class="match"><label class="toggle"><input type="checkbox" id="mAct${idx}" checked> ${m.a} vs ${m.b}</label><div class="grid"><div><label>Giver</label><select id="mG${idx}"><option ${m.giver===m.a?'selected':''}>${m.a}</option><option ${m.giver===m.b?'selected':''}>${m.b}</option></select></div><div><label>Receiver</label><select id="mR${idx}"><option ${m.receiver===m.a?'selected':''}>${m.a}</option><option ${m.receiver===m.b?'selected':''}>${m.b}</option></select></div><div><label>Current holes given</label><input type="number" id="mS${idx}" value="${m.strokes}"></div><div><label>Saved</label><input disabled value="${m.strokes?m.giver+' gives '+m.receiver+' '+m.strokes:'Scratch / new matchup'}"></div></div></div>`}); document.getElementById('matchupSetup').innerHTML=html;}
 function readMatchups(){let p=currentPlayers(), pairs=[]; for(let i=0;i<4;i++) for(let j=i+1;j<4;j++) pairs.push(findMatchup(p[i],p[j])); return pairs.map((m,idx)=>({...m,active:document.getElementById('mAct'+idx)?.checked!==false,giver:document.getElementById('mG'+idx)?.value||m.giver,receiver:document.getElementById('mR'+idx)?.value||m.receiver,strokes:+(document.getElementById('mS'+idx)?.value||0)}));}
 function buildCourse(){
-  let courseType=document.getElementById('course').value;
-  let comboValue=document.getElementById('combo')?.value||'';
+  let c=document.getElementById('course').value;
   let keys=[];
 
-  if(courseType==='TPE'){
-    keys=comboValue.split('+').map(x=>'TPE-'+x);
-  } else if(courseType==='TC'){
-    keys=comboValue.split('+').map(x=>'TC-'+x);
-  } else {
-    keys=[courseType];
+  if(c==='TPE'){
+    keys=document.getElementById('combo').value.split('+').map(x=>'TPE-'+x);
+  }else if(c==='TC'){
+    keys=document.getElementById('combo').value.split('+').map(x=>'TC-'+x);
+  }else{
+    keys=[c];
   }
 
   let holes=[];
   keys.forEach(k=>{
     let course=db.courses.find(x=>x.course_name===k);
-    if(!course) return;
     let arr=db.holes
-      .filter(h=>h.course_id===course.id)
+      .filter(h=>h.course_id===course?.id)
       .sort((a,b)=>a.hole_number-b.hole_number);
 
-    arr.forEach(h=>{
-      let shortName=k.replace('TPE-','').replace('TC-','');
-      holes.push({
-        display:shortName+h.hole_number,
-        sourceCourse:k,
-        sourceHole:h.hole_number,
-        par:h.par,
-        hcp:h.handicap_index,
-        strokeEligible:h.stroke_eligible,
-        roundHole:holes.length+1
-      });
-    });
+    arr.forEach(h=>holes.push({
+      display:k+' #'+h.hole_number,
+      par:h.par,
+      hcp:h.handicap_index,
+      strokeEligible:h.stroke_eligible,
+      roundHole:holes.length+1
+    }));
   });
 
   return holes;
 }
+
 function startRound(){if(!document.getElementById('matchupSetup').querySelector('.match')) renderMatchups(); let ranks=[0,1,2,3].map(i=>+document.getElementById('r'+i).value); if(new Set(ranks).size!==4){alert('Ranks must be 1,2,3,4 with no duplicates.');return} let course=buildCourse(); if(course.length!==18){alert('Selected course/combo does not have 18 holes. Check that both selected 9-hole courses have holes 1–9 in Supabase.'); return} let selectedCourseType=document.getElementById('course').value;
   let selectedCombo=(selectedCourseType==='TPE'||selectedCourseType==='TC')?document.getElementById('combo').value:null;
   round={id:Date.now(),note:document.getElementById('roundNote').value,courseName:selectedCourseType,combo:selectedCombo,players:currentPlayers(),initialRanks:ranks,matchups:readMatchups(),course,scores:Array.from({length:18},()=>Array(4).fill('')),created:new Date().toISOString()}; roundHole=0; renderScore(); showPage('scorePage');}
