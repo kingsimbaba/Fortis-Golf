@@ -772,8 +772,8 @@ async function adminResetStats(){
   if(!confirm('Reset all round stats? This deletes hole_scores and fortis_rounds only. Matchups stay.')) return;
 
   try{
-    await sb('hole_scores',{method:'DELETE'});
-    await sb('fortis_rounds',{method:'DELETE'});
+    await sb('hole_scores?id=gte.0',{method:'DELETE'});
+    await sb('fortis_rounds?id=gte.0',{method:'DELETE'});
     await loadAll();
     renderAdmin();
     alert('Stats reset complete. Matchups were not erased.');
