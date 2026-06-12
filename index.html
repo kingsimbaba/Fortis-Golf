@@ -783,12 +783,11 @@ async function adminStartNewSeason(){
   try{
     await loadAll();
 
-    const activeSeason=db.seasons.find(s=>s.active);
+    let activeSeason=db.seasons.find(s=>s.active===true || s.active==='true' || s.active==='TRUE');
 
-    if(!activeSeason){
-      alert('No active season found');
-      return;
-    }
+if(!activeSeason && db.seasons.length){
+  activeSeason=db.seasons[db.seasons.length-1];
+}
 
     await sb(`seasons?id=eq.${activeSeason.id}`,{
       method:'PATCH',
