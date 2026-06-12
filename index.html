@@ -263,6 +263,64 @@ async function saveRound(){try{let rr=await sb('fortis_rounds',{method:'POST',bo
     });
   }
 } if(scores.length) await sb('hole_scores',{method:'POST',body:JSON.stringify(scores)}); for(const r of calcIndividual(round)){if(r.skipped)continue; let n=nextGive(r); if(r.id) await sb(`matchups?id=eq.${r.id}`,{method:'PATCH',body:JSON.stringify({giver:n.giver,receiver:n.receiver,holes_given:n.strokes,updated_at:new Date().toISOString()})}); else await sb('matchups',{method:'POST',body:JSON.stringify({giver:n.giver,receiver:n.receiver,holes_given:n.strokes})}); let giverResult=(r.giver===r.a?r.match:-r.match); await sb('matchup_history',{method:'POST',body:JSON.stringify({giver:r.giver,receiver:r.receiver,before_holes:r.strokes,after_holes:n.strokes,result_holes:giverResult,course:round.courseName+(round.combo?' '+round.combo:'')})});} localRounds.push(round); await loadAll(); alert('Saved to Supabase. Check fortis_rounds, hole_scores, matchup_history, and matchups.'); renderSummary(); showPage('summary');}catch(e){alert('Save failed: '+e.message)}}
+function renderHeadToHead(){
+  let records={};
+
+  db.history.forEach(h=>{
+    let p1=h.giver;
+    let p2=h.receiver;
+    let key=[p1,p2].sort().join(' vs ');
+
+    if(!records[key]){
+      records[key]={
+        players:key,
+        pA:key.split(' vs ')[0],
+        pB:key.split(' vs ')[1],
+        winsA:0,
+        winsB:0,
+        ties:0,
+        holeDiffA:0
+      };
+    }
+
+    let rec=records[key];
+    let result=+h.result_holes||0;
+
+    let winner='';
+    if(result>0) winner=h.giver;
+    if(result<0) winner=h.receiver;
+
+    if(result===0){
+      rec.ties++;
+    }else if(winner===rec.pA){
+      rec.winsA++;
+      rec.holeDiffA+=Math.abs(result);
+    }else if(winner===rec.pB){
+      rec.winsB++;
+      rec.holeDiffA-=Math.abs(result);
+    }
+  });
+
+  let html='<div class="card"><h2>Head-to-Head Records</h2>';
+  html+='<div class="scroll"><table><tr><th>Matchup</th><th>Record</th><th>Hole +/-</th><th>Current Handicap</th></tr>';
+
+  Object.values(records)
+    .sort((a,b)=>(b.winsA+b.winsB+b.ties)-(a.winsA+a.winsB+a.ties))
+    .forEach(r=>{
+      let current=db.matchups.find(m=>[m.giver,m.receiver].sort().join(' vs ')===r.players);
+      let handicap=current ? `${current.giver} gives ${current.receiver} ${current.holes_given}` : '-';
+
+      html+=`<tr>
+        <td><b>${r.players}</b></td>
+        <td>${r.pA} ${r.winsA} - ${r.winsB} ${r.pB} - Ties ${r.ties}</td>
+        <td>${r.holeDiffA>0?'+':''}${r.holeDiffA}</td>
+        <td>${handicap}</td>
+      </tr>`;
+    });
+
+  html+='</table></div></div>';
+  return html;
+}
 function renderSummary(){let html='<div class="card"><h2>Current Matchup Database</h2><div class="scroll"><table><tr><th>Giver</th><th>Receiver</th><th>Holes</th></tr>'; db.matchups.forEach(m=>html+=`<tr><td>${m.giver}</td><td>${m.receiver}</td><td>${m.holes_given}</td></tr>`); html+='</table></div></div>'; html+=renderPlayerStats(); html+=renderLeaderboards(); html+=renderRankings(); html+=renderRoundHistory(); html+=renderMatchupHistory(); document.getElementById('summaryContent').innerHTML=html;}
 function renderPlayerStats(){
   let stat={};
