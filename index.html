@@ -199,6 +199,98 @@ function renderPlayerStats(){
       stat[name]={
         holes:0,
         totalGross:0,
+        rounds:{},
+        birdies:0,
+        eagles:0,
+        albatross:0,
+        hio:0,
+        pars:0,
+        bogeys:0,
+        doubles:0,
+        triples:0
+      };
+    }
+
+    stat[name].holes++;
+    stat[name].totalGross+=(+s.gross_score||0);
+
+    if(!stat[name].rounds[s.round_id]) stat[name].rounds[s.round_id]=0;
+    stat[name].rounds[s.round_id]+=(+s.gross_score||0);
+
+    if(s.score_type==='Birdie') stat[name].birdies++;
+    if(s.score_type==='Eagle') stat[name].eagles++;
+    if(s.score_type==='Albatross') stat[name].albatross++;
+    if(s.score_type==='Hole In One') stat[name].hio++;
+    if(s.score_type==='Par') stat[name].pars++;
+    if(s.score_type==='Bogey') stat[name].bogeys++;
+    if(s.score_type==='Double Bogey') stat[name].doubles++;
+    if(s.score_type==='Triple Bogey') stat[name].triples++;
+  });
+
+  let rows=Object.entries(stat).map(([name,s])=>{
+    let roundScores=Object.values(s.rounds);
+    let rounds=roundScores.length;
+    let avgRound=rounds ? (s.totalGross/rounds).toFixed(1) : '-';
+    let avgHole=s.holes ? (s.totalGross/s.holes).toFixed(2) : '-';
+    let bestRound=roundScores.length ? Math.min(...roundScores) : '-';
+
+    return {
+      name,
+      rounds,
+      holes:s.holes,
+      avgRound,
+      avgHole,
+      bestRound,
+      birdies:s.birdies,
+      eagles:s.eagles,
+      albatross:s.albatross,
+      hio:s.hio,
+      pars:s.pars,
+      bogeys:s.bogeys,
+      doubles:s.doubles,
+      triples:s.triples
+    };
+  }).sort((a,b)=>a.avgRound-b.avgRound);
+
+  let html='<div class="card"><h2>Enhanced Player Dashboard</h2>';
+
+  if(!rows.length){
+    return html+'<p class="small">No player score data yet. Save a round first.</p></div>';
+  }
+
+  html+='<div class="scroll"><table><tr><th>Player</th><th>Rounds</th><th>Best</th><th>Avg</th><th>Birdies</th><th>Eagles</th><th>HIO</th><th>Pars</th><th>Bogeys</th><th>Doubles</th></tr>';
+
+  rows.forEach(r=>{
+    html+=`<tr>
+      <td><b>${r.name}</b></td>
+      <td>${r.rounds}</td>
+      <td>${r.bestRound}</td>
+      <td>${r.avgRound}</td>
+      <td>${r.birdies}</td>
+      <td>${r.eagles}</td>
+      <td>${r.hio}</td>
+      <td>${r.pars}</td>
+      <td>${r.bogeys}</td>
+      <td>${r.doubles}</td>
+    </tr>`;
+  });
+
+  html+='</table></div>';
+  html+='<p class="small">Stats use saved hole_scores with par and score_type.</p>';
+  html+='</div>';
+
+  return html;
+}{
+  let stat={};
+
+  db.scores.forEach(s=>{
+    let name=s.player_name;
+    if(!name) return;
+
+    if(!stat[name]){
+      stat[name]={
+        holes:0,
+        totalGross:0,
         rounds:new Set()
       };
     }
