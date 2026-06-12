@@ -328,6 +328,70 @@ function renderPlayerStats(){
 
   return html;
 }
+function renderLeaderboards(){
+  let stat={};
+
+  db.scores.forEach(s=>{
+    let name=s.player_name;
+    if(!name) return;
+
+    if(!stat[name]){
+      stat[name]={
+        total:0,
+        rounds:{},
+        birdies:0
+      };
+    }
+
+    stat[name].total+=(+s.gross_score||0);
+
+    if(!stat[name].rounds[s.round_id]){
+      stat[name].rounds[s.round_id]=0;
+    }
+
+    stat[name].rounds[s.round_id]+=(+s.gross_score||0);
+
+    if(s.score_type==='Birdie'){
+      stat[name].birdies++;
+    }
+  });
+
+  let rows=Object.entries(stat).map(([name,s])=>{
+    let rounds=Object.values(s.rounds).length;
+    let avg=rounds ? (s.total/rounds).toFixed(1) : '0.0';
+
+    return {
+      name,
+      avg,
+      birdies:s.birdies
+    };
+  });
+
+  let avgRows=[...rows].sort((a,b)=>parseFloat(a.avg)-parseFloat(b.avg));
+  let birdieRows=[...rows].sort((a,b)=>b.birdies-a.birdies);
+
+  let html='<div class="card"><h2>Scoring Average Leaderboard</h2>';
+  html+='<div class="scroll"><table><tr><th>Rank</th><th>Player</th><th>Avg Round</th></tr>';
+
+  avgRows.forEach((r,i)=>{
+    let medal=i===0?'🥇':i===1?'🥈':i===2?'🥉':i+1;
+    html+=`<tr><td>${medal}</td><td><b>${r.name}</b></td><td>${r.avg}</td></tr>`;
+  });
+
+  html+='</table></div></div>';
+
+  html+='<div class="card"><h2>Birdie Leaderboard</h2>';
+  html+='<div class="scroll"><table><tr><th>Rank</th><th>Player</th><th>Birdies</th></tr>';
+
+  birdieRows.forEach((r,i)=>{
+    let medal=i===0?'🥇':i===1?'🥈':i===2?'🥉':i+1;
+    html+=`<tr><td>${medal}</td><td><b>${r.name}</b></td><td>${r.birdies}</td></tr>`;
+  });
+
+  html+='</table></div></div>';
+
+  return html;
+}
 function renderRankings(){let stat={}; function ensure(n){if(!stat[n])stat[n]={wins:0,losses:0,ties:0,holes:0}; return stat[n]} db.history.forEach(h=>{let a=h.giver,b=h.receiver,r=+h.result_holes||0; ensure(a);ensure(b); if(r>0){stat[a].wins++;stat[b].losses++;stat[a].holes+=r;stat[b].holes-=r}else if(r<0){stat[b].wins++;stat[a].losses++;stat[b].holes+=Math.abs(r);stat[a].holes-=Math.abs(r)}else{stat[a].ties++;stat[b].ties++}}); let rows=Object.entries(stat).sort((a,b)=>(b[1].wins*3+b[1].ties+b[1].holes/10)-(a[1].wins*3+a[1].ties+a[1].holes/10)); let html='<div class="card"><h2>Individual Rankings</h2><div class="scroll"><table><tr><th>Player</th><th>W</th><th>L</th><th>T</th><th>Hole +/-</th></tr>'; rows.forEach(([n,s])=>html+=`<tr><td>${n}</td><td>${s.wins}</td><td>${s.losses}</td><td>${s.ties}</td><td>${s.holes}</td></tr>`); return html+'</table></div><p class="small">Rankings use saved matchup history. Positive result means the giver won; negative means receiver won.</p></div>'}
 function renderRoundHistory(){let html='<div class="card"><h2>Recent Rounds</h2><div class="scroll"><table><tr><th>ID</th><th>Round</th><th>Course</th><th>Played</th><th>Scores</th></tr>'; db.rounds.forEach(r=>{let sc=db.scores.filter(s=>s.round_id===r.id); let players=[...new Set(sc.map(s=>s.player_name))]; let totals=players.map(p=>`${p}: ${sc.filter(x=>x.player_name===p).reduce((a,x)=>a+(+x.gross_score||0),0)}`).join('<br>'); html+=`<tr><td>${r.id}</td><td>${r.round_name||''}</td><td>${r.course_name}${r.course_combo?' '+r.course_combo:''}</td><td>${(r.played_at||'').slice(0,10)}</td><td>${totals}</td></tr>`}); return html+'</table></div></div>'}
 function renderMatchupHistory(){let html='<div class="card"><h2>Recent Matchup History</h2><div class="scroll"><table><tr><th>Date</th><th>Matchup</th><th>Before</th><th>Result</th><th>After</th><th>Course</th></tr>'; db.history.slice(0,50).forEach(h=>{let r=+h.result_holes||0, res=r>0?`${h.giver} +${r}`:r<0?`${h.receiver} +${Math.abs(r)}`:'Tie'; html+=`<tr><td>${(h.played_at||'').slice(0,10)}</td><td>${h.giver} vs ${h.receiver}</td><td>${h.before_holes}</td><td>${res}</td><td>${h.after_holes}</td><td>${h.course||''}</td></tr>`}); return html+'</table></div></div>'}
