@@ -191,8 +191,8 @@ function calcIndividual(r){
       winner:totalResult>0?m.a:totalResult<0?m.b:'Tie'
     };
   });
-}{return r.matchups.map(m=>{if(!m.active)return{...m,skipped:true}; let ai=r.players.indexOf(m.a),bi=r.players.indexOf(m.b),strokeHoles=eligibleStrokeHoles(r.course,+m.strokes||0),match=0,bonusA=0,bonusB=0; for(let h=0;h<18;h++){let sa=r.scores[h][ai],sb=r.scores[h][bi],hole=r.course[h]; if(sa===''||sb==='')continue; let na=+sa-(strokeHoles.includes(h+1)&&m.receiver===m.a?1:0), nb=+sb-(strokeHoles.includes(h+1)&&m.receiver===m.b?1:0); if(na<nb)match++; else if(nb<na)match--; if(+sa-hole.par===-1)bonusA++; if(+sa-hole.par<=-2)bonusA+=5; if(+sb-hole.par===-1)bonusB++; if(+sb-hole.par<=-2)bonusB+=5;} return {...m,strokeHoles,match,bonusA,bonusB,winner:match>0?m.a:match<0?m.b:'Tie'};});}
-function nextGive(m){
+}
+  function nextGive(m){
   let result=+(m.totalResult ?? m.match) || 0;
   let steps=Math.floor(Math.abs(result)/3);
 
