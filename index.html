@@ -214,7 +214,10 @@ function renderPlayerStats(){
     stat[name].holes++;
     stat[name].totalGross+=(+s.gross_score||0);
 
-    if(!stat[name].rounds[s.round_id]) stat[name].rounds[s.round_id]=0;
+    if(!stat[name].rounds[s.round_id]){
+      stat[name].rounds[s.round_id]=0;
+    }
+
     stat[name].rounds[s.round_id]+=(+s.gross_score||0);
 
     if(s.score_type==='Birdie') stat[name].birdies++;
@@ -228,11 +231,22 @@ function renderPlayerStats(){
   });
 
   let rows=Object.entries(stat).map(([name,s])=>{
+
     let roundScores=Object.values(s.rounds);
+
     let rounds=roundScores.length;
-    let avgRound=rounds ? (s.totalGross/rounds).toFixed(1) : '-';
-    let avgHole=s.holes ? (s.totalGross/s.holes).toFixed(2) : '-';
-    let bestRound=roundScores.length ? Math.min(...roundScores) : '-';
+
+    let avgRound=rounds
+      ? (s.totalGross/rounds).toFixed(1)
+      : '-';
+
+    let avgHole=s.holes
+      ? (s.totalGross/s.holes).toFixed(2)
+      : '-';
+
+    let bestRound=roundScores.length
+      ? Math.min(...roundScores)
+      : '-';
 
     return {
       name,
@@ -250,18 +264,44 @@ function renderPlayerStats(){
       doubles:s.doubles,
       triples:s.triples
     };
-  }).sort((a,b)=>a.avgRound-b.avgRound);
 
-  let html='<div class="card"><h2>Enhanced Player Dashboard</h2>';
+  }).sort((a,b)=>parseFloat(a.avgRound)-parseFloat(b.avgRound));
+
+  let html=`
+  <div class="card">
+    <h2>Enhanced Player Dashboard</h2>
+  `;
 
   if(!rows.length){
-    return html+'<p class="small">No player score data yet. Save a round first.</p></div>';
+    html+=`
+      <p class="small">
+        No player score data yet.
+      </p>
+    </div>
+    `;
+    return html;
   }
 
-  html+='<div class="scroll"><table><tr><th>Player</th><th>Rounds</th><th>Best</th><th>Avg</th><th>Birdies</th><th>Eagles</th><th>HIO</th><th>Pars</th><th>Bogeys</th><th>Doubles</th></tr>';
+  html+=`
+  <div class="scroll">
+  <table>
+    <tr>
+      <th>Player</th>
+      <th>Rounds</th>
+      <th>Best</th>
+      <th>Avg</th>
+      <th>Birdies</th>
+      <th>Eagles</th>
+      <th>HIO</th>
+      <th>Pars</th>
+      <th>Bogeys</th>
+      <th>Doubles</th>
+    </tr>
+  `;
 
   rows.forEach(r=>{
-    html+=`<tr>
+    html+=`
+    <tr>
       <td><b>${r.name}</b></td>
       <td>${r.rounds}</td>
       <td>${r.bestRound}</td>
@@ -272,16 +312,22 @@ function renderPlayerStats(){
       <td>${r.pars}</td>
       <td>${r.bogeys}</td>
       <td>${r.doubles}</td>
-    </tr>`;
+    </tr>
+    `;
   });
 
-  html+='</table></div>';
-  html+='<p class="small">Stats use saved hole_scores with par and score_type.</p>';
-  html+='</div>';
+  html+=`
+    </table>
+    </div>
+
+    <p class="small">
+      Stats calculated from saved hole_scores.
+    </p>
+  </div>
+  `;
 
   return html;
-}
-function renderRankings(){let stat={}; function ensure(n){if(!stat[n])stat[n]={wins:0,losses:0,ties:0,holes:0}; return stat[n]} db.history.forEach(h=>{let a=h.giver,b=h.receiver,r=+h.result_holes||0; ensure(a);ensure(b); if(r>0){stat[a].wins++;stat[b].losses++;stat[a].holes+=r;stat[b].holes-=r}else if(r<0){stat[b].wins++;stat[a].losses++;stat[b].holes+=Math.abs(r);stat[a].holes-=Math.abs(r)}else{stat[a].ties++;stat[b].ties++}}); let rows=Object.entries(stat).sort((a,b)=>(b[1].wins*3+b[1].ties+b[1].holes/10)-(a[1].wins*3+a[1].ties+a[1].holes/10)); let html='<div class="card"><h2>Individual Rankings</h2><div class="scroll"><table><tr><th>Player</th><th>W</th><th>L</th><th>T</th><th>Hole +/-</th></tr>'; rows.forEach(([n,s])=>html+=`<tr><td>${n}</td><td>${s.wins}</td><td>${s.losses}</td><td>${s.ties}</td><td>${s.holes}</td></tr>`); return html+'</table></div><p class="small">Rankings use saved matchup history. Positive result means the giver won; negative means receiver won.</p></div>'}
+}let stat={}; function ensure(n){if(!stat[n])stat[n]={wins:0,losses:0,ties:0,holes:0}; return stat[n]} db.history.forEach(h=>{let a=h.giver,b=h.receiver,r=+h.result_holes||0; ensure(a);ensure(b); if(r>0){stat[a].wins++;stat[b].losses++;stat[a].holes+=r;stat[b].holes-=r}else if(r<0){stat[b].wins++;stat[a].losses++;stat[b].holes+=Math.abs(r);stat[a].holes-=Math.abs(r)}else{stat[a].ties++;stat[b].ties++}}); let rows=Object.entries(stat).sort((a,b)=>(b[1].wins*3+b[1].ties+b[1].holes/10)-(a[1].wins*3+a[1].ties+a[1].holes/10)); let html='<div class="card"><h2>Individual Rankings</h2><div class="scroll"><table><tr><th>Player</th><th>W</th><th>L</th><th>T</th><th>Hole +/-</th></tr>'; rows.forEach(([n,s])=>html+=`<tr><td>${n}</td><td>${s.wins}</td><td>${s.losses}</td><td>${s.ties}</td><td>${s.holes}</td></tr>`); return html+'</table></div><p class="small">Rankings use saved matchup history. Positive result means the giver won; negative means receiver won.</p></div>'}
 function renderRoundHistory(){let html='<div class="card"><h2>Recent Rounds</h2><div class="scroll"><table><tr><th>ID</th><th>Round</th><th>Course</th><th>Played</th><th>Scores</th></tr>'; db.rounds.forEach(r=>{let sc=db.scores.filter(s=>s.round_id===r.id); let players=[...new Set(sc.map(s=>s.player_name))]; let totals=players.map(p=>`${p}: ${sc.filter(x=>x.player_name===p).reduce((a,x)=>a+(+x.gross_score||0),0)}`).join('<br>'); html+=`<tr><td>${r.id}</td><td>${r.round_name||''}</td><td>${r.course_name}${r.course_combo?' '+r.course_combo:''}</td><td>${(r.played_at||'').slice(0,10)}</td><td>${totals}</td></tr>`}); return html+'</table></div></div>'}
 function renderMatchupHistory(){let html='<div class="card"><h2>Recent Matchup History</h2><div class="scroll"><table><tr><th>Date</th><th>Matchup</th><th>Before</th><th>Result</th><th>After</th><th>Course</th></tr>'; db.history.slice(0,50).forEach(h=>{let r=+h.result_holes||0, res=r>0?`${h.giver} +${r}`:r<0?`${h.receiver} +${Math.abs(r)}`:'Tie'; html+=`<tr><td>${(h.played_at||'').slice(0,10)}</td><td>${h.giver} vs ${h.receiver}</td><td>${h.before_holes}</td><td>${res}</td><td>${h.after_holes}</td><td>${h.course||''}</td></tr>`}); return html+'</table></div></div>'}
 
