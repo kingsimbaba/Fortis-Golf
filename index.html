@@ -143,8 +143,67 @@ function nextGive(m){let steps=Math.floor(Math.abs(m.match)/3); if(!steps)return
 function renderScore(){let c=calcFortis(round), h=round.course[roundHole]; let html=`<div class="card"><h2>${round.courseName}${round.combo?' '+round.combo:''} · Hole ${roundHole+1}</h2><div class="small">${h.display} · Par ${h.par} · HCP ${h.hcp}</div><button class="btn2" onclick="saveRound()">Save Round to Supabase</button></div><div class="card"><h2>Fortis Live Leaderboard</h2>`; [0,1,2,3].sort((a,b)=>c.totals[b]-c.totals[a]).forEach((i,k)=>html+=`<div class="leader-row"><div>${k+1}. <b>${round.players[i]}</b></div><div class="score">${c.totals[i]}</div><div class="small">pts</div></div>`); html+=`</div><div class="card"><h2>Enter Gross Scores</h2><div class="grid4">`; for(let i=0;i<4;i++) html+=`<div><label>${round.players[i]}</label><input type="number" value="${round.scores[roundHole][i]}" onchange="round.scores[${roundHole}][${i}]=this.value===''?'':+this.value;renderScore()"></div>`; let row=c.rows[roundHole]; html+=`</div><div class="grid" style="margin-top:12px"><button class="btn2" onclick="roundHole=Math.max(0,roundHole-1);renderScore()">Previous hole</button><button onclick="roundHole=Math.min(17,roundHole+1);renderScore()">Next hole</button></div></div><div class="card"><h2>Current Fortis Pairing</h2><div class="team">Team 1: <b>${row.team1.map(i=>round.players[i]).join(' + ')}</b> · Points ${row.t1}</div><div class="team">Team 2: <b>${row.team2.map(i=>round.players[i]).join(' + ')}</b> · Points ${row.t2}</div></div>`; html+=individualHtml(); document.getElementById('scoreContent').innerHTML=html;}
 function individualHtml(){let res=calcIndividual(round), html='<div class="card"><h2>Individual Battles Live</h2>'; res.forEach(r=>{if(r.skipped) html+=`<div class="team">${r.a} vs ${r.b}: OFF</div>`; else html+=`<div class="team"><b>${r.a} vs ${r.b}</b><br><span class="small">${r.strokes?r.giver+' gives '+r.receiver+' '+r.strokes:'Scratch'} · Stroke holes: ${r.strokeHoles.join(', ')||'none'}</span><br>Match: ${r.match>0?r.a+' +'+r.match:r.match<0?r.b+' +'+Math.abs(r.match):'Tie'} · Bonus ${r.a} ${r.bonusA}, ${r.b} ${r.bonusB}</div>`}); return html+'</div>';}
 async function saveRound(){try{let rr=await sb('fortis_rounds',{method:'POST',body:JSON.stringify({round_name:round.note,course_name:round.courseName,course_combo:round.combo})}); let round_id=rr[0].id; let scores=[]; for(let h=0;h<18;h++) for(let i=0;i<4;i++) if(round.scores[h][i]!=='' ) scores.push({round_id,player_name:round.players[i],hole_number:h+1,gross_score:+round.scores[h][i]}); if(scores.length) await sb('hole_scores',{method:'POST',body:JSON.stringify(scores)}); for(const r of calcIndividual(round)){if(r.skipped)continue; let n=nextGive(r); if(r.id) await sb(`matchups?id=eq.${r.id}`,{method:'PATCH',body:JSON.stringify({giver:n.giver,receiver:n.receiver,holes_given:n.strokes,updated_at:new Date().toISOString()})}); else await sb('matchups',{method:'POST',body:JSON.stringify({giver:n.giver,receiver:n.receiver,holes_given:n.strokes})}); let giverResult=(r.giver===r.a?r.match:-r.match); await sb('matchup_history',{method:'POST',body:JSON.stringify({giver:r.giver,receiver:r.receiver,before_holes:r.strokes,after_holes:n.strokes,result_holes:giverResult,course:round.courseName+(round.combo?' '+round.combo:'')})});} localRounds.push(round); await loadAll(); alert('Saved to Supabase. Check fortis_rounds, hole_scores, matchup_history, and matchups.'); renderSummary(); showPage('summary');}catch(e){alert('Save failed: '+e.message)}}
-function renderSummary(){let html='<div class="card"><h2>Current Matchup Database</h2><div class="scroll"><table><tr><th>Giver</th><th>Receiver</th><th>Holes</th></tr>'; db.matchups.forEach(m=>html+=`<tr><td>${m.giver}</td><td>${m.receiver}</td><td>${m.holes_given}</td></tr>`); html+='</table></div></div>'; html+=renderRankings(); html+=renderRoundHistory(); html+=renderMatchupHistory(); document.getElementById('summaryContent').innerHTML=html;}
-function renderRankings(){let stat={}; function ensure(n){if(!stat[n])stat[n]={wins:0,losses:0,ties:0,holes:0}; return stat[n]} db.history.forEach(h=>{let a=h.giver,b=h.receiver,r=+h.result_holes||0; ensure(a);ensure(b); if(r>0){stat[a].wins++;stat[b].losses++;stat[a].holes+=r;stat[b].holes-=r}else if(r<0){stat[b].wins++;stat[a].losses++;stat[b].holes+=Math.abs(r);stat[a].holes-=Math.abs(r)}else{stat[a].ties++;stat[b].ties++}}); let rows=Object.entries(stat).sort((a,b)=>(b[1].wins*3+b[1].ties+b[1].holes/10)-(a[1].wins*3+a[1].ties+a[1].holes/10)); let html='<div class="card"><h2>Individual Rankings</h2><div class="scroll"><table><tr><th>Player</th><th>W</th><th>L</th><th>T</th><th>Hole +/-</th></tr>'; rows.forEach(([n,s])=>html+=`<tr><td>${n}</td><td>${s.wins}</td><td>${s.losses}</td><td>${s.ties}</td><td>${s.holes}</td></tr>`); return html+'</table></div><p class="small">Rankings use saved matchup history. Positive result means the giver won; negative means receiver won.</p></div>'}
+function renderSummary(){let html='<div class="card"><h2>Current Matchup Database</h2><div class="scroll"><table><tr><th>Giver</th><th>Receiver</th><th>Holes</th></tr>'; db.matchups.forEach(m=>html+=`<tr><td>${m.giver}</td><td>${m.receiver}</td><td>${m.holes_given}</td></tr>`); html+='</table></div></div>'; html+=renderPlayerStats(); html+=renderRankings(); html+=renderRoundHistory(); html+=renderMatchupHistory(); document.getElementById('summaryContent').innerHTML=html;}
+function renderPlayerStats(){
+  let stat={};
+
+  db.scores.forEach(s=>{
+    let name=s.player_name;
+    if(!name) return;
+
+    if(!stat[name]){
+      stat[name]={
+        holes:0,
+        totalGross:0,
+        rounds:new Set()
+      };
+    }
+
+    stat[name].holes++;
+    stat[name].totalGross+=(+s.gross_score||0);
+    stat[name].rounds.add(s.round_id);
+  });
+
+  let rows=Object.entries(stat).map(([name,s])=>{
+    let rounds=s.rounds.size;
+    let avgRound=rounds ? (s.totalGross/rounds).toFixed(1) : '-';
+    let avgHole=s.holes ? (s.totalGross/s.holes).toFixed(2) : '-';
+
+    return {
+      name,
+      rounds,
+      holes:s.holes,
+      totalGross:s.totalGross,
+      avgRound,
+      avgHole
+    };
+  }).sort((a,b)=>b.rounds-a.rounds || a.avgHole-b.avgHole);
+
+  let html='<div class="card"><h2>Player Statistics Dashboard</h2>';
+
+  if(!rows.length){
+    return html+'<p class="small">No player score data yet. Save a round first.</p></div>';
+  }
+
+  html+='<div class="scroll"><table><tr><th>Player</th><th>Rounds</th><th>Holes</th><th>Total Gross</th><th>Avg / Round</th><th>Avg / Hole</th></tr>';
+
+  rows.forEach(r=>{
+    html+=`<tr>
+      <td><b>${r.name}</b></td>
+      <td>${r.rounds}</td>
+      <td>${r.holes}</td>
+      <td>${r.totalGross}</td>
+      <td>${r.avgRound}</td>
+      <td>${r.avgHole}</td>
+    </tr>`;
+  });
+
+  html+='</table></div>';
+  html+='<p class="small">Stats are calculated from saved hole_scores in Supabase.</p>';
+  html+='</div>';
+
+  return html;
+}function renderRankings(){let stat={}; function ensure(n){if(!stat[n])stat[n]={wins:0,losses:0,ties:0,holes:0}; return stat[n]} db.history.forEach(h=>{let a=h.giver,b=h.receiver,r=+h.result_holes||0; ensure(a);ensure(b); if(r>0){stat[a].wins++;stat[b].losses++;stat[a].holes+=r;stat[b].holes-=r}else if(r<0){stat[b].wins++;stat[a].losses++;stat[b].holes+=Math.abs(r);stat[a].holes-=Math.abs(r)}else{stat[a].ties++;stat[b].ties++}}); let rows=Object.entries(stat).sort((a,b)=>(b[1].wins*3+b[1].ties+b[1].holes/10)-(a[1].wins*3+a[1].ties+a[1].holes/10)); let html='<div class="card"><h2>Individual Rankings</h2><div class="scroll"><table><tr><th>Player</th><th>W</th><th>L</th><th>T</th><th>Hole +/-</th></tr>'; rows.forEach(([n,s])=>html+=`<tr><td>${n}</td><td>${s.wins}</td><td>${s.losses}</td><td>${s.ties}</td><td>${s.holes}</td></tr>`); return html+'</table></div><p class="small">Rankings use saved matchup history. Positive result means the giver won; negative means receiver won.</p></div>'}
 function renderRoundHistory(){let html='<div class="card"><h2>Recent Rounds</h2><div class="scroll"><table><tr><th>ID</th><th>Round</th><th>Course</th><th>Played</th><th>Scores</th></tr>'; db.rounds.forEach(r=>{let sc=db.scores.filter(s=>s.round_id===r.id); let players=[...new Set(sc.map(s=>s.player_name))]; let totals=players.map(p=>`${p}: ${sc.filter(x=>x.player_name===p).reduce((a,x)=>a+(+x.gross_score||0),0)}`).join('<br>'); html+=`<tr><td>${r.id}</td><td>${r.round_name||''}</td><td>${r.course_name}${r.course_combo?' '+r.course_combo:''}</td><td>${(r.played_at||'').slice(0,10)}</td><td>${totals}</td></tr>`}); return html+'</table></div></div>'}
 function renderMatchupHistory(){let html='<div class="card"><h2>Recent Matchup History</h2><div class="scroll"><table><tr><th>Date</th><th>Matchup</th><th>Before</th><th>Result</th><th>After</th><th>Course</th></tr>'; db.history.slice(0,50).forEach(h=>{let r=+h.result_holes||0, res=r>0?`${h.giver} +${r}`:r<0?`${h.receiver} +${Math.abs(r)}`:'Tie'; html+=`<tr><td>${(h.played_at||'').slice(0,10)}</td><td>${h.giver} vs ${h.receiver}</td><td>${h.before_holes}</td><td>${res}</td><td>${h.after_holes}</td><td>${h.course||''}</td></tr>`}); return html+'</table></div></div>'}
 
