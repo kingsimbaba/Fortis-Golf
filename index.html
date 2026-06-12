@@ -759,7 +759,53 @@ async function adminAddPlayer(){try{let name=document.getElementById('admPlayer'
 async function adminAddCourse(){try{let course_name=document.getElementById('admCourse').value.trim(); if(!course_name) return alert('Enter course name'); await sb('courses',{method:'POST',body:JSON.stringify({course_name})}); alert('Course added'); document.getElementById('admCourse').value=''; await loadAll(); setupCourseSelect(); renderAdmin();}catch(e){alert('Add course failed: '+e.message)}}
 async function adminSaveMatchup(){try{let giver=document.getElementById('admGiver').value.trim(), receiver=document.getElementById('admReceiver').value.trim(), holes_given=+(document.getElementById('admHoles').value||0); if(!giver||!receiver) return alert('Enter giver and receiver'); let existing=db.matchups.find(m=>pairKey(m.giver,m.receiver)===pairKey(giver,receiver)); if(existing) await sb(`matchups?id=eq.${existing.id}`,{method:'PATCH',body:JSON.stringify({giver,receiver,holes_given,updated_at:new Date().toISOString()})}); else await sb('matchups',{method:'POST',body:JSON.stringify({giver,receiver,holes_given})}); alert('Matchup saved'); await loadAll(); renderAdmin();}catch(e){alert('Save matchup failed: '+e.message)}}
 async function adminSaveHole(){try{let course_id=+document.getElementById('admHoleCourse').value, hole_number=+document.getElementById('admHoleNo').value, par=+document.getElementById('admPar').value, handicap_index=+document.getElementById('admHcp').value; if(!course_id||!hole_number||!par||!handicap_index) return alert('Enter all hole fields'); await sb(`holes?course_id=eq.${course_id}&hole_number=eq.${hole_number}`,{method:'DELETE'}); await sb('holes',{method:'POST',body:JSON.stringify({course_id,hole_number,par,handicap_index,stroke_eligible:par!==3})}); alert('Hole saved'); await loadAll(); renderAdmin();}catch(e){alert('Save hole failed: '+e.message)}}
-async function adminResetStats(){
+async function adminResetStats()
+async function adminStartNewSeason(){
+
+  if(!confirm('Close current season and start a new one?')) return;
+
+  await loadAll();
+
+  const activeSeason =
+    db.seasons.find(s=>s.active);
+
+  if(!activeSeason){
+    alert('No active season found');
+    return;
+  }
+
+  await sb(
+    `seasons?id=eq.${activeSeason.id}`,
+    {
+      method:'PATCH',
+      body:JSON.stringify({
+        active:false,
+        ended_at:new Date().toISOString()
+      })
+    }
+  );
+
+  const nextSeasonNumber =
+    db.seasons.length + 1;
+
+  await sb(
+    'seasons',
+    {
+      method:'POST',
+      body:JSON.stringify({
+        season_name:`Season ${nextSeasonNumber}`,
+        active:true,
+        started_at:new Date().toISOString()
+      })
+    }
+  );
+
+  alert(`Season ${nextSeasonNumber} started`);
+
+  await loadAll();
+  render();
+}  
+{
   if(!confirm('Reset all round stats? This deletes hole_scores and fortis_rounds only. Matchups stay.')) return;
 
   try{
