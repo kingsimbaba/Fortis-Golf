@@ -403,7 +403,7 @@ function renderAdmin(){
     return;
   }
   document.getElementById('adminContent').innerHTML=`
-  <div class="card"><h2>Admin</h2><button class="btn2" onclick="loadAll().then(renderAdmin)">Reload database</button><p class="small">Use this page on your iPhone to add players, courses, matchup handicaps, holes, and user roles.</p></div>
+  <div class="card"><h2>Admin</h2><button class="btn-red" onclick="adminResetStats()">Reset Stats Only</button><button class="btn2" onclick="loadAll().then(renderAdmin)">Reload database</button><p class="small">Use this page on your iPhone to add players, courses, matchup handicaps, holes, and user roles.</p></div>
   <div class="card"><h2>User Management</h2><button class="btn2" onclick="loadAdminUsers()">Reload Users</button><div id="adminUsers" class="small" style="margin-top:10px">Loading users...</div><p class="small">Roles: admin = full access, player = scoring/viewing, guest = view-only. Active=false disables the account in the app UI.</p></div>
   <div class="card"><h2>Add Player</h2><div class="grid"><div><label>Player Name</label><input id="admPlayer" placeholder="Ralf"></div><div><label>&nbsp;</label><button onclick="adminAddPlayer()">Add Player</button></div></div></div>
   <div class="card"><h2>Add Course</h2><div class="grid"><div><label>Course Name</label><input id="admCourse" placeholder="YS"></div><div><label>&nbsp;</label><button onclick="adminAddCourse()">Add Course</button></div></div><p class="small">After adding a course, reload database, then enter its 18 holes below.</p></div>
