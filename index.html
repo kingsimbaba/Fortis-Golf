@@ -288,7 +288,14 @@ function renderScore(){
   document.getElementById('scoreContent').innerHTML=html;
 }
 function individualHtml(){let res=calcIndividual(round), html='<div class="card"><h2>Individual Battles Live</h2>'; res.forEach(r=>{if(r.skipped) html+=`<div class="team">${r.a} vs ${r.b}: OFF</div>`; else html+=`<div class="team"><b>${r.a} vs ${r.b}</b><br><span class="small">${r.strokes?r.giver+' gives '+r.receiver+' '+r.strokes:'Scratch'} · Stroke holes: ${r.strokeHoles.join(', ')||'none'}</span><br>Match: ${r.match>0?r.a+' +'+r.match:r.match<0?r.b+' +'+Math.abs(r.match):'Tie'} · Bonus ${r.a} ${r.bonusA}, ${r.b} ${r.bonusB}</div>`}); return html+'</div>';}
-async function saveRound(){try{let rr=await sb('fortis_rounds',{method:'POST',body:JSON.stringify({round_name:round.note,course_name:round.courseName,course_combo:round.combo})}); let round_id=rr[0].id; let scores=[]; for(let h=0;h<18;h++){
+async function saveRound(){try{let activeSeason=db.seasons.find(s=>s.active===true || s.active==='true' || s.active==='TRUE');
+
+let rr=await sb('fortis_rounds',{method:'POST',body:JSON.stringify({
+  round_name:round.note,
+  course_name:round.courseName,
+  course_combo:round.combo,
+  season_id:activeSeason?.id||null
+})}); let round_id=rr[0].id; let scores=[]; for(let h=0;h<18;h++){
   for(let i=0;i<4;i++){
 
     if(round.scores[h][i]==='') continue;
