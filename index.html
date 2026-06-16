@@ -22,6 +22,7 @@
 <section id="scorePage" class="page hidden"><div id="scoreContent"></div></section><section id="summary" class="page hidden"><div id="summaryContent"></div></section><section id="data" class="page hidden"><div class="card"><h2>Database</h2><button class="btn2" onclick="loadAll()">Reload from Supabase</button><div id="dataView" class="small" style="margin-top:10px"></div></div></section><section id="admin" class="page hidden"><div id="adminContent"></div></section></div>
 <div class="nav hidden"><button id="navSetup" class="active" onclick="showPage('setup')">Setup</button><button id="navScorePage" onclick="showPage('scorePage')">Score</button><button id="navSummary" onclick="showPage('summary')">Summary</button><button id="navData" onclick="showPage('data')">Data</button><button id="navAdmin" class="hidden" onclick="showPage('admin')">Admin</button></div>
 <script>
+let profilePlayer='';
 let SB={url:'',key:''}, authClient=null, currentSession=null, currentUser=null, currentProfile=null, db={courses:[],holes:[],matchups:[],players:[],rounds:[],scores:[],history:[],seasons:[]}, round=null, roundHole=0, localRounds=[];
 const courseIdName={1:'DH',2:'SR',3:'TPE-A',4:'TPE-B',5:'TPE-C',6:'TPE-D',8:'TC-E',9:'TC-C',10:'TC-W'};
 async function init(){makePlayers(); await loadConfig(); await initAuth();}
