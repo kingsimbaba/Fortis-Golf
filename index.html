@@ -85,7 +85,7 @@ function makePlayers(){let names=['Paul','Davie','Nick','Andy'], box=document.ge
 function setupCourseSelect(){
   let sel=document.getElementById('course');
   sel.innerHTML='';
-  ['DH','SR','TPE','TC'].forEach(c=>sel.add(new Option(c,c)));
+  ['DH','SR','TPE','TC','KH'].forEach(c=>sel.add(new Option(c,c)));
 
   sel.onchange=()=>{
     const comboBox=document.getElementById('comboBox');
