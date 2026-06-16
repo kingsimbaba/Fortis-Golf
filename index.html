@@ -326,8 +326,9 @@ let rr=await sb('fortis_rounds',{method:'POST',body:JSON.stringify({
       else scoreType=diff+' Over';
     }
 
-    scores.push({
-      round_id,season_id:activeSeason?.id||null,
+  scores.push({
+      round_id,
+      season_id:activeSeason?.id||null,
       player_name:round.players[i],
       hole_number:h+1,
       gross_score:gross,
