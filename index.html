@@ -542,6 +542,7 @@ function renderPlayerStats(){
   return html;
 }
 
+function renderSeasonLeaderboard(){  
   let activeSeason=db.seasons.find(s=>s.active===true || s.active==='true' || s.active==='TRUE');
   if(!activeSeason){
     return '<div class="card"><h2>Season Leaderboard</h2><p class="small">No active season found.</p></div>';
