@@ -540,7 +540,97 @@ function renderPlayerStats(){
 
   return html;
 }
-function renderLeaderboards(){
+function renderLeaderboards()function renderSeasonLeaderboard(){
+  let activeSeason=db.seasons.find(s=>s.active===true || s.active==='true' || s.active==='TRUE');
+  if(!activeSeason){
+    return '<div class="card"><h2>Season Leaderboard</h2><p class="small">No active season found.</p></div>';
+  }
+
+  let seasonScores=db.scores.filter(s=>+s.season_id===+activeSeason.id);
+  let stat={};
+
+  seasonScores.forEach(s=>{
+    let name=s.player_name;
+    if(!name) return;
+
+    if(!stat[name]){
+      stat[name]={
+        rounds:{},
+        holes:0,
+        gross:0,
+        birdies:0,
+        eagles:0,
+        hio:0,
+        albatross:0,
+        pars:0
+      };
+    }
+
+    stat[name].holes++;
+    stat[name].gross+=(+s.gross_score||0);
+
+    if(!stat[name].rounds[s.round_id]) stat[name].rounds[s.round_id]=0;
+    stat[name].rounds[s.round_id]+=(+s.gross_score||0);
+
+    if(s.score_type==='Birdie') stat[name].birdies++;
+    if(s.score_type==='Eagle') stat[name].eagles++;
+    if(s.score_type==='Hole In One') stat[name].hio++;
+    if(s.score_type==='Albatross') stat[name].albatross++;
+    if(s.score_type==='Par') stat[name].pars++;
+  });
+
+  let rows=Object.entries(stat).map(([name,s])=>{
+    let rounds=Object.keys(s.rounds).length;
+    let avg=rounds ? (s.gross/rounds).toFixed(1) : '-';
+    let seasonPoints =
+      s.birdies*1 +
+      s.eagles*5 +
+      s.hio*10 +
+      s.albatross*10 +
+      s.pars*0.25 -
+      (parseFloat(avg)||0);
+
+    return {
+      name,
+      rounds,
+      avg,
+      birdies:s.birdies,
+      eagles:s.eagles,
+      hio:s.hio,
+      albatross:s.albatross,
+      seasonPoints:seasonPoints.toFixed(1)
+    };
+  }).sort((a,b)=>parseFloat(b.seasonPoints)-parseFloat(a.seasonPoints));
+
+  let html=`<div class="card"><h2>${activeSeason.season_name} Leaderboard</h2>`;
+
+  if(!rows.length){
+    return html+'<p class="small">No scores saved for this season yet.</p></div>';
+  }
+
+  html+='<div class="scroll"><table><tr><th>Rank</th><th>Player</th><th>Pts</th><th>Rounds</th><th>Avg</th><th>Birdies</th><th>Eagles</th><th>HIO</th></tr>';
+
+  rows.forEach((r,i)=>{
+    let medal=i===0?'🥇':i===1?'🥈':i===2?'🥉':i+1;
+    html+=`<tr>
+      <td>${medal}</td>
+      <td><b>${r.name}</b></td>
+      <td>${r.seasonPoints}</td>
+      <td>${r.rounds}</td>
+      <td>${r.avg}</td>
+      <td>${r.birdies}</td>
+      <td>${r.eagles}</td>
+      <td>${r.hio}</td>
+    </tr>`;
+  });
+
+  html+='</table></div>';
+  html+='<p class="small">Season leaderboard uses only scores with current active season_id.</p>';
+  html+='</div>';
+
+  return html;
+}
+{
   let stat={};
 
   db.scores.forEach(s=>{
