@@ -674,7 +674,45 @@ function renderSeasonLeaderboard(){
 
   return html;
 }
-  
+
+function renderPlayerProfile(){
+  let names=[...new Set(db.scores.map(s=>s.player_name).filter(Boolean))].sort();
+  if(!profilePlayer && names.length) profilePlayer=names[0];
+
+  let player=profilePlayer;
+  let scores=db.scores.filter(s=>s.player_name===player);
+  let season=db.seasons.find(s=>s.active===true || s.active==='true' || s.active==='TRUE');
+  let seasonScores=scores.filter(s=>+s.season_id===+season?.id);
+
+  function count(arr,type){return arr.filter(s=>s.score_type===type).length;}
+  function rounds(arr){return Object.keys(arr.reduce((a,s)=>{a[s.round_id]=1;return a;},{})).length;}
+
+  let total=scores.reduce((a,s)=>a+(+s.gross_score||0),0);
+  let seasonTotal=seasonScores.reduce((a,s)=>a+(+s.gross_score||0),0);
+
+  let html=`<div class="card"><h2>Player Profile</h2>
+    <label>Select Player</label>
+    <select onchange="profilePlayer=this.value;renderSummary()">
+      ${names.map(n=>`<option ${n===player?'selected':''}>${n}</option>`).join('')}
+    </select>
+    <div class="team"><h2>${player}</h2>
+      <div>Season Rounds: <b>${rounds(seasonScores)}</b></div>
+      <div>Season Avg: <b>${rounds(seasonScores)?(seasonTotal/rounds(seasonScores)).toFixed(1):'-'}</b></div>
+      <div>Season Birdies: <b>${count(seasonScores,'Birdie')}</b></div>
+      <div>Season Eagles: <b>${count(seasonScores,'Eagle')}</b></div>
+    </div>
+    <div class="team"><h2>Lifetime</h2>
+      <div>Total Rounds: <b>${rounds(scores)}</b></div>
+      <div>Lifetime Avg: <b>${rounds(scores)?(total/rounds(scores)).toFixed(1):'-'}</b></div>
+      <div>Birdies: <b>${count(scores,'Birdie')}</b></div>
+      <div>Eagles: <b>${count(scores,'Eagle')}</b></div>
+      <div>HIO: <b>${count(scores,'Hole In One')}</b></div>
+      <div>Albatross: <b>${count(scores,'Albatross')}</b></div>
+    </div>
+  </div>`;
+
+  return html;
+} 
 function renderLeaderboards(){
     let stat={};
 
