@@ -400,7 +400,7 @@ function renderHeadToHead(){
   html+='</table></div></div>';
   return html;
 }
-function renderSummary(){let html='<div class="card"><h2>Current Matchup Database</h2><div class="scroll"><table><tr><th>Giver</th><th>Receiver</th><th>Holes</th></tr>'; db.matchups.forEach(m=>html+=`<tr><td>${m.giver}</td><td>${m.receiver}</td><td>${m.holes_given}</td></tr>`); html+='</table></div></div>'; html+=renderSeasonLeaderboard();html+=renderPlayerStats(); html+=renderLeaderboards(); html+=renderHeadToHead(); html+=renderLifetimeRankings(); html+=renderHandicapTrend(); html+=renderRankings(); html+=renderRoundHistory(); html+=renderMatchupHistory(); document.getElementById('summaryContent').innerHTML=html;}
+function renderSummary(){let html='<div class="card"><h2>Current Matchup Database</h2><div class="scroll"><table><tr><th>Giver</th><th>Receiver</th><th>Holes</th></tr>'; db.matchups.forEach(m=>html+=`<tr><td>${m.giver}</td><td>${m.receiver}</td><td>${m.holes_given}</td></tr>`); html+='</table></div></div>'; html+=renderSeasonLeaderboard();html+=renderPlayerProfile();html+=renderPlayerStats(); html+=renderLeaderboards(); html+=renderHeadToHead(); html+=renderLifetimeRankings(); html+=renderHandicapTrend(); html+=renderRankings(); html+=renderRoundHistory(); html+=renderMatchupHistory(); document.getElementById('summaryContent').innerHTML=html;}
 function renderPlayerStats(){
   let stat={};
 
