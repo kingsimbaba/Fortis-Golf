@@ -630,8 +630,9 @@ function renderSeasonLeaderboard(){
 
   return html;
 }
-{
-  let stat={};
+  
+function renderLeaderboards(){
+    let stat={};
 
   db.scores.forEach(s=>{
     let name=s.player_name;
