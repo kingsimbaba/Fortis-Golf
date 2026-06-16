@@ -652,7 +652,7 @@ function renderPlayerProfile(){
 
   let recent=Object.entries(roundsObj(scores)).slice(-5).reverse();
 
-  let html=`<div class="card"><h2>Player Profile v2</h2>
+  let html=`<div class="card"><h2>Player Profile</h2>
     <label>Select Player</label>
     <select onchange="profilePlayer=this.value;renderSummary()">
       ${names.map(n=>`<option ${n===player?'selected':''}>${n}</option>`).join('')}
