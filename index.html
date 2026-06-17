@@ -48,7 +48,14 @@ async function handleLoggedIn(session){
   document.querySelector('.nav').classList.remove('hidden');
   document.getElementById('navAdmin').classList.toggle('hidden', !(currentProfile&&currentProfile.role==='admin'));
   document.getElementById('userBar').innerHTML=`${currentUser.email} · ${currentProfile?.role||'player'} · <button class="btn2" style="width:auto;padding:6px 10px;font-size:12px" onclick="signOutUser()">Sign out</button>`;
-  await loadAll(); renderSummary(); showPage('setup');
+  await loadAll(); 
+  renderSummary(); 
+
+  if(round){
+  showPage('scorePage');
+  }else{
+  showPage(currentPage || 'setup');
+}
 }
 async function loadProfile(){
   let rows=[];
