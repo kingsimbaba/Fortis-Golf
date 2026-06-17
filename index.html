@@ -1039,7 +1039,20 @@ if(!activeSeason && db.seasons.length){
     alert('Start season failed: '+e.message);
   }
 }
-function showPage(id){document.querySelectorAll('.page').forEach(p=>p.classList.add('hidden'));document.getElementById(id).classList.remove('hidden');document.querySelectorAll('.nav button').forEach(b=>b.classList.remove('active'));let nb=document.getElementById('nav'+id[0].toUpperCase()+id.slice(1)); if(nb) nb.classList.add('active'); if(id==='summary')renderSummary(); if(id==='admin')renderAdmin();}
+function showPage(id){
+  currentPage=id;
+
+  document.querySelectorAll('.page').forEach(p=>p.classList.add('hidden'));
+  document.getElementById(id).classList.remove('hidden');
+
+  document.querySelectorAll('.nav button').forEach(b=>b.classList.remove('active'));
+
+  let nb=document.getElementById('nav'+id[0].toUpperCase()+id.slice(1)); 
+  if(nb) nb.classList.add('active'); 
+
+  if(id==='summary') renderSummary(); 
+  if(id==='admin') renderAdmin();
+}
 function changeTheme(){
   const mode=document.getElementById('themeSelector')?.value||'dark';
   document.body.classList.remove('light-theme','high-contrast');
