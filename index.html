@@ -269,6 +269,7 @@ function changeScore(h,i,delta){
 
   if(next<1) next=1;
   round.scores[h][i]=next;
+  saveActiveRound();
   renderScore();
 }
 
