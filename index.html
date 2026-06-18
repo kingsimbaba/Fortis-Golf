@@ -154,6 +154,29 @@ function buildCourse(){
   return holes;
 }
 
+function saveActiveRound(){
+  if(round){
+    localStorage.setItem('fortisActiveRound', JSON.stringify({round, roundHole}));
+  }
+}
+
+function loadActiveRound(){
+  try{
+    let saved=localStorage.getItem('fortisActiveRound');
+    if(!saved) return false;
+    let data=JSON.parse(saved);
+    if(!data.round) return false;
+    round=data.round;
+    roundHole=data.roundHole||0;
+    return true;
+  }catch(e){
+    return false;
+  }
+}
+
+function clearActiveRound(){
+  localStorage.removeItem('fortisActiveRound');
+}
 function startRound(){if(!document.getElementById('matchupSetup').querySelector('.match')) renderMatchups(); let ranks=[0,1,2,3].map(i=>+document.getElementById('r'+i).value); if(new Set(ranks).size!==4){alert('Ranks must be 1,2,3,4 with no duplicates.');return} let course=buildCourse(); if(course.length!==18){alert('Selected course/combo does not have 18 holes. Check that both selected 9-hole courses have holes 1–9 in Supabase.'); return} let selectedCourseType=document.getElementById('course').value;
   let selectedCombo=(selectedCourseType==='TPE'||selectedCourseType==='TC')?document.getElementById('combo').value:null;
   round={id:Date.now(),note:document.getElementById('roundNote').value,courseName:selectedCourseType,combo:selectedCombo,players:currentPlayers(),initialRanks:ranks,matchups:readMatchups(),course,scores:Array.from({length:18},()=>Array(4).fill('')),created:new Date().toISOString()}; roundHole=0; renderScore(); showPage('scorePage');}
