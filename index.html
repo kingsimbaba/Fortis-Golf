@@ -127,6 +127,15 @@ function loadLastGroup(){let rid=db.rounds?.[0]?.id; if(!rid)return alert('No pr
 function pairKey(a,b){return [a,b].sort().join('___')}
 function findMatchup(a,b){let rec=db.matchups.find(m=>pairKey(m.giver,m.receiver)===pairKey(a,b)); if(rec) return {id:rec.id,a,b,active:true,giver:rec.giver,receiver:rec.receiver,strokes:+rec.holes_given||0}; return {id:null,a,b,active:true,giver:a,receiver:b,strokes:0};}
 function renderMatchups(){let p=currentPlayers(), pairs=[]; for(let i=0;i<4;i++) for(let j=i+1;j<4;j++) pairs.push(findMatchup(p[i],p[j])); let html=''; pairs.forEach((m,idx)=>{html+=`<div class="match"><label class="toggle"><input type="checkbox" id="mAct${idx}" checked> ${m.a} vs ${m.b}</label><div class="grid"><div><label>Giver</label><select id="mG${idx}"><option ${m.giver===m.a?'selected':''}>${m.a}</option><option ${m.giver===m.b?'selected':''}>${m.b}</option></select></div><div><label>Receiver</label><select id="mR${idx}"><option ${m.receiver===m.a?'selected':''}>${m.a}</option><option ${m.receiver===m.b?'selected':''}>${m.b}</option></select></div><div><label>Current holes given</label><input type="number" id="mS${idx}" value="${m.strokes}"></div><div><label>Saved</label><input disabled value="${m.strokes?m.giver+' gives '+m.receiver+' '+m.strokes:'Scratch / new matchup'}"></div></div></div>`}); document.getElementById('matchupSetup').innerHTML=html;}
+function toggleIndividualMatchups(on){
+  useIndividualMatchups=on;
+
+  document.querySelectorAll('[id^="mAct"]').forEach(x=>{
+    x.checked=on;
+  });
+
+  renderMatchups();
+}  
 function readMatchups(){if(!useIndividualMatchups){
   return [];
 }let p=currentPlayers(), pairs=[]; for(let i=0;i<4;i++) for(let j=i+1;j<4;j++) pairs.push(findMatchup(p[i],p[j])); return pairs.map((m,idx)=>({...m,active:document.getElementById('mAct'+idx)?.checked!==false,giver:document.getElementById('mG'+idx)?.value||m.giver,receiver:document.getElementById('mR'+idx)?.value||m.receiver,strokes:+(document.getElementById('mS'+idx)?.value||0)}));}
