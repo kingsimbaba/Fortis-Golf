@@ -51,9 +51,10 @@ async function handleLoggedIn(session){
   await loadAll(); 
   renderSummary(); 
 
-  if(round){
-  showPage('scorePage');
-  }else{
+  if(loadActiveRound()){
+    renderScore();
+    showPage('scorePage');
+}else{
   showPage(currentPage || 'setup');
 }
 }
