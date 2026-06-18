@@ -288,21 +288,36 @@ function renderScore(){
   });
   html+=`</div>`;
 
-  html+=`<div class="card"><h2>Enter Gross Scores</h2><div class="grid4">`;
+  html+=`<div class="card"><h2>Enter Gross Scores</h2>`;
 
   for(let i=0;i<4;i++){
-    let val=round.scores[roundHole][i];
-    html+=`
-      <div>
-        <label>${round.players[i]}</label>
-        <div style="display:grid;grid-template-columns:54px 1fr 54px;gap:6px">
-          <button class="btn2" onclick="changeScore(${roundHole},${i},-1)">−</button>
-          <input type="number" value="${val}" placeholder="Par ${h.par}"
-            onchange="round.scores[${roundHole}][${i}]=this.value===''?'':+this.value;renderScore()">
-          <button onclick="changeScore(${roundHole},${i},1)">+</button>
-        </div>
-      </div>`;
-  }
+  let val=round.scores[roundHole][i];
+  let showVal=val==='' ? h.par : val;
+
+  html+=`
+    <div class="team">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <h2 style="margin:0">${round.players[i]}</h2>
+        <span class="small">Par ${h.par}</span>
+      </div>
+
+      <div style="display:grid;grid-template-columns:70px 1fr 70px;gap:10px;align-items:center">
+        <button class="btn2" style="font-size:26px;padding:18px" onclick="changeScore(${roundHole},${i},-1)">−</button>
+        <div style="text-align:center;font-size:36px;font-weight:900">${showVal}</div>
+        <button style="font-size:26px;padding:18px" onclick="changeScore(${roundHole},${i},1)">+</button>
+      </div>
+
+      <div class="small" style="text-align:center;margin-top:6px">
+        ${showVal-h.par===-3?'Albatross':
+          showVal-h.par===-2?'Eagle':
+          showVal-h.par===-1?'Birdie':
+          showVal-h.par===0?'Par':
+          showVal-h.par===1?'Bogey':
+          showVal-h.par===2?'Double Bogey':
+          showVal-h.par+' Over'}
+      </div>
+    </div>`;
+}
 
   let row=c.rows[roundHole];
 
