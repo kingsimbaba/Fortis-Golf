@@ -24,6 +24,7 @@
 <script>
 let profilePlayer='';
 let currentPage='setup';
+let useIndividualMatchups=true;
 let SB={url:'',key:''}, authClient=null, currentSession=null, currentUser=null, currentProfile=null, db={courses:[],holes:[],matchups:[],players:[],rounds:[],scores:[],history:[],seasons:[]}, round=null, roundHole=0, localRounds=[];
 const courseIdName={1:'DH',2:'SR',3:'TPE-A',4:'TPE-B',5:'TPE-C',6:'TPE-D',8:'TC-E',9:'TC-C',10:'TC-W'};
 async function init(){makePlayers(); await loadConfig(); await initAuth();}
