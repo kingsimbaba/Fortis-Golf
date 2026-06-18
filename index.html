@@ -368,12 +368,11 @@ let rr=await sb('fortis_rounds',{method:'POST',body:JSON.stringify({
 })}); let round_id=rr[0].id; let scores=[]; for(let h=0;h<18;h++){
   for(let i=0;i<4;i++){
 
-    if(round.scores[h][i]===''){
-  round.scores[h][i]=round.course[h].par;
-}
-
-    const gross=+round.scores[h][i];
     const hole=round.course[h];
+
+let gross = round.scores[h][i] === ''
+  ? hole.par
+  : +round.scores[h][i];
 
     let scoreType='';
 
