@@ -365,7 +365,16 @@ let rr=await sb('fortis_rounds',{method:'POST',body:JSON.stringify({
   course_name:round.courseName,
   course_combo:round.combo,
   season_id:activeSeason?.id||null
-})}); let round_id=rr[0].id; let scores=[]; for(let h=0;h<18;h++){
+})}); let round_id=rr[0].id; let scores=[];
+let lastPlayedHole=0;
+
+for(let h=0;h<18;h++){
+  if(round.scores[h].some(x=>x!=='')){
+    lastPlayedHole=h;
+  }
+}
+
+for(let h=0;h<=lastPlayedHole;h++){
   for(let i=0;i<4;i++){
 
     const hole=round.course[h];
