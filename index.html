@@ -231,7 +231,8 @@ function calcIndividual(r){
           sb=r.scores[h][bi],
           hole=r.course[h];
 
-      if(sa===''||sb==='')continue;
+      if(sa==='') sa=r.course[h].par;
+      if(sb==='') sb=r.course[h].par;
 
       let aStroke=strokeHoles.includes(h+1)&&m.receiver===m.a?1:0;
       let bStroke=strokeHoles.includes(h+1)&&m.receiver===m.b?1:0;
