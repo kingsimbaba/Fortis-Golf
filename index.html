@@ -357,7 +357,35 @@ function renderScore(){
   html+=individualHtml();
   document.getElementById('scoreContent').innerHTML=html;
 }
-function individualHtml(){let res=calcIndividual(round), html='<div class="card"><h2>Individual Battles Live</h2>'; res.forEach(r=>{if(r.skipped) html+=`<div class="team">${r.a} vs ${r.b}: OFF</div>`; else html+=`<div class="team"><b>${r.a} vs ${r.b}</b><br><span class="small">${r.strokes?r.giver+' gives '+r.receiver+' '+r.strokes:'Scratch'} · Stroke holes: ${r.strokeHoles.join(', ')||'none'}</span><br>Match: ${r.match>0?r.a+' +'+r.match:r.match<0?r.b+' +'+Math.abs(r.match):'Tie'} · Bonus ${r.a} ${r.bonusA}, ${r.b} ${r.bonusB}</div>`}); return html+'</div>';}
+function individualHtml(){
+  let res=calcIndividual(round);
+  let html='<div class="card"><h2>Individual Battles Live</h2>';
+
+  res.forEach(r=>{
+    if(r.skipped){
+      html+=`<div class="team">${r.a} vs ${r.b}: OFF</div>`;
+    }else{
+      let matchText = r.match>0 ? `${r.a} +${r.match}` : r.match<0 ? `${r.b} +${Math.abs(r.match)}` : 'Tie';
+      let bonusText = r.bonusA-r.bonusB>0 ? `${r.a} +${r.bonusA-r.bonusB}` :
+                      r.bonusA-r.bonusB<0 ? `${r.b} +${Math.abs(r.bonusA-r.bonusB)}` :
+                      'No bonus / tied bonus';
+      let finalText = r.totalResult>0 ? `${r.a} +${r.totalResult}` :
+                      r.totalResult<0 ? `${r.b} +${Math.abs(r.totalResult)}` :
+                      'Tie';
+
+      html+=`
+        <div class="team">
+          <b>${r.a} vs ${r.b}</b><br>
+          Match: ${matchText}<br>
+          Bonus: ${bonusText}<br>
+          <b>Final: ${finalText}</b>
+        </div>`;
+    }
+  });
+
+  html+='</div>';
+  return html;
+}
 async function saveRound(){try{let activeSeason=db.seasons.find(s=>s.active===true || s.active==='true' || s.active==='TRUE');
 
 let rr=await sb('fortis_rounds',{method:'POST',body:JSON.stringify({
