@@ -366,14 +366,17 @@ let rr=await sb('fortis_rounds',{method:'POST',body:JSON.stringify({
   course_combo:round.combo,
   season_id:activeSeason?.id||null
 })}); let round_id=rr[0].id; let scores=[];
-let lastPlayedHole=0;
+let lastPlayedHole=-1;
 
 for(let h=0;h<18;h++){
   if(round.scores[h].some(x=>x!=='')){
     lastPlayedHole=h;
   }
 }
-
+if(lastPlayedHole<0){
+  alert('No scores entered yet.');
+  return;
+}
 for(let h=0;h<=lastPlayedHole;h++){
   for(let i=0;i<4;i++){
 
