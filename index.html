@@ -332,6 +332,16 @@ function changeScore(h,i,delta){
   renderScore();
 }
 
+function confirmHoleScores(){
+  for(let i=0;i<4;i++){
+    if(round.scores[roundHole][i] === ''){
+      round.scores[roundHole][i] = round.course[roundHole].par;
+    }
+  }
+  saveActiveRound();
+  renderScore();
+}
+  
 function renderScore(){
   let c=calcFortis(round), h=round.course[roundHole];
 
