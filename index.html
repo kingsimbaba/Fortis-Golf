@@ -324,7 +324,7 @@ function calcIndividual(r){
 function changeScore(h,i,delta){
   let current=round.scores[h][i];
   let par=round.course[h].par;
-  let next=current==='' ? par : +current+delta;
+  let next=current==='' ? par+delta : +current+delta;
 
   if(next<1) next=1;
   round.scores[h][i]=next;
