@@ -313,7 +313,7 @@ for(let i=0;i<18;i++){
 
 holeNav += '</div></div>';
 
-  let html=`<div class="card">
+  let html=holeNav+`<div class="card">
     <h2>${round.courseName}${round.combo?' '+round.combo:''} · Hole ${roundHole+1}</h2>
     <div class="small">${h.display} · Par ${h.par} · HCP ${h.hcp}</div>
     <button class="btn2" onclick="saveRound()">Save Round to Supabase</button>
