@@ -298,6 +298,21 @@ function changeScore(h,i,delta){
 function renderScore(){
   let c=calcFortis(round), h=round.course[roundHole];
 
+  let holeNav='<div class="card"><div style="display:flex;overflow-x:auto;gap:4px">';
+
+for(let i=0;i<18;i++){
+  holeNav += `
+    <button
+      style="min-width:45px;${
+        i===roundHole ? 'background:#38a169;' : ''
+      }"
+      onclick="roundHole=${i};renderScore()">
+      ${i+1}
+    </button>`;
+}
+
+holeNav += '</div></div>';
+
   let html=`<div class="card">
     <h2>${round.courseName}${round.combo?' '+round.combo:''} · Hole ${roundHole+1}</h2>
     <div class="small">${h.display} · Par ${h.par} · HCP ${h.hcp}</div>
