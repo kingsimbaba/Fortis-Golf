@@ -199,22 +199,46 @@ function loadActiveRound(){
 function clearActiveRound(){
   localStorage.removeItem('fortisActiveRound');
 }
-function startRound(){if(!document.getElementById('matchupSetup').querySelector('.match')) renderMatchups(); let ranks=[0,1,2,3].map(i=>+document.getElementById('r'+i).value); if(new Set(ranks).size!==4){alert('Ranks must be 1,2,3,4 with no duplicates.');return} let course=buildCourse(); if(course.length!==18){alert('Selected course/combo does not have 18 holes. Check that both selected 9-hole courses have holes 1–9 in Supabase.'); return} let selectedCourseType=document.getElementById('course').value;
-  let selectedCombo=(selectedCourseType==='TPE'||selectedCourseType==='TC')?document.getElementById('combo').value:null;
-  round={id:Date.now(),note:document.getElementById('roundNote').value,courseName:selectedCourseType,combo:selectedCombo,players:currentPlayers(),initialRanks:ranks,matchups:readMatchups(),course,scores:Array.from({length:18},()=>Array(4).fill('')),created:new Date().toISOString()}; round={
-  id:Date.now(),
-  note:document.getElementById('roundNote').value,
-  courseName:selectedCourseType,
-  combo:selectedCombo,
-  players:currentPlayers(),
-  initialRanks:ranks,
-  matchups:readMatchups(),
-  course,
-  scores:Array.from({length:18},()=>Array(4).fill('')),
-  created:new Date().toISOString()
-};
+function startRound(){
+  if(!document.getElementById('matchupSetup').querySelector('.match')) renderMatchups();
 
-let startHole = prompt("Starting hole? (1-18)", "1"); roundHole = Math.max(0, Math.min(17, (+startHole || 1) - 1)); saveActiveRound(); renderScore(); showPage('scorePage');
+  let ranks=[0,1,2,3].map(i=>+document.getElementById('r'+i).value);
+  if(new Set(ranks).size!==4){
+    alert('Ranks must be 1,2,3,4 with no duplicates.');
+    return;
+  }
+
+  let course=buildCourse();
+  if(course.length!==18){
+    alert('Selected course/combo does not have 18 holes.');
+    return;
+  }
+
+  let selectedCourseType=document.getElementById('course').value;
+  let selectedCombo=(selectedCourseType==='TPE'||selectedCourseType==='TC')?document.getElementById('combo').value:null;
+
+  round={
+    id:Date.now(),
+    note:document.getElementById('roundNote').value,
+    courseName:selectedCourseType,
+    combo:selectedCombo,
+    players:currentPlayers(),
+    initialRanks:ranks,
+    matchups:readMatchups(),
+    course,
+    scores:Array.from({length:18},()=>Array(4).fill('')),
+    created:new Date().toISOString()
+  };
+
+  let startHole = prompt("Starting hole? (1-18)", "1");
+  roundHole = Math.max(0, Math.min(17, (+startHole || 1) - 1));
+
+  saveActiveRound();
+  renderScore();
+  showPage('scorePage');
+}
+
+
 function playerPoint(score,par){let d=score-par; if(d<=-2)return 16; if(d===-1)return 8; if(d===0)return 4; if(d===1)return 2; if(d===2)return 1; return 0;}
 function calcFortis(r){let totals=Array(4).fill(0),rows=[],prev=r.initialRanks.map((rank,i)=>({i,rank})); for(let h=0;h<18;h++){let order;if(h===0) order=[...prev].sort((a,b)=>a.rank-b.rank).map(x=>x.i); else {let ps=r.scores[h-1].map(x=>x===''?999:+x); order=[0,1,2,3].sort((a,b)=>ps[a]-ps[b]||prev.find(x=>x.i===a).rank-prev.find(x=>x.i===b).rank)} prev=order.map((i,rank)=>({i,rank:rank+1}));let team1=[order[0],order[3]],team2=[order[1],order[2]],pts=r.scores[h].map(s=>s===''?null:playerPoint(+s,r.course[h].par));let done=!pts.some(x=>x===null),t1=team1.reduce((a,i)=>a+(pts[i]??0),0),t2=team2.reduce((a,i)=>a+(pts[i]??0),0),diff=done?t1-t2:0;if(done){team1.forEach(i=>totals[i]+=diff);team2.forEach(i=>totals[i]-=diff)}rows.push({team1,team2,t1,t2,diff,pts,totals:[...totals]})}return{totals,rows}}
 function eligibleStrokeHoles(course,n){return [...course].filter(h=>h.strokeEligible).sort((a,b)=>a.hcp-b.hcp).slice(0,n).map(h=>h.roundHole)}
