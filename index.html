@@ -356,6 +356,28 @@ holeNav += '</div></div>';
     <button class="btn2" onclick="saveRound()">Save Round to Supabase</button>
   </div>`;
 
+  html+=`<div class="card"><h2>Current Gross Aggregate</h2>`;
+
+round.players.forEach((p,i)=>{
+  let grossTotal=0;
+  let holesPlayed=0;
+
+  for(let h=0;h<18;h++){
+    if(round.scores[h][i] !== ''){
+      grossTotal += +round.scores[h][i];
+      holesPlayed++;
+    }
+  }
+
+  html+=`
+    <div class="leader-row">
+      <div><b>${p}</b></div>
+      <div class="score">${grossTotal}</div>
+      <div class="small">${holesPlayed} holes</div>
+    </div>`;
+});
+
+html+=`</div>`;
   html+=`<div class="card"><h2>Fortis Live Leaderboard</h2>`;
   [0,1,2,3].sort((a,b)=>c.totals[b]-c.totals[a]).forEach((i,k)=>{
     html+=`<div class="leader-row"><div>${k+1}. <b>${round.players[i]}</b></div><div class="score">${c.totals[i]}</div><div class="small">pts</div></div>`;
