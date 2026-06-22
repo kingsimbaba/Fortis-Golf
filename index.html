@@ -522,10 +522,14 @@ html+=`</div>`;
     </div>
   </div>`;
 
-  html+=`<div class="card"><h2>Current Fortis Pairing</h2>
-    <div class="team">Team 1: <b>${row.team1.map(i=>round.players[i]).join(' + ')}</b> · Points ${row.t1}</div>
-    <div class="team">Team 2: <b>${row.team2.map(i=>round.players[i]).join(' + ')}</b> · Points ${row.t2}</div>
-  </div>`;
+  let team2Name = row.team2.length===1
+  ? row.team2.map(i=>round.players[i]).join(' + ') + ' x2'
+  : row.team2.map(i=>round.players[i]).join(' + ');
+
+html+=`<div class="card"><h2>Current Fortis Pairing</h2>
+  <div class="team">Team 1: <b>${row.team1.map(i=>round.players[i]).join(' + ')}</b> · Points ${row.t1}</div>
+  <div class="team">Team 2: <b>${team2Name}</b> · Points ${row.t2}</div>
+</div>`;
 
   html+=individualHtml();
   document.getElementById('scoreContent').innerHTML=html;
