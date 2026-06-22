@@ -101,7 +101,7 @@ try{
 setupCourseSelect(); document.getElementById('dbStatus').innerHTML=`<span class="ok">Supabase connected.</span> Courses: ${db.courses.length}, holes: ${db.holes.length}, matchups: ${db.matchups.length}, rounds: ${db.rounds.length}`; document.getElementById('dataView').innerHTML=`Courses ${db.courses.length}<br>Holes ${db.holes.length}<br>Matchups ${db.matchups.length}<br>Players ${db.players.length}<br>Rounds ${db.rounds.length}<br>History ${db.history.length}<br>Seasons ${db.seasons.length}`;}catch(e){document.getElementById('dbStatus').innerHTML='<span class="bad">Supabase error: '+e.message+'</span>';}}
 function makePlayers(){
   let n=+(document.getElementById('playerCount')?.value || 4);
-  let names=['Paul','Davie','Nick','Andy'];
+  let names=['','','',''];
   let box=document.getElementById('playerInputs');
   box.innerHTML='';
 
