@@ -254,10 +254,10 @@ function startRound(){
     courseName:selectedCourseType,
     combo:selectedCombo,
     players:currentPlayers(),
-    initialRanks:ranks,
+    initialRanks:currentPlayers().map((_,i)=>+document.getElementById('r'+i).value),
     matchups:readMatchups(),
     course,
-    scores:Array.from({length:18},()=>Array(4).fill('')),
+    scores:Array.from({length:18},()=>Array(currentPlayers().length).fill('')),
     created:new Date().toISOString()
   };
 
