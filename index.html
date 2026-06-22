@@ -513,7 +513,7 @@ html+=`</div>`;
   <button class="btn2" onclick="confirmHoleScores()">
     Confirm Hole Scores
   </button>`;
-  let row=c.rows[roundHole];
+  let row=c.rows[Math.max(0, roundHole-1)];
 
   html+=`</div>
     <div class="grid" style="margin-top:12px">
