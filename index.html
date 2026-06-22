@@ -163,7 +163,7 @@ function renderMatchups(){if(!useIndividualMatchups){
   return;
 }
                           
-  let p=currentPlayers(), pairs=[]; for(let i=0;i<4;i++) for(let j=i+1;j<4;j++) pairs.push(findMatchup(p[i],p[j])); let html=''; pairs.forEach((m,idx)=>{html+=`<div class="match"><label class="toggle"><input type="checkbox" id="mAct${idx}" checked> ${m.a} vs ${m.b}</label><div class="grid"><div><label>Giver</label><select id="mG${idx}"><option ${m.giver===m.a?'selected':''}>${m.a}</option><option ${m.giver===m.b?'selected':''}>${m.b}</option></select></div><div><label>Receiver</label><select id="mR${idx}"><option ${m.receiver===m.a?'selected':''}>${m.a}</option><option ${m.receiver===m.b?'selected':''}>${m.b}</option></select></div><div><label>Current holes given</label><input type="number" id="mS${idx}" value="${m.strokes}"></div><div><label>Saved</label><input disabled value="${m.strokes?m.giver+' gives '+m.receiver+' '+m.strokes:'Scratch / new matchup'}"></div></div></div>`}); document.getElementById('matchupSetup').innerHTML=html;}
+  let p=currentPlayers(), pairs=[]; for(let i=0;i<p.length;i++) for(let j=i+1;j<p.length;j++) pairs.push(findMatchup(p[i],p[j])); let html=''; pairs.forEach((m,idx)=>{html+=`<div class="match"><label class="toggle"><input type="checkbox" id="mAct${idx}" checked> ${m.a} vs ${m.b}</label><div class="grid"><div><label>Giver</label><select id="mG${idx}"><option ${m.giver===m.a?'selected':''}>${m.a}</option><option ${m.giver===m.b?'selected':''}>${m.b}</option></select></div><div><label>Receiver</label><select id="mR${idx}"><option ${m.receiver===m.a?'selected':''}>${m.a}</option><option ${m.receiver===m.b?'selected':''}>${m.b}</option></select></div><div><label>Current holes given</label><input type="number" id="mS${idx}" value="${m.strokes}"></div><div><label>Saved</label><input disabled value="${m.strokes?m.giver+' gives '+m.receiver+' '+m.strokes:'Scratch / new matchup'}"></div></div></div>`}); document.getElementById('matchupSetup').innerHTML=html;}
 function toggleIndividualMatchups(on){
   useIndividualMatchups=on;
 
@@ -175,7 +175,7 @@ function toggleIndividualMatchups(on){
 }  
 function readMatchups(){if(!useIndividualMatchups){
   return [];
-}let p=currentPlayers(), pairs=[]; for(let i=0;i<4;i++) for(let j=i+1;j<4;j++) pairs.push(findMatchup(p[i],p[j])); return pairs.map((m,idx)=>({...m,active:document.getElementById('mAct'+idx)?.checked!==false,giver:document.getElementById('mG'+idx)?.value||m.giver,receiver:document.getElementById('mR'+idx)?.value||m.receiver,strokes:+(document.getElementById('mS'+idx)?.value||0)}));}
+}let p=currentPlayers(), pairs=[]; for(let i=0;i<p.length;i++) for(let j=i+1;j<p.length;j++) pairs.push(findMatchup(p[i],p[j])); return pairs.map((m,idx)=>({...m,active:document.getElementById('mAct'+idx)?.checked!==false,giver:document.getElementById('mG'+idx)?.value||m.giver,receiver:document.getElementById('mR'+idx)?.value||m.receiver,strokes:+(document.getElementById('mS'+idx)?.value||0)}));}
 function buildCourse(){
   let c=document.getElementById('course').value;
   let keys=[];
@@ -411,7 +411,7 @@ function changeScore(h,i,delta){
 }
 
 function confirmHoleScores(){
-  for(let i=0;i<4;i++){
+  for(let i=0;i<round.players.length;i++){
     if(round.scores[roundHole][i] === ''){
       round.scores[roundHole][i] = round.course[roundHole].par;
     }
@@ -467,14 +467,16 @@ round.players.forEach((p,i)=>{
 
 html+=`</div>`;
   html+=`<div class="card"><h2>Fortis Live Leaderboard</h2>`;
-  [0,1,2,3].sort((a,b)=>c.totals[b]-c.totals[a]).forEach((i,k)=>{
+  currentPlayers().map((_,i)=>i)
+.sort((a,b)=>c.totals[b]-c.totals[a])
+.forEach((i,k)=>{
     html+=`<div class="leader-row"><div>${k+1}. <b>${round.players[i]}</b></div><div class="score">${c.totals[i]}</div><div class="small">pts</div></div>`;
   });
   html+=`</div>`;
 
   html+=`<div class="card"><h2>Enter Gross Scores</h2>`;
 
-  for(let i=0;i<4;i++){
+  for(let i=0;i<round.players.length;i++){
   let val=round.scores[roundHole][i];
   let showVal=val==='' ? h.par : val;
 
@@ -572,7 +574,7 @@ if(lastPlayedHole<0){
   return;
 }
 for(let h=0;h<=lastPlayedHole;h++){
-  for(let i=0;i<4;i++){
+  for(let i=0;i<round.players.length;i++){
 
     const hole=round.course[h];
 
