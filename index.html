@@ -233,11 +233,13 @@ function clearActiveRound(){
 function startRound(){
   if(!document.getElementById('matchupSetup').querySelector('.match')) renderMatchups();
 
-  let ranks=[0,1,2,3].map(i=>+document.getElementById('r'+i).value);
-  if(new Set(ranks).size!==4){
-    alert('Ranks must be 1,2,3,4 with no duplicates.');
-    return;
-  }
+ let n=currentPlayers().length;
+let ranks=[...Array(n).keys()].map(i=>+document.getElementById('r'+i).value);
+
+if(new Set(ranks).size!==n){
+  alert('Ranks must have no duplicates.');
+  return;
+}
 
   let course=buildCourse();
   if(course.length!==18){
