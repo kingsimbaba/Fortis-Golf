@@ -291,17 +291,22 @@ function calcFortis(r){
     arr.sort((a,b)=>a.score-b.score || a.rank-b.rank);
 
     if(n===3){
-      let best=arr[0].i, mid=arr[1].i, worst=arr[2].i;
-      let teamBW=(r.scores[h][best]===''?0:+r.scores[h][best])+(r.scores[h][worst]===''?0:+r.scores[h][worst]);
-      let middle=(r.scores[h][mid]===''?0:+r.scores[h][mid])*2;
-      let diff=middle-teamBW;
+  let best=arr[0].i, mid=arr[1].i, worst=arr[2].i;
 
-      totals[best]+=diff;
-      totals[worst]+=diff;
-      totals[mid]-=diff*2;
+  let bestPts = r.scores[h][best]==='' ? 0 : playerPoint(+r.scores[h][best], r.course[h].par);
+  let worstPts = r.scores[h][worst]==='' ? 0 : playerPoint(+r.scores[h][worst], r.course[h].par);
+  let midPts = r.scores[h][mid]==='' ? 0 : playerPoint(+r.scores[h][mid], r.course[h].par);
 
-      rows.push({h,team1:[best,worst],team2:[mid],t1:teamBW,t2:middle});
-    }
+  let teamBW = bestPts + worstPts;
+  let middle = midPts * 2;
+  let diff = teamBW - middle;
+
+  totals[best] += diff;
+  totals[worst] += diff;
+  totals[mid] -= diff * 2;
+
+  rows.push({h,team1:[best,worst],team2:[mid],t1:teamBW,t2:middle});
+}
 
     if(n===4){
       let team1=[arr[0].i,arr[3].i];
