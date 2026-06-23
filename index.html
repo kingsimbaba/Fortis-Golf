@@ -264,7 +264,10 @@ if(new Set(ranks).size!==n){
   };
 
   let startHole = prompt("Starting hole? (1-18)", "1");
-  roundHole = Math.max(0, Math.min(17, (+startHole || 1) - 1));
+  let startHoleIndex = Math.max(0, Math.min(17, (+startHole || 1) - 1));
+
+round.startHoleIndex = startHoleIndex;
+roundHole = startHoleIndex;
 
   saveActiveRound();
   renderScore();
@@ -281,55 +284,62 @@ function calcFortis(r){
 
   let totals=Array(n).fill(0), rows=[];
 
-  for(let h=0;h<18;h++){
-    let arr=r.players.map((p,i)=>({
-  i,
-  score:h===0 ? r.initialRanks[i] : (r.scores[h-1][i]==='' ? 999 : +r.scores[h-1][i]),
-  rank:r.initialRanks[i]
-}));
+  let startIndex = r.startHoleIndex ?? 0;
+  let playOrder = Array.from({length:18}, (_,i)=>(startIndex+i)%18);
+
+  for(let orderIndex=0; orderIndex<18; orderIndex++){
+    let h = playOrder[orderIndex];
+
+    let arr=r.players.map((p,i)=>{
+      let scoreForPairing;
+
+      if(orderIndex===0){
+        scoreForPairing = r.initialRanks[i];
+      }else{
+        let prevHole = playOrder[orderIndex-1];
+        scoreForPairing = r.scores[prevHole][i]==='' ? 999 : +r.scores[prevHole][i];
+      }
+
+      return {
+        i,
+        score: scoreForPairing,
+        rank: r.initialRanks[i]
+      };
+    });
 
     arr.sort((a,b)=>a.score-b.score || a.rank-b.rank);
 
     if(n===3){
-  let best=arr[0].i, mid=arr[1].i, worst=arr[2].i;
+      let best=arr[0].i, mid=arr[1].i, worst=arr[2].i;
 
-  let bestPts = r.scores[h][best]==='' ? 0 : playerPoint(+r.scores[h][best], r.course[h].par);
-  let worstPts = r.scores[h][worst]==='' ? 0 : playerPoint(+r.scores[h][worst], r.course[h].par);
-  let midPts = r.scores[h][mid]==='' ? 0 : playerPoint(+r.scores[h][mid], r.course[h].par);
+      let bestPts = r.scores[h][best]==='' ? 0 : playerPoint(+r.scores[h][best], r.course[h].par);
+      let worstPts = r.scores[h][worst]==='' ? 0 : playerPoint(+r.scores[h][worst], r.course[h].par);
+      let midPts = r.scores[h][mid]==='' ? 0 : playerPoint(+r.scores[h][mid], r.course[h].par);
 
-  let teamBW = bestPts + worstPts;
-  let middle = midPts * 2;
-  let diff = teamBW - middle;
+      let teamBW = bestPts + worstPts;
+      let middle = midPts * 2;
+      let diff = teamBW - middle;
 
-  totals[best] += diff;
-  totals[worst] += diff;
-  totals[mid] -= diff * 2;
+      totals[best] += diff;
+      totals[worst] += diff;
+      totals[mid] -= diff * 2;
 
-  rows.push({h,team1:[best,worst],team2:[mid],t1:teamBW,t2:middle});
-}
+      rows[h]={h,team1:[best,worst],team2:[mid],t1:teamBW,t2:middle};
+    }
 
     if(n===4){
-  let team1=[arr[0].i,arr[3].i];
-  let team2=[arr[1].i,arr[2].i];
+      let team1=[arr[0].i,arr[3].i];
+      let team2=[arr[1].i,arr[2].i];
 
-  let pts = r.scores[h].map(s =>
-    s==='' ? null : playerPoint(+s, r.course[h].par)
-  );
+      let t1=team1.reduce((a,i)=>a+(r.scores[h][i]===''?0:+r.scores[h][i]),0);
+      let t2=team2.reduce((a,i)=>a+(r.scores[h][i]===''?0:+r.scores[h][i]),0);
+      let diff=t2-t1;
 
-  let done = !pts.some(x => x === null);
+      team1.forEach(i=>totals[i]+=diff);
+      team2.forEach(i=>totals[i]-=diff);
 
-  let t1 = team1.reduce((a,i)=>a+(pts[i] ?? 0),0);
-  let t2 = team2.reduce((a,i)=>a+(pts[i] ?? 0),0);
-
-  let diff = done ? t1 - t2 : 0;
-
-  if(done){
-    team1.forEach(i=>totals[i]+=diff);
-    team2.forEach(i=>totals[i]-=diff);
-  }
-
-  rows.push({h,team1,team2,t1,t2,diff,pts});
-}
+      rows[h]={h,team1,team2,t1,t2};
+    }
   }
 
   return {totals,rows};
