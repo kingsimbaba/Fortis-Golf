@@ -1479,13 +1479,23 @@ function showReplayPanel() {
     box.id = 'replayPanel';
     box.className = 'card';
     box.style.marginTop = '16px';
-    document.getElementById('summaryContent').appendChild(box);
+    const target =
+  document.getElementById('summaryContent') ||
+  document.getElementById('summary') ||
+  document.body;
+
+target.appendChild(box);
   }
 
   const holeNo = replayHoles[replayIndex];
   const h = holeNo - 1;
   const holeData = replayScores.filter(x => Number(x.hole_number) === holeNo);
   const row = replayCalc.rows[h];
+
+  if (!row) {
+  alert("Replay row missing for hole " + holeNo);
+  return;
+}
 
   let html = `
     <h2>Round Replay</h2>
