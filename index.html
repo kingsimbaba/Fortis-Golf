@@ -4,7 +4,7 @@
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
 <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
   
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Fortis Golf</title><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>地獄倒霉鬼</title><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>:root{--bg:#09111f;--panel:#121c2e;--line:#26364f;--text:#f7fafc;--muted:#a7b1c2;--green:#38a169;--red:#fc8181}
 
 .light-theme{--bg:#f7fafc;--panel:#ffffff;--line:#cbd5e0;--text:#1a202c;--muted:#4a5568;--green:#2f855a;--red:#e53e3e}
@@ -14,7 +14,7 @@
 .bar span{position:absolute;top:-22px;left:50%;transform:translateX(-50%);font-size:11px;color:var(--text)}
 .trend-labels{display:flex;gap:8px;font-size:10px;color:var(--muted)}
 .trend-labels div{flex:1;text-align:center}@media(max-width:760px){.grid,.grid4{grid-template-columns:1fr}.wrap{padding:10px}}</style></head><body>
-<header><h1>Fortis Golf</h1><div class="sub">Supabase version · history + rankings + admin · multi-user</div><div id="userBar" class="small"></div></header><div class="wrap">
+<header><h1>地獄倒霉鬼</h1><div class="sub">Supabase version · history + rankings + admin · multi-user</div><div id="userBar" class="small"></div></header><div class="wrap">
 <section id="auth" class="page"><div class="card"><h2>Login</h2><p class="small">Each golfer can sign in on their own phone. Admin users can manage players, courses, and handicaps.</p><div class="grid"><div><label>Email</label><input id="authEmail" type="email" placeholder="you@example.com"></div><div><label>Password</label><input id="authPassword" type="password" placeholder="Password"></div><button onclick="signInUser()">Sign In</button><button class="btn2" onclick="signUpUser()">Create Account</button></div><div id="authMsg" class="small" style="margin-top:10px"></div></div></section>
 <section id="setup" class="page hidden"><div class="card"><h2>Database Status</h2><div id="dbStatus" class="small">Connecting...</div></div><div class="card"><div class="card"><h2>Display Settings</h2><label>Theme</label><select id="themeSelector" onchange="changeTheme()"><option value="dark">Dark</option><option value="light">Light</option><option value="contrast">High Contrast</option></select></div><h2>New Round</h2><div class="grid"><div><label>Course Type</label><select id="course"></select></div><div id="comboBox" class="hidden"><label id="comboLabel">Combo</label><select id="combo"></select></div><div><label>Round Note</label><input id="roundNote" placeholder="Sunday game"></div></div><p class="small">For TPE and TC, choose a front 9 + back 9 combo. Holes 1–9 come from the first course, holes 10–18 from the second course.</p></div>
 <div class="card"><label>Number of Players</label>
