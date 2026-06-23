@@ -286,6 +286,7 @@ function calcFortis(r){
 
   let startIndex = r.startHoleIndex ?? 0;
   let playOrder = Array.from({length:18}, (_,i)=>(startIndex+i)%18);
+  let prevRanks = r.initialRanks.map((rank,i)=>({i,rank}));
 
   for(let orderIndex=0; orderIndex<18; orderIndex++){
     let h = playOrder[orderIndex];
@@ -303,11 +304,15 @@ function calcFortis(r){
       return {
         i,
         score: scoreForPairing,
-        rank: r.initialRanks[i]
+        rank: prevRanks.find(x=>x.i===i).rank
       };
     });
 
     arr.sort((a,b)=>a.score-b.score || a.rank-b.rank);
+    prevRanks = arr.map((x,idx)=>({
+  i:x.i,
+  rank:idx+1
+}));
 
     if(n===3){
       let best=arr[0].i, mid=arr[1].i, worst=arr[2].i;
