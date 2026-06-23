@@ -1420,23 +1420,102 @@ setTimeout(()=>{
 },500);init();
 
 let replayScores = [];
+let replayHoles = [];
 let replayIndex = 0;
 
 async function replayRound(roundId) {
-  try {
-    const { data, error } = await authClient
-      .from('hole_scores')
-      .select('*')
-      .eq('round_id', Number(roundId));
+  const { data, error } = await authClient
+    .from('hole_scores')
+    .select('*')
+    .eq('round_id', Number(roundId))
+    .order('hole_number');
 
-    if (error) {
-      alert("Replay error: " + error.message);
-      return;
-    }
-
-    alert("Round " + roundId + " has " + data.length + " score records.");
-  } catch(e) {
-    alert("JS error: " + e.message);
+  if (error) {
+    alert("Replay error: " + error.message);
+    return;
   }
+
+  if (!data || data.length === 0) {
+    alert("No scores found for this round.");
+    return;
+  }
+
+  replayScores = data;
+  replayHoles = [...new Set(data.map(x => Number(x.hole_number)))].sort((a,b)=>a-b);
+  replayIndex = 0;
+
+  showReplayPanel();
+}
+
+function showReplayPanel() {
+  let box = document.getElementById('replayPanel');
+
+  if (!box) {
+    box = document.createElement('div');
+    box.id = 'replayPanel';
+    box.className = 'card';
+    box.style.marginTop = '16px';
+    document.getElementById('summaryPage').appendChild(box);
+  }
+
+  const holeNo = replayHoles[replayIndex];
+  const holeData = replayScores.filter(x => Number(x.hole_number) === holeNo);
+
+  let html = `
+    <h2>Round Replay</h2>
+    <h3>Hole ${holeNo}</h3>
+    <div class="scroll">
+      <table>
+        <tr>
+          <th>Player</th>
+          <th>Score</th>
+          <th>Points</th>
+          <th>Total</th>
+        </tr>
+  `;
+
+  holeData.forEach(r => {
+    html += `
+      <tr>
+        <td>${r.player_name || r.player_id || ''}</td>
+        <td>${r.score ?? r.gross ?? ''}</td>
+        <td>${r.points ?? r.point ?? ''}</td>
+        <td>${r.total_points ?? r.running_total ?? ''}</td>
+      </tr>
+    `;
+  });
+
+  html += `
+      </table>
+    </div>
+
+    <p class="small">Hole ${replayIndex + 1} of ${replayHoles.length}</p>
+
+    <button class="btn2" onclick="prevReplayHole()">◀ Previous</button>
+    <button class="btn2" onclick="nextReplayHole()">Next ▶</button>
+    <button class="btn2" onclick="closeReplay()">Close</button>
+  `;
+
+  box.innerHTML = html;
+  box.scrollIntoView({ behavior: 'smooth' });
+}
+
+function nextReplayHole() {
+  if (replayIndex < replayHoles.length - 1) {
+    replayIndex++;
+    showReplayPanel();
+  }
+}
+
+function prevReplayHole() {
+  if (replayIndex > 0) {
+    replayIndex--;
+    showReplayPanel();
+  }
+}
+
+function closeReplay() {
+  const box = document.getElementById('replayPanel');
+  if (box) box.remove();
 }
 </script></body></html>
