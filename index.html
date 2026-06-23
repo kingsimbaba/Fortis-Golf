@@ -1427,18 +1427,19 @@ async function replayRound(roundId) {
 
   try {
     const { data, error } = await supabase
-      .from("hole_scores")
-      .select("*")
-      .eq("round_id", roundId);
+      .from('hole_scores')
+      .select('*')
+      .eq('round_id', roundId);
 
     if (error) {
-      alert("Supabase error: " + error.message);
+      alert("Supabase Error: " + JSON.stringify(error));
       return;
     }
 
-    alert("Found " + (data ? data.length : 0) + " records");
+    alert("Records found: " + data.length);
+
   } catch (e) {
-    alert("JS error: " + e.message);
+    alert("Catch Error: " + e.message);
   }
 }
 </script></body></html>
