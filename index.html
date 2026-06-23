@@ -1264,7 +1264,7 @@ function renderRoundHistory(){
         <td>${r.round_name || ''}</td>
         <td>${r.course_name || ''}${r.course_combo ? ' '+r.course_combo : ''}</td>
         <td>${players.join('<br>')}</td>
-        <td><button class="btn2" onclick="alert('Replay Button Works')">Replay</button></td>
+        <td><button class="btn2" onclick="replayRound('${r.id}')">Replay</button></td>
       </tr>`;
   });
 
