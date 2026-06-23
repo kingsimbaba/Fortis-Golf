@@ -121,7 +121,7 @@ function makePlayers(){
 function setupCourseSelect(){
   let sel=document.getElementById('course');
   sel.innerHTML='';
-  ['DH','SR','TPE','TC','KH','LDS'].forEach(c=>sel.add(new Option(c,c)));
+  ['DH','SR','TPE','TC','KH','LDS','DS'].forEach(c=>sel.add(new Option(c,c)));
 
   sel.onchange=()=>{
     const comboBox=document.getElementById('comboBox');
@@ -134,10 +134,14 @@ function setupCourseSelect(){
       comboBox.classList.remove('hidden');
       comboBox.querySelector('label').innerText='TPE Combo';
     }else if(sel.value==='TC'){
-      ['E+C','C+E','E+W','W+E','C+W','W+C'].forEach(x=>combo.add(new Option(x,x)));
-      comboBox.classList.remove('hidden');
-      comboBox.querySelector('label').innerText='TC Combo';
-    }else{
+  ['E+C','C+E','E+W','W+E','C+W','W+C'].forEach(x=>combo.add(new Option(x,x)));
+  comboBox.classList.remove('hidden');
+  comboBox.querySelector('label').innerText='TC Combo';
+}else if(sel.value==='DS'){
+  ['E+C','C+E','E+W','W+E','C+W','W+C'].forEach(x=>combo.add(new Option(x,x)));
+  comboBox.classList.remove('hidden');
+  comboBox.querySelector('label').innerText='DS Combo';
+}else{
       comboBox.classList.add('hidden');
     }
   };
