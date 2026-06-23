@@ -1538,9 +1538,13 @@ if (!row && !isTwoPlayerReplay) {
   replayRoundObj.players.forEach((p,i)=>{
     const s = holeData.find(x => x.player_name === p);
     const strokes = s?.gross_score ?? '';
-    const pts = strokes === '' ? '' : playerPoint(Number(strokes), replayRoundObj.course[h].par);
+    const pts = isTwoPlayerReplay
+  ? ''
+  : (strokes === '' ? '' : playerPoint(Number(strokes), replayRoundObj.course[h].par));
 
-    let pairing = row.team1.includes(i) ? 'Team 1' : 'Team 2';
+    let pairing = isTwoPlayerReplay
+  ? 'Individual'
+  : (row.team1.includes(i) ? 'Team 1' : 'Team 2');
 
     html += `
       <tr>
