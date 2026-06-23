@@ -1414,4 +1414,35 @@ setTimeout(()=>{
   const selector=document.getElementById('themeSelector');
   if(selector && savedTheme) selector.value=savedTheme;
 },500);init();
+setTimeout(()=>{
+  const selector=document.getElementById('themeSelector');
+  if(selector && savedTheme) selector.value=savedTheme;
+},500);init();
+
+let replayScores = [];
+let replayIndex = 0;
+
+async function replayRound(roundId) {
+  const { data, error } = await supabase
+    .from("hole_scores")
+    .select("*")
+    .eq("round_id", roundId)
+    .order("hole_number", { ascending: true });
+
+  if (error) {
+    console.error(error);
+    alert("Could not load replay");
+    return;
+  }
+
+  if (!data || data.length === 0) {
+    alert("No hole scores found");
+    return;
+  }
+
+  replayScores = data;
+  replayIndex = 0;
+  alert("Replay loaded: " + replayScores.length + " score records");
+}
+
 </script></body></html>
