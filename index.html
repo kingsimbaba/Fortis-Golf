@@ -331,9 +331,15 @@ function calcFortis(r){
       let team1=[arr[0].i,arr[3].i];
       let team2=[arr[1].i,arr[2].i];
 
-      let t1=team1.reduce((a,i)=>a+(r.scores[h][i]===''?0:+r.scores[h][i]),0);
-      let t2=team2.reduce((a,i)=>a+(r.scores[h][i]===''?0:+r.scores[h][i]),0);
-      let diff=t2-t1;
+      let t1 = team1.reduce((a,i)=>
+  a + (r.scores[h][i]==='' ? 0 : playerPoint(+r.scores[h][i], r.course[h].par)), 0
+);
+
+      let t2 = team2.reduce((a,i)=>
+  a + (r.scores[h][i]==='' ? 0 : playerPoint(+r.scores[h][i], r.course[h].par)), 0
+);
+
+      let diff = t1 - t2;
 
       team1.forEach(i=>totals[i]+=diff);
       team2.forEach(i=>totals[i]-=diff);
