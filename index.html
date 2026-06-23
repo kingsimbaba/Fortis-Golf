@@ -1445,7 +1445,23 @@ async function replayRound(roundId) {
   }
 
   const players = roundRec?.players || [...new Set(data.map(s => s.player_name))];
-  const course = roundRec?.course_data || [];
+  let course = roundRec?.course_data || [];
+
+if (!course || !course.length) {
+  course = [];
+
+  for (let h = 1; h <= 18; h++) {
+    const one = data.find(s => Number(s.hole_number) === h);
+
+    course.push({
+      roundHole: h,
+      display: one?.course_hole || 'Hole ' + h,
+      par: Number(one?.par || 4),
+      hcp: Number(one?.handicap_index || h),
+      strokeEligible: Number(one?.par || 4) !== 3
+    });
+  }
+}
 
   replayRoundObj = {
     players,
