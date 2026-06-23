@@ -1496,12 +1496,13 @@ function showReplayPanel() {
     box.id = 'replayPanel';
     box.className = 'card';
     box.style.marginTop = '16px';
-    const target =
-  document.getElementById('summaryContent') ||
-  document.getElementById('summary') ||
-  document.body;
 
-target.appendChild(box);
+    const target =
+      document.getElementById('summaryContent') ||
+      document.getElementById('summary') ||
+      document.body;
+
+    target.appendChild(box);
   }
 
   const holeNo = replayHoles[replayIndex];
@@ -1509,22 +1510,22 @@ target.appendChild(box);
   const holeData = replayScores.filter(x => Number(x.hole_number) === holeNo);
   const row = replayCalc.rows[h];
 
-  let isTwoPlayerReplay = replayRoundObj.players.length === 2;
+  const isTwoPlayerReplay = replayRoundObj.players.length === 2;
 
-if (!row && !isTwoPlayerReplay) {
-  alert("Replay row missing for hole " + holeNo);
-  return;
-}
+  let pairingText = '';
+
+  if (isTwoPlayerReplay) {
+    pairingText = `${replayRoundObj.players[0]} vs ${replayRoundObj.players[1]}`;
+  } else {
+    pairingText = `Team 1: ${row.team1.map(i=>replayRoundObj.players[i]).join(' + ')}
+      vs Team 2: ${row.team2.map(i=>replayRoundObj.players[i]).join(' + ')}${row.team2.length===1?' x2':''}`;
+  }
 
   let html = `
     <h2>Round Replay</h2>
     <h3>Hole ${holeNo}</h3>
-    <div class="small">
-      Pairing: 
-      Team 1: <b>${row.team1.map(i=>replayRoundObj.players[i]).join(' + ')}</b>
-      vs
-      Team 2: <b>${row.team2.map(i=>replayRoundObj.players[i]).join(' + ')}${row.team2.length===1?' x2':''}</b>
-    </div>
+    <div class="small">Pairing: <b>${pairingText}</b></div>
+
     <div class="scroll">
       <table>
         <tr>
@@ -1537,17 +1538,19 @@ if (!row && !isTwoPlayerReplay) {
 
   replayRoundObj.players.forEach((p,i)=>{
     const s = holeData.find(x =>
-  String(x.player_name || '').trim().toLowerCase() ===
-  String(p || '').trim().toLowerCase()
-) || holeData[i];
-    const strokes = s?.gross_score ?? '';
-    const pts = isTwoPlayerReplay
-  ? ''
-  : (strokes === '' ? '' : playerPoint(Number(strokes), replayRoundObj.course[h].par));
+      String(x.player_name || '').trim().toLowerCase() ===
+      String(p || '').trim().toLowerCase()
+    ) || holeData[i];
 
-    let pairing = isTwoPlayerReplay
-  ? 'Individual'
-  : (row.team1.includes(i) ? 'Team 1' : 'Team 2');
+    const strokes = s?.gross_score ?? '';
+
+    const pts = isTwoPlayerReplay
+      ? ''
+      : (strokes === '' ? '' : playerPoint(Number(strokes), replayRoundObj.course[h].par));
+
+    const pairing = isTwoPlayerReplay
+      ? 'Individual'
+      : (row.team1.includes(i) ? 'Team 1' : 'Team 2');
 
     html += `
       <tr>
@@ -1564,10 +1567,10 @@ if (!row && !isTwoPlayerReplay) {
     </div>
 
     ${isTwoPlayerReplay ? '' : `
-  <p class="small">
-    Team 1 Points: ${row.t1} · Team 2 Points: ${row.t2}
-  </p>
-`}
+      <p class="small">
+        Team 1 Points: ${row.t1} · Team 2 Points: ${row.t2}
+      </p>
+    `}
 
     <button class="btn2" onclick="prevReplayHole()">◀ Previous</button>
     <button class="btn2" onclick="nextReplayHole()">Next ▶</button>
