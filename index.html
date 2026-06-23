@@ -1423,7 +1423,18 @@ let replayScores = [];
 let replayIndex = 0;
 
 async function replayRound(roundId) {
-  alert("Round ID = " + roundId);
+  const { data, error } = await supabase
+    .from("hole_scores")
+    .select("*")
+    .eq("round_id", Number(roundId))
+    .order("hole_number", { ascending: true });
+
+  if (error) {
+    alert("Replay error: " + error.message);
+    return;
+  }
+
+  alert("Found " + data.length + " score records for round " + roundId);
 }
 
 </script></body></html>
