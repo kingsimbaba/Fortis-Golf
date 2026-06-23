@@ -1492,7 +1492,9 @@ target.appendChild(box);
   const holeData = replayScores.filter(x => Number(x.hole_number) === holeNo);
   const row = replayCalc.rows[h];
 
-  if (!row) {
+  let isTwoPlayerReplay = replayRoundObj.players.length === 2;
+
+if (!row && !isTwoPlayerReplay) {
   alert("Replay row missing for hole " + holeNo);
   return;
 }
