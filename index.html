@@ -1424,7 +1424,7 @@ let replayIndex = 0;
 
 async function replayRound(roundId) {
   try {
-    const { data, error } = await supabase
+    const { data, error } = await client
       .from('hole_scores')
       .select('*')
       .eq('round_id', Number(roundId));
