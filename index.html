@@ -1467,6 +1467,8 @@ async function replayRound(roundId) {
   replayHoles = [...new Set(data.map(x => Number(x.hole_number)))].sort((a,b)=>a-b);
   replayIndex = 0;
   replayCalc = calcFortis(replayRoundObj);
+  alert("Players = " + replayRoundObj.players.length);
+  alert("Rows = " + (replayCalc.rows ? replayCalc.rows.length : 0));
 
   showReplayPanel();
 }
