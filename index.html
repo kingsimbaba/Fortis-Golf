@@ -1536,7 +1536,10 @@ if (!row && !isTwoPlayerReplay) {
   `;
 
   replayRoundObj.players.forEach((p,i)=>{
-    const s = holeData.find(x => x.player_name === p);
+    const s = holeData.find(x =>
+  String(x.player_name || '').trim().toLowerCase() ===
+  String(p || '').trim().toLowerCase()
+) || holeData[i];
     const strokes = s?.gross_score ?? '';
     const pts = isTwoPlayerReplay
   ? ''
