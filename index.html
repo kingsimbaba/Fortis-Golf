@@ -1422,8 +1422,12 @@ setTimeout(()=>{
 let replayScores = [];
 let replayHoles = [];
 let replayIndex = 0;
+let replayRoundObj = null;
+let replayCalc = null;
 
 async function replayRound(roundId) {
+  const roundRec = db.rounds.find(r => Number(r.id) === Number(roundId));
+
   const { data, error } = await authClient
     .from('hole_scores')
     .select('*')
@@ -1435,14 +1439,34 @@ async function replayRound(roundId) {
     return;
   }
 
-  if (!data || data.length === 0) {
+  if (!data || !data.length) {
     alert("No scores found.");
     return;
   }
 
+  const players = roundRec?.players || [...new Set(data.map(s => s.player_name))];
+  const course = roundRec?.course_data || [];
+
+  replayRoundObj = {
+    players,
+    initialRanks: roundRec?.initial_ranks || players.map((_,i)=>i+1),
+    startHoleIndex: roundRec?.start_hole_index || 0,
+    course,
+    scores: Array.from({length:18},()=>Array(players.length).fill(''))
+  };
+
+  data.forEach(s => {
+    const h = Number(s.hole_number) - 1;
+    const i = players.indexOf(s.player_name);
+    if (h >= 0 && i >= 0) {
+      replayRoundObj.scores[h][i] = s.gross_score;
+    }
+  });
+
   replayScores = data;
   replayHoles = [...new Set(data.map(x => Number(x.hole_number)))].sort((a,b)=>a-b);
   replayIndex = 0;
+  replayCalc = calcFortis(replayRoundObj);
 
   showReplayPanel();
 }
@@ -1455,48 +1479,57 @@ function showReplayPanel() {
     box.id = 'replayPanel';
     box.className = 'card';
     box.style.marginTop = '16px';
-
-    const target =
-      document.getElementById('summary') ||
-      document.getElementById('summaryPage') ||
-      document.body;
-
-    target.appendChild(box);
+    document.getElementById('summaryContent').appendChild(box);
   }
 
   const holeNo = replayHoles[replayIndex];
+  const h = holeNo - 1;
   const holeData = replayScores.filter(x => Number(x.hole_number) === holeNo);
+  const row = replayCalc.rows[h];
 
   let html = `
     <h2>Round Replay</h2>
     <h3>Hole ${holeNo}</h3>
+    <div class="small">
+      Pairing: 
+      Team 1: <b>${row.team1.map(i=>replayRoundObj.players[i]).join(' + ')}</b>
+      vs
+      Team 2: <b>${row.team2.map(i=>replayRoundObj.players[i]).join(' + ')}${row.team2.length===1?' x2':''}</b>
+    </div>
     <div class="scroll">
       <table>
         <tr>
           <th>Player</th>
           <th>Strokes</th>
-          <th>Hole Points</th>
+          <th>8421 Points</th>
+          <th>Pairing</th>
         </tr>
   `;
 
-  holeData.forEach(r => {
-  html += `
-    <tr>
-      <td>${r.player_name || r.player_id || ''}</td>
-      <td>${r.strokes ?? r.gross_score ?? r.score ?? r.gross ?? ''}</td>
-      <td>${scoreToFortisPoints(
-        r.strokes ?? r.gross_score ?? r.score ?? r.gross,
-        r.par
-      )}</td>
-    </tr>
-  `;
-});
+  replayRoundObj.players.forEach((p,i)=>{
+    const s = holeData.find(x => x.player_name === p);
+    const strokes = s?.gross_score ?? '';
+    const pts = strokes === '' ? '' : playerPoint(Number(strokes), replayRoundObj.course[h].par);
+
+    let pairing = row.team1.includes(i) ? 'Team 1' : 'Team 2';
+
+    html += `
+      <tr>
+        <td>${p}</td>
+        <td>${strokes}</td>
+        <td>${pts}</td>
+        <td>${pairing}</td>
+      </tr>
+    `;
+  });
 
   html += `
       </table>
     </div>
 
-    <p class="small">Hole ${replayIndex + 1} of ${replayHoles.length}</p>
+    <p class="small">
+      Team 1 Points: ${row.t1} · Team 2 Points: ${row.t2}
+    </p>
 
     <button class="btn2" onclick="prevReplayHole()">◀ Previous</button>
     <button class="btn2" onclick="nextReplayHole()">Next ▶</button>
@@ -1504,7 +1537,7 @@ function showReplayPanel() {
   `;
 
   box.innerHTML = html;
-  box.scrollIntoView({ behavior: 'smooth' });
+  box.scrollIntoView({ behavior:'smooth' });
 }
 
 function nextReplayHole() {
