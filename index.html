@@ -121,8 +121,18 @@ function makePlayers(){
 function setupCourseSelect(){
   let sel=document.getElementById('course');
   sel.innerHTML='';
-  ['DH','SR','TPE','TC','KH','LDS','DS'].forEach(c=>sel.add(new Option(c,c)));
+  const courseNames = {
+  DH:'東華',
+  SR:'揚升',
+  TPE:'台北',
+  TC:'台中國際',
+  KH:'國華',
+  LDS:'老淡水',
+  DS:'大溪'
+};
 
+['DH','SR','TPE','TC','KH','LDS','DS']
+  .forEach(c=>sel.add(new Option(courseNames[c] || c, c)));
   sel.onchange=()=>{
     const comboBox=document.getElementById('comboBox');
     const combo=document.getElementById('combo');
