@@ -1563,9 +1563,11 @@ if (!row && !isTwoPlayerReplay) {
       </table>
     </div>
 
-    <p class="small">
-      Team 1 Points: ${row.t1} · Team 2 Points: ${row.t2}
-    </p>
+    ${isTwoPlayerReplay ? '' : `
+  <p class="small">
+    Team 1 Points: ${row.t1} · Team 2 Points: ${row.t2}
+  </p>
+`}
 
     <button class="btn2" onclick="prevReplayHole()">◀ Previous</button>
     <button class="btn2" onclick="nextReplayHole()">Next ▶</button>
