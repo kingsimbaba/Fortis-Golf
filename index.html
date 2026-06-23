@@ -1436,7 +1436,7 @@ async function replayRound(roundId) {
   }
 
   if (!data || data.length === 0) {
-    alert("No scores found for this round.");
+    alert("No scores found.");
     return;
   }
 
@@ -1455,7 +1455,13 @@ function showReplayPanel() {
     box.id = 'replayPanel';
     box.className = 'card';
     box.style.marginTop = '16px';
-    document.getElementById('summaryPage').appendChild(box);
+
+    const target =
+      document.getElementById('summary') ||
+      document.getElementById('summaryPage') ||
+      document.body;
+
+    target.appendChild(box);
   }
 
   const holeNo = replayHoles[replayIndex];
