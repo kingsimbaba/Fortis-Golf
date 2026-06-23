@@ -603,7 +603,12 @@ let rr=await sb('fortis_rounds',{method:'POST',body:JSON.stringify({
   round_name:round.note,
   course_name:round.courseName,
   course_combo:round.combo,
-  season_id:activeSeason?.id||null
+  season_id:activeSeason?.id||null,
+  players:round.players,
+  initial_ranks:round.initialRanks,
+  matchups:round.matchups,
+  course_data:round.course,
+  start_hole_index:round.startHoleIndex || 0
 })}); let round_id=rr[0].id; let scores=[];
 let lastPlayedHole=-1;
 
