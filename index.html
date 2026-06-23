@@ -441,6 +441,9 @@ function confirmHoleScores(){
       round.scores[roundHole][i] = round.course[roundHole].par;
     }
   }
+
+  roundHole = (roundHole + 1) % 18;
+
   saveActiveRound();
   renderScore();
 }
