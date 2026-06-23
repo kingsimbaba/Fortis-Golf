@@ -1484,9 +1484,9 @@ function showReplayPanel() {
     html += `
       <tr>
         <td>${r.player_name || r.player_id || ''}</td>
-        <td>${r.score ?? r.gross ?? ''}</td>
-        <td>${r.points ?? r.point ?? ''}</td>
-        <td>${r.total_points ?? r.running_total ?? ''}</td>
+        <td>${r.strokes ?? r.gross_score ?? r.score ?? r.gross ?? ''}</td>
+        <td>${r.fortis_points ?? r.points ?? r.point ?? r.hole_points ?? ''}</td>
+        <td>${r.total ?? r.total_points ?? r.running_total ?? r.running_points ?? ''}</td>
       </tr>
     `;
   });
