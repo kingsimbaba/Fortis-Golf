@@ -26,6 +26,12 @@
 <div class="card"><h2>Individual Matchups</h2><label class="toggle">
   <input type="checkbox" id="useIndividualMatchups" checked onchange="toggleIndividualMatchups(this.checked)">
   Use Individual Matchups
+  <br>
+
+<label class="toggle">
+  <input type="checkbox" id="countPar3Strokes">
+  Include Par 3 holes in handicap allocation (Larry Mode)
+</label>
 </label><div id="matchupSetup" class="small">Enter players, then tap Load Individual Matchups.</div></div></section>
 <section id="scorePage" class="page hidden"><div id="scoreContent"></div></section><section id="summary" class="page hidden"><div id="summaryContent"></div></section><section id="data" class="page hidden"><div class="card"><h2>Database</h2><button class="btn2" onclick="loadAll()">Reload from Supabase</button><div id="dataView" class="small" style="margin-top:10px"></div></div></section><section id="admin" class="page hidden"><div id="adminContent"></div></section></div>
 <div class="nav hidden"><button id="navSetup" class="active" onclick="showPage('setup')">Setup</button><button id="navScorePage" onclick="showPage('scorePage')">Score</button><button id="navSummary" onclick="showPage('summary')">Summary</button><button id="navData" onclick="showPage('data')">Data</button><button id="navAdmin" class="hidden" onclick="showPage('admin')">Admin</button></div>
@@ -387,7 +393,15 @@ function calcFortis(r){
 
   return {totals,rows};
 }
-function eligibleStrokeHoles(course,n){return [...course].filter(h=>h.strokeEligible).sort((a,b)=>a.hcp-b.hcp).slice(0,n).map(h=>h.roundHole)}
+function eligibleStrokeHoles(course,n){
+  const countPar3 = document.getElementById('countPar3Strokes')?.checked === true;
+
+  return [...course]
+    .filter(h => countPar3 || h.strokeEligible)
+    .sort((a,b)=>a.hcp-b.hcp)
+    .slice(0,n)
+    .map(h=>h.roundHole);
+}
 function bonusForScore(score,par){
   let diff=score-par;
   if(par===3 && score===1) return 10;
