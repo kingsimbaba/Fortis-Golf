@@ -275,7 +275,12 @@ if(new Set(ranks).size!==n){
   }
 
   let selectedCourseType=document.getElementById('course').value;
-  let selectedCombo=(selectedCourseType==='TPE'||selectedCourseType==='TC')?document.getElementById('combo').value:null;
+  let selectedCombo=
+  (selectedCourseType==='TPE' ||
+   selectedCourseType==='TC' ||
+   selectedCourseType==='TSN')
+    ? document.getElementById('combo').value
+    : null;
 
   round={
     id:Date.now(),
