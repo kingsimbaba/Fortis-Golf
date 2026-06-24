@@ -1432,14 +1432,20 @@ const savedTheme=localStorage.getItem('fortisTheme');
 if(savedTheme==='light') document.body.classList.add('light-theme');
 if(savedTheme==='contrast') document.body.classList.add('high-contrast');
 
+const savedTheme=localStorage.getItem('fortisTheme');
+
+if(savedTheme==='light')
+  document.body.classList.add('light-theme');
+
+if(savedTheme==='contrast')
+  document.body.classList.add('high-contrast');
+
 setTimeout(()=>{
   const selector=document.getElementById('themeSelector');
   if(selector && savedTheme) selector.value=savedTheme;
-},500);init();
-setTimeout(()=>{
-  const selector=document.getElementById('themeSelector');
-  if(selector && savedTheme) selector.value=savedTheme;
-},500);init();
+},500);
+
+init();
 
 let replayScores = [];
 let replayHoles = [];
