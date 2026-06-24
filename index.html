@@ -137,10 +137,11 @@ function setupCourseSelect(){
   DS:'大溪',
   'VGC-E':'守德東',
   'VGC-W':'守德西',
-  TSN:'新山一'  
+  TSN:'新山一',
+  NF:'南峰'  
 };
 
-['DH','SR','TPE','TC','KH','LDS','DS','VGC-E','VGC-W','TSN']
+['DH','SR','TPE','TC','KH','LDS','DS','VGC-E','VGC-W','TSN','NF']
   .forEach(c=>sel.add(new Option(courseNames[c] || c, c)));
   sel.onchange=()=>{
     const comboBox=document.getElementById('comboBox');
