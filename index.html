@@ -203,12 +203,17 @@ function buildCourse(){
   let keys=[];
 
   if(c==='TPE'){
-    keys=document.getElementById('combo').value.split('+').map(x=>'TPE-'+x);
-  }else if(c==='TC'){
-    keys=document.getElementById('combo').value.split('+').map(x=>'TC-'+x);
-  }else{
-    keys=[c];
-  }
+  keys=document.getElementById('combo').value.split('+').map(x=>'TPE-'+x);
+
+}else if(c==='TC'){
+  keys=document.getElementById('combo').value.split('+').map(x=>'TC-'+x);
+
+}else if(c==='TSN'){
+  keys=document.getElementById('combo').value.split('+').map(x=>'TSN-'+x);
+
+}else{
+  keys=[c];
+}
 
   let holes=[];
   keys.forEach(k=>{
