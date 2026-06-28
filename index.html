@@ -168,7 +168,7 @@ function setupCourseSelect(){
   comboBox.classList.remove('hidden');
   comboBox.querySelector('label').innerText='TSN Combo';
 }else if(sel.value==='TM'){
-  ['N+O','O+TM','TM+N'].forEach(x=>combo.add(new Option(x,x)));
+  ['TM-N+TM-O','TM-O+TM-TM','TM-TM+TM-N'].forEach(x=>combo.add(new Option(x,x)));
   comboBox.classList.remove('hidden');
   comboBox.querySelector('label').innerText='TM Combo';      
 }else{
