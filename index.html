@@ -221,10 +221,17 @@ function buildCourse(){
   keys=document.getElementById('combo').value.split('+').map(x=>'TC-'+x);
 
 }else if(c==='TSN'){
-  keys=document.getElementById('combo').value.split('+').map(x=>'TSN-'+x);
+    keys=document.getElementById('combo').value
+      .split('+')
+      .map(x=>'TSN-'+x);
+
+}else if(c==='TM'){
+    keys=document.getElementById('combo').value
+      .split('+');
 
 }else{
-  keys=[c];
+    keys=[c];
+}
 }
 
   let holes=[];
@@ -290,7 +297,8 @@ if(new Set(ranks).size!==n){
   let selectedCombo=
   (selectedCourseType==='TPE' ||
    selectedCourseType==='TC' ||
-   selectedCourseType==='TSN')
+   selectedCourseType==='TSN' ||
+   selectedCourseType==='TM')
     ? document.getElementById('combo').value
     : null;
 
