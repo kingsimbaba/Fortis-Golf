@@ -250,30 +250,40 @@ function buildCourse(){
   let c=document.getElementById('course').value;
   let keys=[];
 
-  if(c==='TPE'){
-  keys=document.getElementById('combo').value.split('+').map(x=>'TPE-'+x);
+  if(c==='TPE' || c==='TC'){
+    let comboValue=document.getElementById('combo').value;
 
-}else if(c==='TC'){
-  keys=document.getElementById('combo').value.split('+').map(x=>'TC-'+x);
+    if(comboValue.includes('+')){
+      keys=comboValue.split('+').map(x=>c+'-'+x);
+    }else{
+      keys=comboValue.split('').map(x=>c+'-'+x);
+    }
 
-}else if(c==='TSN'){
+  }else if(c==='TSN'){
     keys=document.getElementById('combo').value
       .split('+')
       .map(x=>'TSN-'+x);
 
-}else if(c==='TM'){
+  }else if(c==='TM'){
     keys=document.getElementById('combo').value
       .split('+');
 
-}else{
+  }else{
     keys=[c];
-}
+  }
 
   let holes=[];
+
   keys.forEach(k=>{
     let course=db.courses.find(x=>x.course_name===k);
+
+    if(!course){
+      alert('Course not found: '+k);
+      return;
+    }
+
     let arr=db.holes
-      .filter(h=>h.course_id===course?.id)
+      .filter(h=>+h.course_id===+course.id)
       .sort((a,b)=>a.hole_number-b.hole_number);
 
     arr.forEach(h=>holes.push({
