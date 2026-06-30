@@ -16,7 +16,11 @@
 .trend-labels div{flex:1;text-align:center}@media(max-width:760px){.grid,.grid4{grid-template-columns:1fr}.wrap{padding:10px}}</style></head><body>
 <header><h1>地獄倒霉鬼</h1><div class="sub">Supabase version · history + rankings + admin · multi-user</div><div id="userBar" class="small"></div></header><div class="wrap">
 <section id="auth" class="page"><div class="card"><h2>Login</h2><p class="small">Each golfer can sign in on their own phone. Admin users can manage players, courses, and handicaps.</p><div class="grid"><div><label>Email</label><input id="authEmail" type="email" placeholder="you@example.com"></div><div><label>Password</label><input id="authPassword" type="password" placeholder="Password"></div><button onclick="signInUser()">Sign In</button><button class="btn2" onclick="signUpUser()">Create Account</button></div><div id="authMsg" class="small" style="margin-top:10px"></div></div></section>
-<section id="setup" class="page hidden"><div class="card"><h2>Database Status</h2><div id="dbStatus" class="small">Connecting...</div></div><div class="card"><div class="card"><h2>Display Settings</h2><label>Theme</label><select id="themeSelector" onchange="changeTheme()"><option value="dark">Dark</option><option value="light">Light</option><option value="contrast">High Contrast</option></select></div><h2>New Round</h2><div class="grid"><div><label>Course Type</label><select id="course"></select></div><div id="comboBox" class="hidden"><label id="comboLabel">Combo</label><select id="combo"></select></div><div><label>Round Note</label><input id="roundNote" placeholder="Sunday game"></div></div><p class="small">For TPE and TC, choose a front 9 + back 9 combo. Holes 1–9 come from the first course, holes 10–18 from the second course.</p></div>
+<section id="setup" class="page hidden"><div class="card"><h2>Database Status</h2><div id="dbStatus" class="small">Connecting...</div></div><div class="card"><div class="card"><h2>Display Settings</h2><label>Theme</label><select id="themeSelector" onchange="changeTheme()"><option value="dark">Dark</option><option value="light">Light</option><option value="contrast">High Contrast</option></select></div><h2>New Round</h2><div class="grid"><div><label>Country</label>
+<select id="country" onchange="setupCourseSelect()"></select>
+
+<label>Course Type</label>
+<select id="course"></select></div><div id="comboBox" class="hidden"><label id="comboLabel">Combo</label><select id="combo"></select></div><div><label>Round Note</label><input id="roundNote" placeholder="Sunday game"></div></div><p class="small">For TPE and TC, choose a front 9 + back 9 combo. Holes 1–9 come from the first course, holes 10–18 from the second course.</p></div>
 <div class="card"><label>Number of Players</label>
 <select id="playerCount" onchange="makePlayers(); renderMatchups();">
   <option value="4" selected>4 Players</option>
@@ -127,9 +131,21 @@ function makePlayers(){
 function setupCourseSelect(){
   let sel=document.getElementById('course');
   sel.innerHTML='';
-  [...new Set(db.courses.map(c=>c.course_name))]
-  .sort()
-  .forEach(c=>sel.add(new Option(c, c)));
+  let countrySel=document.getElementById('country');
+
+if(countrySel && countrySel.options.length===0){
+  [...new Set(db.courses.map(c=>c.country || 'Taiwan'))]
+    .sort()
+    .forEach(c=>countrySel.add(new Option(c,c)));
+}
+
+let selectedCountry = countrySel ? countrySel.value : 'Taiwan';
+
+db.courses
+  .filter(c => (c.country || 'Taiwan') === selectedCountry)
+  .filter(c => c.is_combo_parent || !c.course_group)
+  .sort((a,b)=>(a.display_name||a.course_name).localeCompare(b.display_name||b.course_name))
+  .forEach(c=>sel.add(new Option(c.display_name || c.course_name, c.course_name)));
   sel.onchange=()=>{
     const comboBox=document.getElementById('comboBox');
     const combo=document.getElementById('combo');
