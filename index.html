@@ -248,33 +248,26 @@ function readMatchups(){if(!useIndividualMatchups){
 }let p=currentPlayers(), pairs=[]; for(let i=0;i<p.length;i++) for(let j=i+1;j<p.length;j++) pairs.push(findMatchup(p[i],p[j])); return pairs.map((m,idx)=>({...m,active:document.getElementById('mAct'+idx)?.checked!==false,giver:document.getElementById('mG'+idx)?.value||m.giver,receiver:document.getElementById('mR'+idx)?.value||m.receiver,strokes:+(document.getElementById('mS'+idx)?.value||0)}));}
 function buildCourse(){
   let c=document.getElementById('course').value;
+  let comboBox=document.getElementById('comboBox');
+  let combo=document.getElementById('combo');
   let keys=[];
 
-  if(c==='TPE' || c==='TC'){
-    let comboValue=document.getElementById('combo').value.trim();
+  if(!comboBox.classList.contains('hidden') && combo.value){
+    let comboValue=combo.value.trim();
 
     if(comboValue.includes('+')){
-      keys=comboValue.split('+').map(x=>{
-        x=x.trim();
-
-        if(x.startsWith(c+'-')){
-          return x;
-        }
-
-        return c+'-'+x;
-      });
+      keys=comboValue.split('+').map(x=>x.trim());
     }else{
-      keys=comboValue.split('').map(x=>c+'-'+x);
+      keys=comboValue.split('');
     }
 
-  }else if(c==='TSN'){
-    keys=document.getElementById('combo').value
-      .split('+')
-      .map(x=>'TSN-'+x);
+    keys=keys.map(x=>{
+      if(x.startsWith(c+'-')){
+        return x;
+      }
 
-  }else if(c==='TM'){
-    keys=document.getElementById('combo').value
-      .split('+');
+      return c+'-'+x;
+    });
 
   }else{
     keys=[c];
