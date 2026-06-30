@@ -149,13 +149,27 @@ const normalCourses = db.courses
     value: c.course_name
   }));
 
-const comboParents = (db.course_combos || [])
+let comboParents = (db.course_combos || [])
   .filter(c => (c.country || 'Taiwan') === selectedCountry)
   .filter(c => c.active !== false)
   .map(c => ({
     label: c.parent_course_name,
     value: c.parent_course_code
   }));
+
+if(selectedCountry === 'Vietnam'){
+  comboParents.push({
+    label: '新山',
+    value: 'TSN'
+  });
+}
+
+if(selectedCountry === 'China'){
+  comboParents.push({
+    label: '天馬',
+    value: 'TM'
+  });
+}
 
 [...new Map([...normalCourses, ...comboParents].map(x => [x.value, x])).values()]
   .sort((a,b)=>a.label.localeCompare(b.label))
