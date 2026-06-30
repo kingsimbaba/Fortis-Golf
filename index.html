@@ -141,11 +141,25 @@ if(countrySel && countrySel.options.length===0){
 
 let selectedCountry = countrySel ? countrySel.value : 'Taiwan';
 
-db.courses
+const normalCourses = db.courses
   .filter(c => (c.country || 'Taiwan') === selectedCountry)
-  .filter(c => c.is_combo_parent || !c.course_group)
-  .sort((a,b)=>(a.display_name||a.course_name).localeCompare(b.display_name||b.course_name))
-  .forEach(c=>sel.add(new Option(c.display_name || c.course_name, c.course_name)));
+  .filter(c => !c.course_group)
+  .map(c => ({
+    label: c.display_name || c.course_name,
+    value: c.course_name
+  }));
+
+const comboParents = (db.course_combos || [])
+  .filter(c => (c.country || 'Taiwan') === selectedCountry)
+  .filter(c => c.active !== false)
+  .map(c => ({
+    label: c.parent_course_name,
+    value: c.parent_course_code
+  }));
+
+[...new Map([...normalCourses, ...comboParents].map(x => [x.value, x])).values()]
+  .sort((a,b)=>a.label.localeCompare(b.label))
+  .forEach(x=>sel.add(new Option(x.label, x.value)));
   sel.onchange=()=>{
     const comboBox=document.getElementById('comboBox');
     const combo=document.getElementById('combo');
