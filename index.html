@@ -251,10 +251,18 @@ function buildCourse(){
   let keys=[];
 
   if(c==='TPE' || c==='TC'){
-    let comboValue=document.getElementById('combo').value;
+    let comboValue=document.getElementById('combo').value.trim();
 
     if(comboValue.includes('+')){
-      keys=comboValue.split('+').map(x=>c+'-'+x);
+      keys=comboValue.split('+').map(x=>{
+        x=x.trim();
+
+        if(x.startsWith(c+'-')){
+          return x;
+        }
+
+        return c+'-'+x;
+      });
     }else{
       keys=comboValue.split('').map(x=>c+'-'+x);
     }
