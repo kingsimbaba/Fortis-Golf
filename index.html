@@ -167,7 +167,7 @@ const comboParents = (db.course_combos || [])
     combo.innerHTML='';
 
     const taiwanCombos = (db.course_combos || [])
-  .filter(x => x.country === 'Taiwan')
+  .filter(x => (x.country || 'Taiwan') === selectedCountry)
   .filter(x => x.parent_course_code === sel.value)
   .filter(x => x.active !== false);
 
@@ -316,10 +316,8 @@ if(new Set(ranks).size!==n){
 
   let selectedCourseType=document.getElementById('course').value;
   let selectedCombo=
-  (selectedCourseType==='TPE' ||
-   selectedCourseType==='TC' ||
-   selectedCourseType==='TSN' ||
-   selectedCourseType==='TM')
+  let selectedCombo=
+  !document.getElementById('comboBox').classList.contains('hidden')
     ? document.getElementById('combo').value
     : null;
 
