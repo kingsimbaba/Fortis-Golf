@@ -43,7 +43,7 @@
 let profilePlayer='';
 let currentPage='setup';
 let useIndividualMatchups=true;
-let SB={url:'',key:''}, authClient=null, currentSession=null, currentUser=null, currentProfile=null, db={courses:[],holes:[],matchups:[],players:[],rounds:[],scores:[],history:[],seasons:[]}, round=null, roundHole=0, localRounds=[];
+let SB={url:'',key:''}, authClient=null, currentSession=null, currentUser=null, currentProfile=null, db={courses:[],holes:[],course_combos:[],matchups:[],players:[],rounds:[],scores:[],history:[],seasons:[]}, round=null, roundHole=0, localRounds=[];
 const courseIdName={1:'DH',2:'SR',3:'TPE-A',4:'TPE-B',5:'TPE-C',6:'TPE-D',8:'TC-E',9:'TC-C',10:'TC-W'};
 async function init(){makePlayers(); await loadConfig(); await initAuth();}
 async function initAuth(){
@@ -99,7 +99,7 @@ async function signOutUser(){await authClient.auth.signOut();}
 
 async function loadConfig(){try{let r=await fetch('/api/config'); let j=await r.json(); SB.url=j.supabaseUrl; SB.key=j.supabaseAnonKey; document.getElementById('dbStatus').innerHTML=SB.url&&SB.key?'<span class="ok">Connected to Vercel config.</span>':'<span class="bad">Missing env vars.</span>';}catch(e){document.getElementById('dbStatus').innerHTML='<span class="bad">Could not load /api/config.</span>';}}
 async function sb(path,opts={}){if(!SB.url||!SB.key) throw new Error('Missing Supabase config'); let r=await fetch(`${SB.url}/rest/v1/${path}`,{...opts,headers:{apikey:SB.key,Authorization:`Bearer ${currentSession?.access_token||SB.key}`,'Content-Type':'application/json',Prefer:'return=representation',...(opts.headers||{})}}); if(!r.ok){let t=await r.text(); throw new Error(t)} return await r.json();}
-async function loadAll(){try{db.courses=await sb('courses?select=*&order=id'); db.holes=await sb('holes?select=*&order=course_id,hole_number'); db.matchups=await sb('matchups?select=*&order=id'); db.players=await sb('players?select=*&order=name').catch(()=>[]); db.rounds=await sb('fortis_rounds?select=*&order=id.desc&limit=30').catch(()=>[]); db.scores=await sb('hole_scores?select=*&order=round_id.desc,hole_number&limit=1000').catch(()=>[]); db.history=await sb('matchup_history?select=*&order=id.desc&limit=200').catch(()=>[]);
+async function loadAll(){try{db.courses=await sb('courses?select=*&order=id'); db.holes=await sb('holes?select=*&order=course_id,hole_number');db.course_combos=await sb('course_combos?select=*&order=id'); db.matchups=await sb('matchups?select=*&order=id'); db.players=await sb('players?select=*&order=name').catch(()=>[]); db.rounds=await sb('fortis_rounds?select=*&order=id.desc&limit=30').catch(()=>[]); db.scores=await sb('hole_scores?select=*&order=round_id.desc,hole_number&limit=1000').catch(()=>[]); db.history=await sb('matchup_history?select=*&order=id.desc&limit=200').catch(()=>[]);
 
 try{
   db.seasons=await sb('seasons?select=*&order=id');
@@ -152,30 +152,36 @@ db.courses
 
     combo.innerHTML='';
 
-    if(sel.value==='TPE'){
-      ['A+B','B+A','A+C','C+A','A+D','D+A','B+C','C+B','B+D','D+B','C+D','D+C'].forEach(x=>combo.add(new Option(x,x)));
-      comboBox.classList.remove('hidden');
-      comboBox.querySelector('label').innerText='TPE Combo';
-    }else if(sel.value==='TC'){
-  ['E+C','C+E','E+W','W+E','C+W','W+C'].forEach(x=>combo.add(new Option(x,x)));
+    const taiwanCombos = (db.course_combos || [])
+  .filter(x => x.country === 'Taiwan')
+  .filter(x => x.parent_course_code === sel.value)
+  .filter(x => x.active !== false);
+
+if(taiwanCombos.length){
+  taiwanCombos.forEach(x =>
+    combo.add(new Option(x.playable_display_name || x.combo_display_name || x.combo_code, x.combo_code))
+  );
+
   comboBox.classList.remove('hidden');
-  comboBox.querySelector('label').innerText='TC Combo';
-}else if(sel.value==='DS'){
-  ['E+C','C+E','E+W','W+E','C+W','W+C'].forEach(x=>combo.add(new Option(x,x)));
-  comboBox.classList.remove('hidden');
-  comboBox.querySelector('label').innerText='DS Combo';
-}else if(sel.value==='TSN'){
+  comboBox.querySelector('label').innerText = 'Combo';
+}
+else if(sel.value==="TSN"){
   ['A+B','B+A','A+C','C+A','A+D','D+A','B+C','C+B','B+D','D+B','C+D','D+C']
     .forEach(x=>combo.add(new Option(x,x)));
+
   comboBox.classList.remove('hidden');
   comboBox.querySelector('label').innerText='TSN Combo';
-}else if(sel.value==='TM'){
-  ['TM-N+TM-O','TM-O+TM-TM','TM-TM+TM-N'].forEach(x=>combo.add(new Option(x,x)));
+}
+else if(sel.value==="TM"){
+  ['TM-N+TM-O','TM-O+TM-TM','TM-TM+TM-N']
+    .forEach(x=>combo.add(new Option(x,x)));
+
   comboBox.classList.remove('hidden');
-  comboBox.querySelector('label').innerText='TM Combo';      
-}else{
-      comboBox.classList.add('hidden');
-    }
+  comboBox.querySelector('label').innerText='TM Combo';
+}
+else{
+  comboBox.classList.add('hidden');
+}
   };
 
   sel.onchange();
