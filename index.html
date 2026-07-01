@@ -500,8 +500,12 @@ function calcIndividual(r){
       if(na<nb)match++;
       else if(nb<na)match--;
 
-      bonusA+=bonusForScore(+sa,hole.par);
-      bonusB+=bonusForScore(+sb,hole.par);
+      let isLarryMode = document.getElementById('countPar3Strokes')?.checked === true;
+
+if(!isLarryMode){
+  bonusA+=bonusForScore(+sa,hole.par);
+  bonusB+=bonusForScore(+sb,hole.par);
+}
     }
 
     totalResult=startResult+match+bonusA-bonusB;
