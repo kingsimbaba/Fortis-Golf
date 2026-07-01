@@ -482,6 +482,7 @@ function calcIndividual(r){
         bonusA=0,
         bonusB=0,
         totalResult=0;
+    startResult = (m.receiver === m.a ? m.strokes : -m.strokes);
 
     for(let h=0;h<18;h++){
       let sa=r.scores[h][ai],
@@ -504,17 +505,18 @@ function calcIndividual(r){
       bonusB+=bonusForScore(+sb,hole.par);
     }
 
-    totalResult=match+bonusA-bonusB;
+    totalResult=startResult+match+bonusA-bonusB;
 
     return {
-      ...m,
-      strokeHoles,
-      match,
-      bonusA,
-      bonusB,
-      totalResult,
-      winner:totalResult>0?m.a:totalResult<0?m.b:'Tie'
-    };
+  ...m,
+  strokeHoles,
+  match,
+  bonusA,
+  bonusB,
+  startResult,
+  totalResult,
+  winner: totalResult>0 ? m.a : totalResult<0 ? m.b : 'Tie'
+};
   });
 }
   function nextGive(m){
