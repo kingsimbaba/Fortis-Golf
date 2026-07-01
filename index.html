@@ -682,21 +682,37 @@ function individualHtml(){
     if(r.skipped){
       html+=`<div class="team">${r.a} vs ${r.b}: OFF</div>`;
     }else{
-      let matchText = r.match>0 ? `${r.a} +${r.match}` : r.match<0 ? `${r.b} +${Math.abs(r.match)}` : 'Tie';
-      let bonusText = r.bonusA-r.bonusB>0 ? `${r.a} +${r.bonusA-r.bonusB}` :
-                      r.bonusA-r.bonusB<0 ? `${r.b} +${Math.abs(r.bonusA-r.bonusB)}` :
-                      'No bonus / tied bonus';
-      let finalText = r.totalResult>0 ? `${r.a} +${r.totalResult}` :
-                      r.totalResult<0 ? `${r.b} +${Math.abs(r.totalResult)}` :
-                      'Tie';
+      let handicapText =
+  r.startResult > 0 ? `${r.a} +${r.startResult}` :
+  r.startResult < 0 ? `${r.b} +${Math.abs(r.startResult)}` :
+  'Tie';
 
-      html+=`
-        <div class="team">
-          <b>${r.a} vs ${r.b}</b><br>
-          Match: ${matchText}<br>
-          Bonus: ${bonusText}<br>
-          <b>Final: ${finalText}</b>
-        </div>`;
+let matchText =
+  r.match > 0 ? `${r.a} +${r.match}` :
+  r.match < 0 ? `${r.b} +${Math.abs(r.match)}` :
+  'Tie';
+
+let isLarryMode = r.larryMode === true || r.mode === 'larry';
+
+let bonusText =
+  r.bonusA-r.bonusB > 0 ? `${r.a} +${r.bonusA-r.bonusB}` :
+  r.bonusA-r.bonusB < 0 ? `${r.b} +${Math.abs(r.bonusA-r.bonusB)}` :
+  'None';
+
+let finalText =
+  r.totalResult > 0 ? `${r.a} +${r.totalResult}` :
+  r.totalResult < 0 ? `${r.b} +${Math.abs(r.totalResult)}` :
+  'Tie';
+
+html+=`
+  <div class="team">
+    <b>${r.a} vs ${r.b}</b><br>
+    Handicap: ${handicapText}<br>
+    Match: ${matchText}<br>
+    ${isLarryMode ? '' : `Bonus: ${bonusText}<br>`}
+    <b>Final: ${finalText}</b>
+  </div>
+`;
     }
   });
 
