@@ -588,11 +588,29 @@ for(let i=0;i<18;i++){
 
 holeNav += '</div></div>';
 
-  let html=holeNav+`<div class="card">
-    <h2>${round.courseName}${round.combo?' '+round.combo:''} · Hole ${roundHole+1}</h2>
-    <div class="small">${h.display} · Par ${h.par} · HCP ${h.hcp}</div>
-    <button class="btn2" onclick="saveRound()">Save Round to Supabase</button>
-  </div>`;
+  let courseRec = db.courses.find(c => c.course_name === round.courseName);
+
+let comboRec = db.course_combos.find(c =>
+  c.parent_course_code === round.courseName &&
+  c.combo_code === round.combo
+);
+
+let courseTitle =
+  courseRec?.display_name ||
+  comboRec?.parent_course_name ||
+  round.courseName;
+
+let comboTitle =
+  comboRec?.playable_display_name ||
+  comboRec?.combo_display_name ||
+  round.combo ||
+  '';
+
+let html=holeNav+`<div class="card">
+  <h2>${courseTitle}${comboTitle ? ' ' + comboTitle : ''} · Hole ${roundHole+1}</h2>
+  <div class="small">${h.display} · Par ${h.par} · HCP ${h.hcp}</div>
+  <button class="btn2" onclick="saveRound()">Save Round to Supabase</button>
+</div>`;
 
   html+=`<div class="card"><h2>Current Strokes</h2>`;
 
