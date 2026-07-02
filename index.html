@@ -14,19 +14,19 @@
 .bar span{position:absolute;top:-22px;left:50%;transform:translateX(-50%);font-size:11px;color:var(--text)}
 .trend-labels{display:flex;gap:8px;font-size:10px;color:var(--muted)}
 .trend-labels div{flex:1;text-align:center}@media(max-width:760px){.grid,.grid4{grid-template-columns:1fr}.wrap{padding:10px}}</style></head><body>
-<header><h1>地獄倒霉鬼</h1><div class="sub">Supabase version · history + rankings + admin · multi-user</div><div id="userBar" class="small"></div></header><div class="wrap">
-<section id="auth" class="page"><div class="card"><h2>Login</h2><p class="small">Each golfer can sign in on their own phone. Admin users can manage players, courses, and handicaps.</p><div class="grid"><div><label>Email</label><input id="authEmail" type="email" placeholder="you@example.com"></div><div><label>Password</label><input id="authPassword" type="password" placeholder="Password"></div><button onclick="signInUser()">Sign In</button><button class="btn2" onclick="signUpUser()">Create Account</button></div><div id="authMsg" class="small" style="margin-top:10px"></div></div></section>
-<section id="setup" class="page hidden"><div class="card"><h2>Database Status</h2><div id="dbStatus" class="small">Connecting...</div></div><div class="card"><div class="card"><h2>Display Settings</h2><label>Theme</label><select id="themeSelector" onchange="changeTheme()"><option value="dark">Dark</option><option value="light">Light</option><option value="contrast">High Contrast</option></select></div><h2>New Round</h2><div class="grid"><div><label>Country</label>
+<header><h1>地獄倒霉鬼</h1><div class="sub">雲端版 · 歷史紀錄 · 排行榜 · 管理員 · 多人使用</div><div id="userBar" class="small"></div></header><div class="wrap">
+<section id="auth" class="page"><div class="card"><h2>登入</h2><p class="small">Each golfer can sign in on their own phone. Admin users can manage players, courses, and handicaps.</p><div class="grid"><div><label>電子郵件</label><input id="authEmail" type="email" placeholder="you@example.com"></div><div><label>密碼</label><input id="authPassword" type="password" placeholder="Password"></div><button onclick="signInUser()">登入</button><button class="btn2" onclick="signUpUser()">建立帳號</button></div><div id="authMsg" class="small" style="margin-top:10px"></div></div></section>
+<section id="setup" class="page hidden"><div class="card"><h2>資料庫狀態</h2><div id="dbStatus" class="small">Connecting...</div></div><div class="card"><div class="card"><h2>顯示設定</h2><label>主題</label><select id="themeSelector" onchange="changeTheme()"><option value="dark">Dark</option><option value="light">Light</option><option value="contrast">High Contrast</option></select></div><h2>新回合</h2><div class="grid"><div><label>國家</label>
 <select id="country" onchange="setupCourseSelect()"></select>
 
-<label>Course Type</label>
-<select id="course"></select></div><div id="comboBox" class="hidden"><label id="comboLabel">Combo</label><select id="combo"></select></div><div><label>Round Note</label><input id="roundNote" placeholder="Sunday game"></div></div><p class="small">球場有超過18個洞，請選擇擊球的兩個場地.</p></div>
-<div class="card"><label>Number of Players</label>
+<label>球場</label>
+<select id="course"></select></div><div id="comboBox" class="hidden"><label id="comboLabel">Combo</label><select id="combo"></select></div><div><label>備註</label><input id="roundNote" placeholder="Sunday game"></div></div><p class="small">球場有超過18個洞，請選擇擊球的兩個場地.</p></div>
+<div class="card"><label>球員人數</label>
 <select id="playerCount" onchange="makePlayers(); renderMatchups();">
   <option value="4" selected>4 Players</option>
   <option value="3">3 Players</option>
   <option value="2">2 Players</option>
-</select><h2>Players + Hole 1 Driving Rank</h2><div class="grid4" id="playerInputs"></div><div class="grid" style="margin-top:12px"><button class="btn2" onclick="loadLastGroup()">Load Last Group</button><button class="btn2" onclick="renderMatchups()">Load Individual Matchups</button><button onclick="startRound()">Start Round</button></div><p class="small">Fortis game is always on. Turn off individual matchups that are not participating.</p></div>
+</select><h2>球員 + 第一洞開球距離</h2><div class="grid4" id="playerInputs"></div><div class="grid" style="margin-top:12px"><button class="btn2" onclick="loadLastGroup()">載入上一場</button><button class="btn2" onclick="renderMatchups()">載入個人對戰</button><button onclick="startRound()">開始回合</button></div><p class="small">Fortis game is always on. Turn off individual matchups that are not participating.</p></div>
 <div class="card"><h2>Individual Matchups</h2><label class="toggle">
   <input type="checkbox" id="useIndividualMatchups" checked onchange="toggleIndividualMatchups(this.checked)">
   Use Individual Matchups
@@ -38,7 +38,13 @@
 </label>
 </label><div id="matchupSetup" class="small">Enter players, then tap Load Individual Matchups.</div></div></section>
 <section id="scorePage" class="page hidden"><div id="scoreContent"></div></section><section id="summary" class="page hidden"><div id="summaryContent"></div></section><section id="data" class="page hidden"><div class="card"><h2>Database</h2><button class="btn2" onclick="loadAll()">Reload from Supabase</button><div id="dataView" class="small" style="margin-top:10px"></div></div></section><section id="admin" class="page hidden"><div id="adminContent"></div></section></div>
-<div class="nav hidden"><button id="navSetup" class="active" onclick="showPage('setup')">Setup</button><button id="navScorePage" onclick="showPage('scorePage')">Score</button><button id="navSummary" onclick="showPage('summary')">Summary</button><button id="navData" onclick="showPage('data')">Data</button><button id="navAdmin" class="hidden" onclick="showPage('admin')">Admin</button></div>
+<div class="nav hidden">
+    <button id="navSetup" class="active" onclick="showPage('setup')">設定</button>
+    <button id="navScorePage" onclick="showPage('scorePage')">計分</button>
+    <button id="navSummary" onclick="showPage('summary')">統計</button>
+    <button id="navData" onclick="showPage('data')">資料</button>
+    <button id="navAdmin" class="hidden" onclick="showPage('admin')">管理</button>
+</div>
 <script>
 let profilePlayer='';
 let currentPage='setup';
