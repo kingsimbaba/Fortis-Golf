@@ -15,12 +15,12 @@
 .trend-labels{display:flex;gap:8px;font-size:10px;color:var(--muted)}
 .trend-labels div{flex:1;text-align:center}@media(max-width:760px){.grid,.grid4{grid-template-columns:1fr}.wrap{padding:10px}}</style></head><body>
 <header><h1>地獄倒霉鬼</h1><div class="sub">雲端版 · 歷史紀錄 · 排行榜 · 管理員 · 多人使用</div><div id="userBar" class="small"></div></header><div class="wrap">
-<section id="auth" class="page"><div class="card"><h2>登入</h2><p class="small">Each golfer can sign in on their own phone. Admin users can manage players, courses, and handicaps.</p><div class="grid"><div><label>電子郵件</label><input id="authEmail" type="email" placeholder="you@example.com"></div><div><label>密碼</label><input id="authPassword" type="password" placeholder="Password"></div><button onclick="signInUser()">登入</button><button class="btn2" onclick="signUpUser()">建立帳號</button></div><div id="authMsg" class="small" style="margin-top:10px"></div></div></section>
+<section id="auth" class="page"><div class="card"><h2>登入</h2><p class="small">請輸入電子郵件再按登入即可.</p><div class="grid"><div><label>電子郵件</label><input id="authEmail" type="email" placeholder="you@example.com"></div><div><label>密碼</label><input id="authPassword" type="password" placeholder="Password"></div><button onclick="signInUser()">登入</button><button class="btn2" onclick="signUpUser()">建立帳號</button></div><div id="authMsg" class="small" style="margin-top:10px"></div></div></section>
 <section id="setup" class="page hidden"><div class="card"><h2>資料庫狀態</h2><div id="dbStatus" class="small">Connecting...</div></div><div class="card"><div class="card"><h2>顯示設定</h2><label>主題</label><select id="themeSelector" onchange="changeTheme()"><option value="dark">Dark</option><option value="light">Light</option><option value="contrast">High Contrast</option></select></div><h2>新回合</h2><div class="grid"><div><label>國家</label>
 <select id="country" onchange="setupCourseSelect()"></select>
 
 <label>球場</label>
-<select id="course"></select></div><div id="comboBox" class="hidden"><label id="comboLabel">Combo</label><select id="combo"></select></div><div><label>備註</label><input id="roundNote" placeholder="Sunday game"></div></div><p class="small">球場有超過18個洞，請選擇擊球的兩個場地.</p></div>
+<select id="course"></select></div><div id="comboBox" class="hidden"><label id="comboLabel">組合</label><select id="combo"></select></div><div><label>備註</label><input id="roundNote" placeholder="Sunday game"></div></div><p class="small">球場有超過18個洞，請選擇擊球的兩個場地.</p></div>
 <div class="card"><label>球員人數</label>
 <select id="playerCount" onchange="makePlayers(); renderMatchups();">
   <option value="4" selected>4 位球員</option>
