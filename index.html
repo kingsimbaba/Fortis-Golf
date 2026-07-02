@@ -23,20 +23,20 @@
 <select id="course"></select></div><div id="comboBox" class="hidden"><label id="comboLabel">Combo</label><select id="combo"></select></div><div><label>備註</label><input id="roundNote" placeholder="Sunday game"></div></div><p class="small">球場有超過18個洞，請選擇擊球的兩個場地.</p></div>
 <div class="card"><label>球員人數</label>
 <select id="playerCount" onchange="makePlayers(); renderMatchups();">
-  <option value="4" selected>4 Players</option>
-  <option value="3">3 Players</option>
-  <option value="2">2 Players</option>
-</select><h2>球員 + 第一洞開球距離</h2><div class="grid4" id="playerInputs"></div><div class="grid" style="margin-top:12px"><button class="btn2" onclick="loadLastGroup()">載入上一場</button><button class="btn2" onclick="renderMatchups()">載入個人對戰</button><button onclick="startRound()">開始回合</button></div><p class="small">Fortis game is always on. Turn off individual matchups that are not participating.</p></div>
-<div class="card"><h2>Individual Matchups</h2><label class="toggle">
+  <option value="4" selected>4 位球員</option>
+  <option value="3">3 位球員</option>
+  <option value="2">2 位球員</option>
+</select><h2>球員 + 第一洞開球距離</h2><div class="grid4" id="playerInputs"></div><div class="grid" style="margin-top:12px"><button class="btn2" onclick="loadLastGroup()">載入上一場</button><button class="btn2" onclick="renderMatchups()">載入個人對戰</button><button onclick="startRound()">開始回合</button></div><p class="small">地獄倒霉鬼永遠開啟,不需要個人對戰可關閉.</p></div>
+<div class="card"><h2>個人對戰</h2><label class="toggle">
   <input type="checkbox" id="useIndividualMatchups" checked onchange="toggleIndividualMatchups(this.checked)">
-  Use Individual Matchups
+  使用個人對戰
   <br>
 
 <label class="toggle">
   <input type="checkbox" id="countPar3Strokes">
-  Larry Mode
+  立偉模式
 </label>
-</label><div id="matchupSetup" class="small">Enter players, then tap Load Individual Matchups.</div></div></section>
+</label><div id="matchupSetup" class="small">請先輸入球員，然後點選載入個人對戰。</div></div></section>
 <section id="scorePage" class="page hidden"><div id="scoreContent"></div></section><section id="summary" class="page hidden"><div id="summaryContent"></div></section><section id="data" class="page hidden"><div class="card"><h2>Database</h2><button class="btn2" onclick="loadAll()">Reload from Supabase</button><div id="dataView" class="small" style="margin-top:10px"></div></div></section><section id="admin" class="page hidden"><div id="adminContent"></div></section></div>
 <div class="nav hidden">
     <button id="navSetup" class="active" onclick="showPage('setup')">設定</button>
@@ -140,9 +140,9 @@ function makePlayers(){
   for(let i=0;i<n;i++){
     box.insertAdjacentHTML('beforeend',`
       <div>
-        <label>Player ${i+1}</label>
+        <label>球員 ${i+1}</label>
         <input id="p${i}" value="${names[i]||''}">
-        <label>Hole 1 Driving Rank</label>
+        <label>第一洞開球距離</label>
         <select id="r${i}">
           ${[1,2,3,4].slice(0,n).map(x=>`<option>${x}</option>`).join('')}
         </select>
