@@ -1414,7 +1414,7 @@ function renderRoundHistory(){
 
     html+=`
       <tr>
-        <td>${r.created_at ? new Date(r.created_at).toLocaleDateString() : ''}</td>
+        <td>${r.played_at ? new Date(r.played_at).toLocaleDateString() : ''}</td>
         <td>${r.round_name || ''}</td>
         <td>${r.course_name || ''}${r.course_combo ? ' '+r.course_combo : ''}</td>
         <td>${players.join('<br>')}</td>
