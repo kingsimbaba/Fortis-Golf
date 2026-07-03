@@ -878,7 +878,7 @@ function renderHeadToHead(){
   html+='</table></div></div>';
   return html;
 }
-function renderSummary(){let html='<div class="card"><h2>Current Matchup Database</h2><div class="scroll"><table><tr><th>Giver</th><th>Receiver</th><th>Holes</th></tr>'; db.matchups.forEach(m=>html+=`<tr><td>${m.giver}</td><td>${m.receiver}</td><td>${m.holes_given}</td></tr>`); html+='</table></div></div>'; html+=renderSeasonLeaderboard();html+=renderPlayerProfile();html+=renderPlayerStats(); html+=renderLeaderboards(); html+=renderHeadToHead(); html+=renderLifetimeRankings(); html+=renderHandicapTrend(); html+=renderRankings(); html+=renderRoundHistory(); html+=renderMatchupHistory(); document.getElementById('summaryContent').innerHTML=html;}
+function renderSummary(){let html='<div class="card"><h2>私人恩怨資料庫</h2><div class="scroll"><table><tr><th>讓桿方</th><th>受讓方</th><th>洞數</th></tr>'; db.matchups.forEach(m=>html+=`<tr><td>${m.giver}</td><td>${m.receiver}</td><td>${m.holes_given}</td></tr>`); html+='</table></div></div>'; html+=renderSeasonLeaderboard();html+=renderPlayerProfile();html+=renderPlayerStats(); html+=renderLeaderboards(); html+=renderHeadToHead(); html+=renderLifetimeRankings(); html+=renderHandicapTrend(); html+=renderRankings(); html+=renderRoundHistory(); html+=renderMatchupHistory(); document.getElementById('summaryContent').innerHTML=html;}
 function renderPlayerStats(){
   let stat={};
 
@@ -1023,7 +1023,7 @@ function renderPlayerStats(){
 function renderSeasonLeaderboard(){  
   let activeSeason=db.seasons.find(s=>s.active===true || s.active==='true' || s.active==='TRUE');
   if(!activeSeason){
-    return '<div class="card"><h2>Season Leaderboard</h2><p class="small">No active season found.</p></div>';
+    return '<div class="card"><h2>球季排行榜</h2><p class="small">目前沒有啟用中的球季.</p></div>';
   }
 
   let seasonScores=db.scores.filter(s=>+s.season_id===+activeSeason.id);
@@ -1082,13 +1082,13 @@ function renderSeasonLeaderboard(){
     };
   }).sort((a,b)=>parseFloat(b.seasonPoints)-parseFloat(a.seasonPoints));
 
-  let html=`<div class="card"><h2>${activeSeason.season_name} Leaderboard</h2>`;
+  let html=`<div class="card"><h2>${activeSeason.season_name} 排行榜</h2>`;
 
   if(!rows.length){
-    return html+'<p class="small">No scores saved for this season yet.</p></div>';
+    return html+'<p class="small">本球季尚未有成績.</p></div>';
   }
 
-  html+='<div class="scroll"><table><tr><th>Rank</th><th>Player</th><th>Pts</th><th>Rounds</th><th>Avg</th><th>Birdies</th><th>Eagles</th><th>HIO</th></tr>';
+  html+='<div class="scroll"><table><tr><th>排名</th><th>球員</th><th>分數</th><th>回合</th><th>平均</th><th>博蒂</th><th>老鷹</th><th>一桿進洞</th></tr>';
 
   rows.forEach((r,i)=>{
     let medal=i===0?'🥇':i===1?'🥈':i===2?'🥉':i+1;
