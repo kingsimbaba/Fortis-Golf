@@ -1425,7 +1425,7 @@ function renderRoundHistory(){
   html+='</table></div></div>';
   return html;
 }
-function renderMatchupHistory(){let html='<div class="card"><h2>Recent Matchup History</h2><div class="scroll"><table><tr><th>Date</th><th>Matchup</th><th>Before</th><th>Result</th><th>After</th><th>Course</th></tr>'; db.history.slice(0,50).forEach(h=>{let r=+h.result_holes||0, res=r>0?`${h.giver} +${r}`:r<0?`${h.receiver} +${Math.abs(r)}`:'Tie'; html+=`<tr><td>${(h.played_at||'').slice(0,10)}</td><td>${h.giver} vs ${h.receiver}</td><td>${h.before_holes}</td><td>${res}</td><td>${h.after_holes}</td><td>${h.course||''}</td></tr>`}); return html+'</table></div></div>'}
+function renderMatchupHistory(){let html='<div class="card"><h2>近期讓桿紀錄</h2><div class="scroll"><table><tr><th>日期</th><th>對戰</th><th>戰前</th><th>結果</th><th>戰後</th><th>球場</th></tr>'; db.history.slice(0,50).forEach(h=>{let r=+h.result_holes||0, res=r>0?`${h.giver} +${r}`:r<0?`${h.receiver} +${Math.abs(r)}`:'Tie'; html+=`<tr><td>${(h.played_at||'').slice(0,10)}</td><td>${h.giver} vs ${h.receiver}</td><td>${h.before_holes}</td><td>${res}</td><td>${h.after_holes}</td><td>${h.course||''}</td></tr>`}); return html+'</table></div></div>'}
 
 function renderAdmin(){
   const courseOptions=db.courses.map(c=>`<option value="${c.id}">${c.course_name}</option>`).join('');
