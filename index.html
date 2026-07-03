@@ -1324,8 +1324,8 @@ function renderLifetimeRankings(){
     };
   }).sort((a,b)=>parseFloat(b.lifetimeScore)-parseFloat(a.lifetimeScore));
 
-  let html='<div class="card"><h2>Lifetime Fortis Rankings</h2>';
-  html+='<div class="scroll"><table><tr><th>Rank</th><th>Player</th><th>Score</th><th>Avg</th><th>W-L-T</th><th>Hole +/-</th><th>Birdies</th><th>Eagles</th></tr>';
+  let html='<div class="card"><h2>生涯排行榜</h2>';
+  html+='<div class="scroll"><table><tr><th>排名</th><th>球員</th><th>戰力</th><th>平均桿數</th><th>勝-敗-平</th><th>洞數 +/-</th><th>博蒂</th><th>老鷹</th></tr>';
 
   rows.forEach((r,i)=>{
     let medal=i===0?'🥇':i===1?'🥈':i===2?'🥉':i+1;
@@ -1367,7 +1367,7 @@ function renderHandicapTrend(){
     });
   });
 
-  let html='<div class="card"><h2>Handicap Trend</h2>';
+  let html='<div class="card"><h2>讓桿走勢圖</h2>';
 
   let keys=Object.keys(pairs);
 
@@ -1400,7 +1400,7 @@ function renderHandicapTrend(){
 
   return html;
 }
-function renderRankings(){let stat={}; function ensure(n){if(!stat[n])stat[n]={wins:0,losses:0,ties:0,holes:0}; return stat[n]} db.history.forEach(h=>{let a=h.giver,b=h.receiver,r=+h.result_holes||0; ensure(a);ensure(b); if(r>0){stat[a].wins++;stat[b].losses++;stat[a].holes+=r;stat[b].holes-=r}else if(r<0){stat[b].wins++;stat[a].losses++;stat[b].holes+=Math.abs(r);stat[a].holes-=Math.abs(r)}else{stat[a].ties++;stat[b].ties++}}); let rows=Object.entries(stat).sort((a,b)=>(b[1].wins*3+b[1].ties+b[1].holes/10)-(a[1].wins*3+a[1].ties+a[1].holes/10)); let html='<div class="card"><h2>Individual Rankings</h2><div class="scroll"><table><tr><th>Player</th><th>W</th><th>L</th><th>T</th><th>Hole +/-</th></tr>'; rows.forEach(([n,s])=>html+=`<tr><td>${n}</td><td>${s.wins}</td><td>${s.losses}</td><td>${s.ties}</td><td>${s.holes}</td></tr>`); return html+'</table></div><p class="small">Rankings use saved matchup history. Positive result means the giver won; negative means receiver won.</p></div>'}
+function renderRankings(){let stat={}; function ensure(n){if(!stat[n])stat[n]={wins:0,losses:0,ties:0,holes:0}; return stat[n]} db.history.forEach(h=>{let a=h.giver,b=h.receiver,r=+h.result_holes||0; ensure(a);ensure(b); if(r>0){stat[a].wins++;stat[b].losses++;stat[a].holes+=r;stat[b].holes-=r}else if(r<0){stat[b].wins++;stat[a].losses++;stat[b].holes+=Math.abs(r);stat[a].holes-=Math.abs(r)}else{stat[a].ties++;stat[b].ties++}}); let rows=Object.entries(stat).sort((a,b)=>(b[1].wins*3+b[1].ties+b[1].holes/10)-(a[1].wins*3+a[1].ties+a[1].holes/10)); let html='<div class="card"><h2>個人排行榜</h2><div class="scroll"><table><tr><th>球員</th><th>勝</th><th>敗</th><th>平</th><th>洞數 +/-</th></tr>'; rows.forEach(([n,s])=>html+=`<tr><td>${n}</td><td>${s.wins}</td><td>${s.losses}</td><td>${s.ties}</td><td>${s.holes}</td></tr>`); return html+'</table></div><p class="small">Rankings use saved matchup history. Positive result means the giver won; negative means receiver won.</p></div>'}
 function renderRoundHistory(){
   let html='<div class="card"><h2>賽事紀錄與回播</h2>';
 
@@ -1680,7 +1680,7 @@ function showReplayPanel() {
         <tr>
           <th>球員</th>
           <th>桿數</th>
-          <th>地獄倒霉鬼積分</th>
+          <th>地獄倒霉鬼分</th>
           <th>配對</th>
         </tr>
   `;
