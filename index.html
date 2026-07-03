@@ -1406,7 +1406,7 @@ function renderRoundHistory(){
     return html+'<p class="small">尚無儲存回合</p></div>';
   }
 
-  html+='<div class="scroll"><table><tr><th>日期</th><th>回合</th><th>球場</th><th>球員</th><th>回播</th></tr>';
+  html+='<div class="scroll"><table><tr><th>日期</th><th>回合名稱</th><th>球場</th><th>球員</th><th>回播</th></tr>';
 
   db.rounds.forEach(r=>{
     let sc=db.scores.filter(s=>s.round_id===r.id);
