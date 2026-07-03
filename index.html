@@ -858,18 +858,20 @@ function renderHeadToHead(){
     }
   });
 
-  let html='<div class="card"><h2>Head-to-Head Records</h2>';
-  html+='<div class="scroll"><table><tr><th>Matchup</th><th>Record</th><th>Hole +/-</th><th>Current Handicap</th></tr>';
+  let html='<div class="card"><h2>對戰記錄</h2>';
+  html+='<div class="scroll"><table><tr><th>對戰組合</th><th>戰績</th><th>洞數差</th><th>目前讓桿</th></tr>';
 
   Object.values(records)
     .sort((a,b)=>(b.winsA+b.winsB+b.ties)-(a.winsA+a.winsB+a.ties))
     .forEach(r=>{
       let current=db.matchups.find(m=>[m.giver,m.receiver].sort().join(' vs ')===r.players);
-      let handicap=current ? `${current.giver} gives ${current.receiver} ${current.holes_given}` : '-';
+      let handicap = current
+      ? `${current.giver} 讓 ${current.receiver} ${current.holes_given} 洞`
+      : '-';
 
       html+=`<tr>
         <td><b>${r.players}</b></td>
-        <td>${r.pA} ${r.winsA} - ${r.winsB} ${r.pB} - Ties ${r.ties}</td>
+        <td>${r.pA} ${r.winsA} 勝｜${r.pB} ${r.winsB} 勝｜平手 ${r.ties}</td>
         <td>${r.holeDiffA>0?'+':''}${r.holeDiffA}</td>
         <td>${handicap}</td>
       </tr>`;
