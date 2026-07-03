@@ -1130,34 +1130,34 @@ function renderPlayerProfile(){
 
   let recent=Object.entries(roundsObj(scores)).slice(-5).reverse();
 
-  let html=`<div class="card"><h2>Player Profile</h2>
-    <label>Select Player</label>
+  let html=`<div class="card"><h2>球員資料</h2>
+    <label>選擇球員</label>
     <select onchange="profilePlayer=this.value;renderSummary()">
       ${names.map(n=>`<option ${n===player?'selected':''}>${n}</option>`).join('')}
     </select>
 
     <div class="team">
-      <h2>${player}</h2>
+      <h2>${球員}</h2>
       <div class="grid4">
-        <div><b>${seasonRounds.length}</b><br><span class="small">Season Rounds</span></div>
-        <div><b>${avg(seasonScores)}</b><br><span class="small">Season Avg</span></div>
-        <div><b>${count(seasonScores,'Birdie')}</b><br><span class="small">Birdies</span></div>
-        <div><b>${count(seasonScores,'Eagle')}</b><br><span class="small">Eagles</span></div>
+        <div><b>${seasonRounds.length}</b><br><span class="small">賽季回合</span></div>
+        <div><b>${avg(seasonScores)}</b><br><span class="small">賽季平均</span></div>
+        <div><b>${count(seasonScores,'Birdie')}</b><br><span class="small">博蒂</span></div>
+        <div><b>${count(seasonScores,'Eagle')}</b><br><span class="small">老鷹</span></div>
       </div>
     </div>
 
     <div class="team">
-      <h2>Lifetime</h2>
+      <h2>生涯成績</h2>
       <div class="grid4">
-        <div><b>${lifeRounds.length}</b><br><span class="small">Rounds</span></div>
-        <div><b>${avg(scores)}</b><br><span class="small">Avg</span></div>
-        <div><b>${best}</b><br><span class="small">Best</span></div>
-        <div><b>${count(scores,'Hole In One')}</b><br><span class="small">HIO</span></div>
+        <div><b>${lifeRounds.length}</b><br><span class="small">總回合</span></div>
+        <div><b>${avg(scores)}</b><br><span class="small">平均</span></div>
+        <div><b>${best}</b><br><span class="small">最佳成績</span></div>
+        <div><b>${count(scores,'Hole In One')}</b><br><span class="small">一桿進洞</span></div>
       </div>
     </div>
 
     <div class="team">
-      <h2>Recent Form</h2>
+      <h2>最近一回合</h2>
       ${recent.length?recent.map(([rid,total])=>`<div class="leader-row"><div>Round ${rid}</div><div class="score">${total}</div><div class="small">gross</div></div>`).join(''):'<p class="small">No recent rounds.</p>'}
     </div>
   </div>`;
