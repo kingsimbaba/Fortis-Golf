@@ -960,13 +960,13 @@ function renderPlayerStats(){
 
   let html=`
   <div class="card">
-    <h2>Enhanced Player Dashboard</h2>
+    <h2>球員數據看板</h2>
   `;
 
   if(!rows.length){
     html+=`
       <p class="small">
-        No player score data yet.
+        尚無球員成績資料.
       </p>
     </div>
     `;
@@ -977,16 +977,16 @@ function renderPlayerStats(){
   <div class="scroll">
   <table>
     <tr>
-      <th>Player</th>
-      <th>Rounds</th>
-      <th>Best</th>
-      <th>Avg</th>
-      <th>Birdies</th>
-      <th>Eagles</th>
-      <th>HIO</th>
-      <th>Pars</th>
-      <th>Bogeys</th>
-      <th>Doubles</th>
+      <th>球員</th>
+      <th>回合</th>
+      <th>最佳</th>
+      <th>平均</th>
+      <th>博蒂</th>
+      <th>老鷹</th>
+      <th>一桿進洞</th>
+      <th>標準桿</th>
+      <th>柏忌</th>
+      <th>雙柏忌</th>
     </tr>
   `;
 
@@ -1012,7 +1012,7 @@ function renderPlayerStats(){
     </div>
 
     <p class="small">
-      Stats calculated from saved hole_scores.
+      數據依照已儲存的成績計算.
     </p>
   </div>
   `;
