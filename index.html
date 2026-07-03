@@ -613,12 +613,12 @@ let comboTitle =
   '';
 
 let html=holeNav+`<div class="card">
-  <h2>${courseTitle}${comboTitle ? ' ' + comboTitle : ''} · Hole ${roundHole+1}</h2>
-  <div class="small">${h.display} · Par ${h.par} · HCP ${h.hcp}</div>
-  <button class="btn2" onclick="saveRound()">Save Round to Supabase</button>
+  <h2>${courseTitle}${comboTitle ? ' ' + comboTitle : ''} · 第 ${roundHole+1} 洞</h2>
+  <div class="small">${h.display} · 標準桿 ${h.par} · 難度 ${h.hcp}</div>
+  <button class="btn2" onclick="saveRound()">儲存回合</button>
 </div>`;
 
-  html+=`<div class="card"><h2>Current Strokes</h2>`;
+  html+=`<div class="card"><h2>目前總桿</h2>`;
 
 round.players.forEach((p,i)=>{
   let grossTotal=0;
@@ -635,20 +635,20 @@ round.players.forEach((p,i)=>{
     <div class="leader-row">
       <div><b>${p}</b></div>
       <div class="score">${grossTotal}</div>
-      <div class="small">gross</div>
+      <div class="small">總桿</div>
     </div>`;
 });
 
 html+=`</div>`;
-  html+=`<div class="card"><h2>Total Jinx Live Leaderboard</h2>`;
+  html+=`<div class="card"><h2>地獄倒霉鬼即時排行榜</h2>`;
   currentPlayers().map((_,i)=>i)
 .sort((a,b)=>c.totals[b]-c.totals[a])
 .forEach((i,k)=>{
-    html+=`<div class="leader-row"><div>${k+1}. <b>${round.players[i]}</b></div><div class="score">${c.totals[i]}</div><div class="small">pts</div></div>`;
+    html+=`<div class="leader-row"><div>${k+1}. <b>${round.players[i]}</b></div><div class="score">${c.totals[i]}</div><div class="small">分</div></div>`;
   });
   html+=`</div>`;
 
-  html+=`<div class="card"><h2>Enter Gross Scores</h2>`;
+  html+=`<div class="card"><h2>輸入桿數</h2>`;
 
   for(let i=0;i<round.players.length;i++){
   let val=round.scores[roundHole][i];
@@ -680,14 +680,14 @@ html+=`</div>`;
 }
   html+=`
   <button class="btn2" onclick="confirmHoleScores()">
-    Confirm Hole Scores
+    確認本洞成績
   </button>`;
   let row=c.rows[roundHole];
 
   html+=`</div>
     <div class="grid" style="margin-top:12px">
-      <button class="btn2" onclick="roundHole=Math.max(0,roundHole-1);renderScore()">Previous hole</button>
-      <button onclick="roundHole=Math.min(17,roundHole+1);renderScore()">Next hole</button>
+      <button class="btn2" onclick="roundHole=Math.max(0,roundHole-1);renderScore()">上一洞</button>
+      <button onclick="roundHole=Math.min(17,roundHole+1);renderScore()">下一洞</button>
     </div>
   </div>`;
 
@@ -695,9 +695,9 @@ html+=`</div>`;
   ? row.team2.map(i=>round.players[i]).join(' + ') + ' x2'
   : row.team2.map(i=>round.players[i]).join(' + ');
 
-html+=`<div class="card"><h2>Current Total Jinx Pairing</h2>
-  <div class="team">Team 1: <b>${row.team1.map(i=>round.players[i]).join(' + ')}</b> · Points ${row.t1}</div>
-  <div class="team">Team 2: <b>${team2Name}</b> · Points ${row.t2}</div>
+html+=`<div class="card"><h2>目前配對</h2>
+  <div class="team">第一組: <b>${row.team1.map(i=>round.players[i]).join(' + ')}</b> · Points ${row.t1}</div>
+  <div class="team">第二組: <b>${team2Name}</b> · 分數 ${row.t2}</div>
 </div>`;
 
   html+=individualHtml();
@@ -784,25 +784,25 @@ let gross = round.scores[h][i] === ''
     let scoreType='';
 
     if(hole.par===3){
-      if(gross===1) scoreType='Hole In One';
-      else if(gross===2) scoreType='Birdie';
-      else if(gross===3) scoreType='Par';
-      else if(gross===4) scoreType='Bogey';
-      else if(gross===5) scoreType='Double Bogey';
-      else scoreType=(gross-hole.par)+' Over';
-    }
-    else{
-      const diff=gross-hole.par;
+  if(gross===1) scoreType='一桿進洞';
+  else if(gross===2) scoreType='博蒂';
+  else if(gross===3) scoreType='標準桿';
+  else if(gross===4) scoreType='柏忌';
+  else if(gross===5) scoreType='雙柏忌';
+  else scoreType=(gross-hole.par)+' 桿超標';
+}
+else{
+  const diff=gross-hole.par;
 
-      if(diff<=-3) scoreType='Albatross';
-      else if(diff===-2) scoreType='Eagle';
-      else if(diff===-1) scoreType='Birdie';
-      else if(diff===0) scoreType='Par';
-      else if(diff===1) scoreType='Bogey';
-      else if(diff===2) scoreType='Double Bogey';
-      else if(diff===3) scoreType='Triple Bogey';
-      else scoreType=diff+' Over';
-    }
+  if(diff<=-3) scoreType='信天翁';
+  else if(diff===-2) scoreType='老鷹';
+  else if(diff===-1) scoreType='博蒂';
+  else if(diff===0) scoreType='標準桿';
+  else if(diff===1) scoreType='柏忌';
+  else if(diff===2) scoreType='雙柏忌';
+  else if(diff===3) scoreType='三柏忌';
+  else scoreType='+'+diff;
+}
 
   scores.push({
       round_id,
