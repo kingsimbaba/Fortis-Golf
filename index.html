@@ -706,41 +706,41 @@ html+=`<div class="card"><h2>目前配對</h2>
 }
 function individualHtml(){
   let res=calcIndividual(round);
-  let html='<div class="card"><h2>Individual Battles Live</h2>';
+  let html='<div class="card"><h2>個人對戰即時戰況</h2>';
 
   res.forEach(r=>{
     if(r.skipped){
-      html+=`<div class="team">${r.a} vs ${r.b}: OFF</div>`;
+      html+=`<div class="team">${r.a} vs ${r.b}: 已關閉</div>`;
     }else{
       let handicapText =
   r.startResult > 0 ? `${r.a} +${r.startResult}` :
   r.startResult < 0 ? `${r.b} +${Math.abs(r.startResult)}` :
-  'Tie';
+  '平手';
 
 let matchText =
   r.match > 0 ? `${r.a} +${r.match}` :
   r.match < 0 ? `${r.b} +${Math.abs(r.match)}` :
-  'Tie';
+  '平手';
 
 let isLarryMode = r.larryMode === true || r.mode === 'larry';
 
 let bonusText =
   r.bonusA-r.bonusB > 0 ? `${r.a} +${r.bonusA-r.bonusB}` :
   r.bonusA-r.bonusB < 0 ? `${r.b} +${Math.abs(r.bonusA-r.bonusB)}` :
-  'None';
+  '無';
 
 let finalText =
   r.totalResult > 0 ? `${r.a} +${r.totalResult}` :
   r.totalResult < 0 ? `${r.b} +${Math.abs(r.totalResult)}` :
-  'Tie';
+  '平手';
 
 html+=`
   <div class="team">
     <b>${r.a} vs ${r.b}</b><br>
-    Handicap: ${handicapText}<br>
-    Match: ${matchText}<br>
-    ${isLarryMode ? '' : `Bonus: ${bonusText}<br>`}
-    <b>Final: ${finalText}</b>
+    讓桿： ${handicapText}<br>
+    對戰： ${matchText}<br>
+    ${isLarryMode ? '' : `獎勵： ${bonusText}<br>`}
+    <b>最終結果： ${finalText}</b>
   </div>
 `;
     }
