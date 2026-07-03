@@ -1206,8 +1206,8 @@ function renderLeaderboards(){
   let avgRows=[...rows].sort((a,b)=>parseFloat(a.avg)-parseFloat(b.avg));
   let birdieRows=[...rows].sort((a,b)=>b.birdies-a.birdies);
 
-  let html='<div class="card"><h2>Scoring Average Leaderboard</h2>';
-  html+='<div class="scroll"><table><tr><th>Rank</th><th>Player</th><th>Avg Round</th></tr>';
+  let html='<div class="card"><h2>平均桿數排行榜</h2>';
+  html+='<div class="scroll"><table><tr><th>排名</th><th>球員</th><th>平均桿數</th></tr>';
 
   avgRows.forEach((r,i)=>{
     let medal=i===0?'🥇':i===1?'🥈':i===2?'🥉':i+1;
@@ -1216,8 +1216,8 @@ function renderLeaderboards(){
 
   html+='</table></div></div>';
 
-  html+='<div class="card"><h2>Birdie Leaderboard</h2>';
-  html+='<div class="scroll"><table><tr><th>Rank</th><th>Player</th><th>Birdies</th></tr>';
+  html+='<div class="card"><h2>博蒂排行榜</h2>';
+  html+='<div class="scroll"><table><tr><th>排名</th><th>球員</th><th>博蒂</th></tr>';
 
   birdieRows.forEach((r,i)=>{
     let medal=i===0?'🥇':i===1?'🥈':i===2?'🥉':i+1;
