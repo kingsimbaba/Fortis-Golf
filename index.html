@@ -668,13 +668,14 @@ html+=`</div>`;
       </div>
 
       <div class="small" style="text-align:center;margin-top:6px">
-        ${showVal-h.par===-3?'Albatross':
-          showVal-h.par===-2?'Eagle':
-          showVal-h.par===-1?'Birdie':
-          showVal-h.par===0?'Par':
-          showVal-h.par===1?'Bogey':
-          showVal-h.par===2?'Double Bogey':
-          showVal-h.par+' Over'}
+        ${showVal-h.par===-3?'信天翁':
+          showVal-h.par===-2?'老鷹':
+          showVal-h.par===-1?'博蒂':
+          showVal-h.par===0?'標準桿':
+          showVal-h.par===1?'柏忌':
+          showVal-h.par===2?'雙柏忌':
+          showVal-h.par===3?'三柏忌':
+          '+'+(showVal-h.par)}
       </div>
     </div>`;
 }
@@ -696,7 +697,7 @@ html+=`</div>`;
   : row.team2.map(i=>round.players[i]).join(' + ');
 
 html+=`<div class="card"><h2>目前配對</h2>
-  <div class="team">第一組: <b>${row.team1.map(i=>round.players[i]).join(' + ')}</b> · Points ${row.t1}</div>
+  <div class="team">第一組: <b>${row.team1.map(i=>round.players[i]).join(' + ')}</b> · 分數 ${row.t1}</div>
   <div class="team">第二組: <b>${team2Name}</b> · 分數 ${row.t2}</div>
 </div>`;
 
