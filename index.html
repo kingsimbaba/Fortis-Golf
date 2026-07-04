@@ -210,6 +210,19 @@ th{color:var(--muted)}
   right:34px;
   bottom:24px;
   font-size:46px;
+  animation:rabbitGrabbed 1.4s ease-in-out infinite;
+}
+
+@keyframes rabbitGrabbed{
+  0%,54%{
+    opacity:1;
+    transform:scale(1);
+  }
+
+  55%,100%{
+    opacity:0;
+    transform:scale(.2) translateY(-30px);
+  }
 }
 
 @keyframes eagleDive{
