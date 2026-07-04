@@ -171,6 +171,7 @@ th{color:var(--muted)}
 </div>
 <script>
 let profilePlayer='';
+let scoreAnimationPlaying=false;
 let currentPage='setup';
 let useIndividualMatchups=true;
 let SB={url:'',key:''}, authClient=null, currentSession=null, currentUser=null, currentProfile=null, db={courses:[],holes:[],course_combos:[],matchups:[],players:[],rounds:[],scores:[],history:[],seasons:[]}, round=null, roundHole=0, localRounds=[];
@@ -734,6 +735,8 @@ function playScoreAnimation(result){
 }
 
 function confirmHoleScores(){
+    if(scoreAnimationPlaying) return;
+      scoreAnimationPlaying=true;
 
   for(let i=0;i<round.players.length;i++){
     if(round.scores[roundHole][i] === ''){
@@ -766,6 +769,7 @@ saveActiveRound();
 setTimeout(()=>{
   roundHole = (roundHole + 1) % 18;
   saveActiveRound();
+  scoreAnimationPlaying=false;
   renderScore();
 },2200);
 }
