@@ -824,11 +824,17 @@ let finalText =
 
 html+=`
   <div class="team">
-    <b>${r.a} vs ${r.b}</b><br>
-    讓桿： ${handicapText}<br>
-    對戰： ${matchText}<br>
-    ${isLarryMode ? '' : `獎勵： ${bonusText}<br>`}
-    <b>最終結果： ${finalText}</b>
+    <div style="display:flex;justify-content:space-between;gap:10px;align-items:center">
+      <b>${r.a} vs ${r.b}</b>
+      <span class="score" style="font-size:22px">${finalText}</span>
+    </div>
+
+    <div class="grid4" style="margin-top:8px">
+      <div><span class="small">讓桿</span><br><b>${handicapText}</b></div>
+      <div><span class="small">對戰</span><br><b>${matchText}</b></div>
+      ${isLarryMode ? '' : `<div><span class="small">獎勵</span><br><b>${bonusText}</b></div>`}
+      <div><span class="small">最終</span><br><b>${finalText}</b></div>
+    </div>
   </div>
 `;
     }
