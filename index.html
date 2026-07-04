@@ -688,11 +688,32 @@ function changeScore(h,i,delta){
 }
 
 function confirmHoleScores(){
+
   for(let i=0;i<round.players.length;i++){
     if(round.scores[roundHole][i] === ''){
       round.scores[roundHole][i] = round.course[roundHole].par;
     }
   }
+
+  let par = round.course[roundHole].par;
+
+  let results = round.players.map((player,i)=>({
+    player,
+    score: +round.scores[roundHole][i],
+    diff: +round.scores[roundHole][i] - par
+  }));
+
+  let goodScores = results.filter(r=>r.diff < 0);
+
+  let animationResult;
+
+  if(goodScores.length){
+    animationResult = goodScores.sort((a,b)=>a.score-b.score)[0];
+  }else{
+    animationResult = results.sort((a,b)=>b.score-a.score)[0];
+  }
+
+  playScoreAnimation(animationResult);
 
   roundHole = (roundHole + 1) % 18;
 
