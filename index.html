@@ -262,6 +262,70 @@ th{color:var(--muted)}
   0%{transform:translateX(0)}
   100%{transform:translateX(-35px)}
 }
+.par-scene{
+  position:relative;
+  height:180px;
+  overflow:hidden;
+  border-radius:18px;
+  background:linear-gradient(#65c466 0%,#3f9f45 100%);
+}
+
+.par-green{
+  position:absolute;
+  left:0;
+  right:0;
+  bottom:0;
+  height:70px;
+  background:#267a32;
+}
+
+.par-cup{
+  position:absolute;
+  right:48px;
+  bottom:54px;
+  width:42px;
+  height:16px;
+  background:#111;
+  border-radius:50%;
+}
+
+.par-flag{
+  position:absolute;
+  right:64px;
+  bottom:66px;
+  width:4px;
+  height:70px;
+  background:#ffffff;
+}
+
+.par-flag:after{
+  content:'';
+  position:absolute;
+  top:0;
+  left:4px;
+  border-top:11px solid transparent;
+  border-bottom:11px solid transparent;
+  border-left:30px solid #ff4444;
+}
+
+.par-ball{
+  position:absolute;
+  left:18px;
+  bottom:64px;
+  width:22px;
+  height:22px;
+  background:#ffffff;
+  border-radius:50%;
+  box-shadow:inset -3px -3px 0 rgba(0,0,0,.12);
+  animation:ballDrop 1.7s ease-in-out infinite;
+}
+
+@keyframes ballDrop{
+  0%{transform:translate(0,0) scale(1);opacity:1}
+  65%{transform:translate(250px,0) scale(1);opacity:1}
+  80%{transform:translate(285px,10px) scale(.75);opacity:1}
+  100%{transform:translate(285px,18px) scale(.2);opacity:0}
+}
 </style></head><body>
 <header><h1>地獄倒霉鬼</h1><div class="sub">雲端版 · 歷史紀錄 · 排行榜 · 管理員 · 多人使用</div><div id="userBar" class="small"></div></header><div class="wrap">
 <section id="auth" class="page"><div class="card"><h2>登入</h2><p class="small">請輸入電子郵件再按登入即可.</p><div class="grid"><div><label>電子郵件</label><input id="authEmail" type="email" placeholder="you@example.com"></div><div><label>密碼</label><input id="authPassword" type="password" placeholder="Password"></div><button onclick="signInUser()">登入</button><button class="btn2" onclick="signUpUser()">建立帳號</button></div><div id="authMsg" class="small" style="margin-top:10px"></div></div></section>
@@ -820,7 +884,7 @@ function playScoreAnimation(result){
       icon:'birdie', title:'博蒂！', text:'啄木鳥瘋狂啄木頭！'
     } :
     diff === 0 ? {
-      icon:'⛳', title:'標準桿', text:'高爾夫球冷靜進洞。'
+      icon:'par', title:'標準桿', text:'高爾夫球冷靜進洞。'
     } :
     diff === 1 ? {
       icon:'🏌️‍♂️💢', title:'柏忌', text:'球員氣到折斷一支球桿。'
@@ -851,6 +915,13 @@ function playScoreAnimation(result){
       <div class="albatross-cloud one">☁️</div>
       <div class="albatross-cloud two">☁️</div>
       <div class="albatross-bird">🕊️</div>
+    </div>`
+  : scene.icon==='par'
+  ? `<div class="par-scene">
+      <div class="par-green"></div>
+      <div class="par-flag"></div>
+      <div class="par-cup"></div>
+      <div class="par-ball"></div>
     </div>`
   : `<div class="score-animal">${scene.icon}</div>`
 }
