@@ -761,10 +761,13 @@ function confirmHoleScores(){
 
   playScoreAnimation(animationResult);
 
-  roundHole = (roundHole + 1) % 18;
+saveActiveRound();
 
+setTimeout(()=>{
+  roundHole = (roundHole + 1) % 18;
   saveActiveRound();
   renderScore();
+},2200);
 }
   
 function renderScore(){
