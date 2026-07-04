@@ -633,14 +633,18 @@ function confirmHoleScores(){
 function renderScore(){
   let c=calcFortis(round), h=round.course[roundHole];
 
-  let holeNav='<div class="card"><div style="display:flex;overflow-x:auto;gap:4px">';
+  let holeNav='<div class="card"><h2>選擇球洞</h2><div style="display:grid;grid-template-columns:repeat(6,1fr);gap:6px">';
 
 for(let i=0;i<18;i++){
+  let played = round.scores[i].some(x=>x !== '');
   holeNav += `
     <button
-      style="min-width:45px;${
-        i===roundHole ? 'background:#38a169;' : ''
-      }"
+      style="
+        min-width:0;
+        padding:10px 4px;
+        ${i===roundHole ? 'background:#38a169;font-size:18px;' : ''}
+        ${played && i!==roundHole ? 'background:#1f2f48;' : ''}
+      "
       onclick="roundHole=${i};renderScore()">
       ${i+1}
     </button>`;
