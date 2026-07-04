@@ -93,11 +93,11 @@ th{color:var(--muted)}
 </label><div id="matchupSetup" class="small">請先輸入球員，然後點選載入個人對戰。</div></div></section>
 <section id="scorePage" class="page hidden"><div id="scoreContent"></div></section><section id="summary" class="page hidden"><div id="summaryContent"></div></section><section id="data" class="page hidden"><div class="card"><h2>Database</h2><button class="btn2" onclick="loadAll()">Reload from Supabase</button><div id="dataView" class="small" style="margin-top:10px"></div></div></section><section id="admin" class="page hidden"><div id="adminContent"></div></section></div>
 <div class="nav hidden">
-    <button id="navSetup" class="active" onclick="showPage('setup')">設定</button>
-    <button id="navScorePage" onclick="showPage('scorePage')">計分</button>
-    <button id="navSummary" onclick="showPage('summary')">統計</button>
-    <button id="navData" onclick="showPage('data')">資料</button>
-    <button id="navAdmin" class="hidden" onclick="showPage('admin')">管理</button>
+  <button id="navSetup" class="active" onclick="showPage('setup')">⚙️<br>設定</button>
+  <button id="navScorePage" onclick="showPage('scorePage')">⛳<br>計分</button>
+  <button id="navSummary" onclick="showPage('summary')">📊<br>統計</button>
+  <button id="navData" onclick="showPage('data')">🗄️<br>資料</button>
+  <button id="navAdmin" class="hidden" onclick="showPage('admin')">🔧<br>管理</button>
 </div>
 <script>
 let profilePlayer='';
