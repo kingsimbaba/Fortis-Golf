@@ -137,6 +137,48 @@ th{color:var(--muted)}
   0%,100%{transform:translateY(0) rotate(0)}
   50%{transform:translateY(-12px) rotate(-4deg)}
 }
+.birdie-scene{
+  position:relative;
+  height:180px;
+  overflow:hidden;
+}
+
+.birdie-tree{
+  position:absolute;
+  left:55%;
+  bottom:20px;
+  width:42px;
+  height:130px;
+  background:#7a4a25;
+  border-radius:18px;
+}
+
+.birdie-woodpecker{
+  position:absolute;
+  left:28%;
+  top:54px;
+  font-size:70px;
+  animation:peckBird .22s infinite;
+}
+
+.birdie-chips{
+  position:absolute;
+  left:58%;
+  top:74px;
+  font-size:28px;
+  animation:woodChips .45s infinite;
+}
+
+@keyframes peckBird{
+  0%,100%{transform:translateX(0) rotate(0deg)}
+  50%{transform:translateX(18px) rotate(8deg)}
+}
+
+@keyframes woodChips{
+  0%{opacity:0;transform:scale(.5) translateX(0)}
+  50%{opacity:1;transform:scale(1.2) translateX(15px)}
+  100%{opacity:0;transform:scale(.5) translateX(30px)}
+}
 </style></head><body>
 <header><h1>地獄倒霉鬼</h1><div class="sub">雲端版 · 歷史紀錄 · 排行榜 · 管理員 · 多人使用</div><div id="userBar" class="small"></div></header><div class="wrap">
 <section id="auth" class="page"><div class="card"><h2>登入</h2><p class="small">請輸入電子郵件再按登入即可.</p><div class="grid"><div><label>電子郵件</label><input id="authEmail" type="email" placeholder="you@example.com"></div><div><label>密碼</label><input id="authPassword" type="password" placeholder="Password"></div><button onclick="signInUser()">登入</button><button class="btn2" onclick="signUpUser()">建立帳號</button></div><div id="authMsg" class="small" style="margin-top:10px"></div></div></section>
@@ -692,7 +734,7 @@ function playScoreAnimation(result){
       icon:'🦅🐇', title:'老鷹！', text:'白頭鷹高速俯衝抓走兔子！'
     } :
     diff === -1 ? {
-      icon:'🐦‍⬛🪵', title:'博蒂！', text:'啄木鳥瘋狂啄木頭！'
+      icon:'birdie', title:'博蒂！', text:'啄木鳥瘋狂啄木頭！'
     } :
     diff === 0 ? {
       icon:'⛳', title:'標準桿', text:'高爾夫球冷靜進洞。'
@@ -710,7 +752,14 @@ function playScoreAnimation(result){
   overlay.className='score-animation';
   overlay.innerHTML=`
     <div class="score-animation-box">
-      <div class="score-animal">${scene.icon}</div>
+      ${scene.icon==='birdie'
+  ? `<div class="birdie-scene">
+      <div class="birdie-tree"></div>
+      <div class="birdie-woodpecker">🐦‍⬛</div>
+      <div class="birdie-chips">✦</div>
+    </div>`
+  : `<div class="score-animal">${scene.icon}</div>`
+}
       <div class="score-title">${scene.title}</div>
       <div class="score-player">${result.player} · ${result.score} 桿</div>
       <div class="small" style="margin-top:8px">${scene.text}</div>
