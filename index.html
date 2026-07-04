@@ -681,35 +681,46 @@ let html=holeNav+`<div class="card">
   </div>
 </div>`;
 
-  html+=`<div class="card"><h2>目前總桿</h2>`;
+  html+=`<div class="card">
+  <div class="grid" style="gap:10px">
+    <div>
+      <h2>目前總桿</h2>`;
 
 round.players.forEach((p,i)=>{
   let grossTotal=0;
-  let holesPlayed=0;
 
   for(let h=0;h<18;h++){
     if(round.scores[h][i] !== ''){
       grossTotal += +round.scores[h][i];
-      holesPlayed++;
     }
   }
 
   html+=`
-    <div class="leader-row">
+    <div class="leader-row" style="padding:8px 10px;margin:5px 0">
       <div><b>${p}</b></div>
-      <div class="score">${grossTotal}</div>
-      <div class="small">總桿</div>
+      <div class="score" style="font-size:22px">${grossTotal}</div>
     </div>`;
 });
 
-html+=`</div>`;
-  html+=`<div class="card"><h2>地獄倒霉鬼即時排行榜</h2>`;
-  currentPlayers().map((_,i)=>i)
-.sort((a,b)=>c.totals[b]-c.totals[a])
-.forEach((i,k)=>{
-    html+=`<div class="leader-row"><div>${k+1}. <b>${round.players[i]}</b></div><div class="score">${c.totals[i]}</div><div class="small">分</div></div>`;
+html+=`
+    </div>
+    <div>
+      <h2>即時排行榜</h2>`;
+
+round.players.map((_,i)=>i)
+  .sort((a,b)=>c.totals[b]-c.totals[a])
+  .forEach((i,k)=>{
+    html+=`
+      <div class="leader-row" style="padding:8px 10px;margin:5px 0">
+        <div>${k+1}. <b>${round.players[i]}</b></div>
+        <div class="score" style="font-size:22px">${c.totals[i]}</div>
+      </div>`;
   });
-  html+=`</div>`;
+
+html+=`
+    </div>
+  </div>
+</div>`;
 
   html+=`<div class="card"><h2>輸入桿數</h2>`;
 
