@@ -158,6 +158,7 @@ th{color:var(--muted)}
   left:28%;
   top:54px;
   font-size:70px;
+  transform:scaleX(-1);
   animation:peckBird .22s infinite;
 }
 
@@ -170,8 +171,12 @@ th{color:var(--muted)}
 }
 
 @keyframes peckBird{
-  0%,100%{transform:translateX(0) rotate(0deg)}
-  50%{transform:translateX(18px) rotate(8deg)}
+  0%,100%{
+    transform:scaleX(-1) translateX(0) rotate(0deg);
+  }
+  50%{
+    transform:scaleX(-1) translateX(-18px) rotate(-8deg);
+  }
 }
 
 @keyframes woodChips{
