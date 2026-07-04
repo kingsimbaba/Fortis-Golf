@@ -756,16 +756,17 @@ for(let i=0;i<round.players.length;i++){
     </div>`;
 }
   html+=`
-  <button class="btn2" onclick="confirmHoleScores()">
-    確認本洞成績
+  <button onclick="confirmHoleScores()" style="font-size:18px;padding:16px">
+    儲存並前往下一洞 →
   </button>`;
-  let row=c.rows[roundHole];
 
-  html+=`</div>
-    <div class="grid" style="margin-top:12px">
-      <button class="btn2" onclick="roundHole=Math.max(0,roundHole-1);renderScore()">上一洞</button>
-      <button onclick="roundHole=Math.min(17,roundHole+1);renderScore()">下一洞</button>
-    </div>
+let row=c.rows[roundHole];
+
+html+=`
+  </div>
+  <div class="grid" style="margin-top:10px">
+    <button class="btn2" onclick="roundHole=Math.max(0,roundHole-1);renderScore()">← 上一洞</button>
+    <button class="btn2" onclick="roundHole=Math.min(17,roundHole+1);renderScore()">下一洞 →</button>
   </div>`;
 
   let team2Name = row.team2.length===1
