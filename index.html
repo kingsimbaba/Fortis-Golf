@@ -708,33 +708,35 @@ html+=`</div>`;
 
   html+=`<div class="card"><h2>輸入桿數</h2>`;
 
-  for(let i=0;i<round.players.length;i++){
+for(let i=0;i<round.players.length;i++){
   let val=round.scores[roundHole][i];
   let showVal=val==='' ? h.par : val;
+  let diff=showVal-h.par;
+
+  let scoreName =
+    diff===-3?'信天翁':
+    diff===-2?'老鷹':
+    diff===-1?'博蒂':
+    diff===0?'標準桿':
+    diff===1?'柏忌':
+    diff===2?'雙柏忌':
+    diff===3?'三柏忌':
+    '+'+diff;
 
   html+=`
-    <div class="team">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+    <div class="team" style="display:grid;grid-template-columns:1fr 58px 76px 58px;gap:8px;align-items:center">
+      <div>
         <h2 style="margin:0">${round.players[i]}</h2>
-        <span class="small">Par ${h.par}</span>
+        <div class="small">Par ${h.par} · ${scoreName}</div>
       </div>
 
-      <div style="display:grid;grid-template-columns:70px 1fr 70px;gap:10px;align-items:center">
-        <button class="btn2" style="font-size:26px;padding:18px" onclick="changeScore(${roundHole},${i},-1)">−</button>
-        <div style="text-align:center;font-size:36px;font-weight:900">${showVal}</div>
-        <button style="font-size:26px;padding:18px" onclick="changeScore(${roundHole},${i},1)">+</button>
+      <button class="btn2" style="font-size:24px;padding:12px" onclick="changeScore(${roundHole},${i},-1)">−</button>
+
+      <div style="text-align:center;font-size:34px;font-weight:900">
+        ${showVal}
       </div>
 
-      <div class="small" style="text-align:center;margin-top:6px">
-        ${showVal-h.par===-3?'信天翁':
-          showVal-h.par===-2?'老鷹':
-          showVal-h.par===-1?'博蒂':
-          showVal-h.par===0?'標準桿':
-          showVal-h.par===1?'柏忌':
-          showVal-h.par===2?'雙柏忌':
-          showVal-h.par===3?'三柏忌':
-          '+'+(showVal-h.par)}
-      </div>
+      <button style="font-size:24px;padding:12px" onclick="changeScore(${roundHole},${i},1)">+</button>
     </div>`;
 }
   html+=`
