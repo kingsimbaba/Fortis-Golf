@@ -774,8 +774,19 @@ html+=`
   : row.team2.map(i=>round.players[i]).join(' + ');
 
 html+=`<div class="card"><h2>目前配對</h2>
-  <div class="team">第一組: <b>${row.team1.map(i=>round.players[i]).join(' + ')}</b> · 分數 ${row.t1}</div>
-  <div class="team">第二組: <b>${team2Name}</b> · 分數 ${row.t2}</div>
+  <div class="grid">
+    <div class="team" style="text-align:center">
+      <div class="small">第一組</div>
+      <h2>${row.team1.map(i=>round.players[i]).join(' + ')}</h2>
+      <div class="score">${row.t1}</div>
+    </div>
+
+    <div class="team" style="text-align:center">
+      <div class="small">第二組</div>
+      <h2>${team2Name}</h2>
+      <div class="score">${row.t2}</div>
+    </div>
+  </div>
 </div>`;
 
   html+=individualHtml();
