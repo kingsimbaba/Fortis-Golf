@@ -676,7 +676,53 @@ if(!isLarryMode){
 
   return {giver,receiver,strokes};
 }
-function changeScore(h,i,delta){
+function playScoreAnimation(result){
+  let par = round.course[roundHole].par;
+  let diff = result.diff;
+
+  let scene =
+    par === 3 && result.score === 1 ? {
+      icon:'🐦💥', title:'一桿進洞！', text:'鳥群衝進洞口，引發大爆炸！'
+    } :
+    diff <= -3 ? {
+      icon:'🪽', title:'信天翁！', text:'信天翁在藍天優雅展翅。'
+    } :
+    diff === -2 ? {
+      icon:'🦅🐇', title:'老鷹！', text:'白頭鷹高速俯衝抓走兔子！'
+    } :
+    diff === -1 ? {
+      icon:'🐦‍⬛🪵', title:'博蒂！', text:'啄木鳥瘋狂啄木頭！'
+    } :
+    diff === 0 ? {
+      icon:'⛳', title:'標準桿', text:'高爾夫球冷靜進洞。'
+    } :
+    diff === 1 ? {
+      icon:'🏌️‍♂️💢', title:'柏忌', text:'球員氣到折斷一支球桿。'
+    } :
+    diff === 2 ? {
+      icon:'🏌️‍♂️💢💢💢', title:'雙柏忌', text:'球員連續折斷三支球桿。'
+    } : {
+      icon:'🏌️‍♂️🎒🌊', title:'三柏忌以上', text:'球員把整袋球桿丟進水裡！'
+    };
+
+  let overlay=document.createElement('div');
+  overlay.className='score-animation';
+  overlay.innerHTML=`
+    <div class="score-animation-box">
+      <div class="score-animal">${scene.icon}</div>
+      <div class="score-title">${scene.title}</div>
+      <div class="score-player">${result.player} · ${result.score} 桿</div>
+      <div class="small" style="margin-top:8px">${scene.text}</div>
+    </div>
+  `;
+
+  document.body.appendChild(overlay);
+
+  setTimeout(()=>{
+    overlay.remove();
+  },2200);
+}
+  function changeScore(h,i,delta){
   let current=round.scores[h][i];
   let par=round.course[h].par;
   let next=current==='' ? par+delta : +current+delta;
