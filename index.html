@@ -222,6 +222,46 @@ th{color:var(--muted)}
     transform:translate(-180px,-60px) scale(.9) rotate(2deg);
   }
 }
+.albatross-scene{
+  position:relative;
+  height:180px;
+  overflow:hidden;
+  border-radius:18px;
+  background:linear-gradient(#55b7ff,#dff5ff);
+}
+
+.albatross-bird{
+  position:absolute;
+  left:50%;
+  top:56px;
+  transform:translateX(-50%);
+  font-size:92px;
+  animation:albatrossSpread 1.8s ease-in-out infinite;
+}
+
+.albatross-cloud{
+  position:absolute;
+  font-size:42px;
+  opacity:.8;
+  animation:cloudDrift 3s linear infinite;
+}
+
+.albatross-cloud.one{left:20px;top:22px}
+.albatross-cloud.two{right:26px;top:42px;animation-delay:.8s}
+
+@keyframes albatrossSpread{
+  0%,100%{
+    transform:translateX(-50%) scaleX(1) scaleY(1);
+  }
+  50%{
+    transform:translateX(-50%) scaleX(1.65) scaleY(.92);
+  }
+}
+
+@keyframes cloudDrift{
+  0%{transform:translateX(0)}
+  100%{transform:translateX(-35px)}
+}
 </style></head><body>
 <header><h1>地獄倒霉鬼</h1><div class="sub">雲端版 · 歷史紀錄 · 排行榜 · 管理員 · 多人使用</div><div id="userBar" class="small"></div></header><div class="wrap">
 <section id="auth" class="page"><div class="card"><h2>登入</h2><p class="small">請輸入電子郵件再按登入即可.</p><div class="grid"><div><label>電子郵件</label><input id="authEmail" type="email" placeholder="you@example.com"></div><div><label>密碼</label><input id="authPassword" type="password" placeholder="Password"></div><button onclick="signInUser()">登入</button><button class="btn2" onclick="signUpUser()">建立帳號</button></div><div id="authMsg" class="small" style="margin-top:10px"></div></div></section>
@@ -771,7 +811,7 @@ function playScoreAnimation(result){
       icon:'🐦💥', title:'一桿進洞！', text:'鳥群衝進洞口，引發大爆炸！'
     } :
     diff <= -3 ? {
-      icon:'🪽', title:'信天翁！', text:'信天翁在藍天優雅展翅。'
+      icon:'albatross', title:'信天翁！', text:'信天翁在藍天優雅展翅。'
     } :
     diff === -2 ? {
       icon:'eagle', title:'老鷹！', text:'白頭鷹展翅滑翔！'
@@ -805,6 +845,12 @@ function playScoreAnimation(result){
   ? `<div class="eagle-scene">
       <div class="eagle-sky"></div>
       <div class="eagle-bird">🦅</div>
+    </div>`
+  : scene.icon==='albatross'
+  ? `<div class="albatross-scene">
+      <div class="albatross-cloud one">☁️</div>
+      <div class="albatross-cloud two">☁️</div>
+      <div class="albatross-bird">🕊️</div>
     </div>`
   : `<div class="score-animal">${scene.icon}</div>`
 }
