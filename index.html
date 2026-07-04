@@ -671,9 +671,14 @@ let comboTitle =
   '';
 
 let html=holeNav+`<div class="card">
-  <h2>${courseTitle}${comboTitle ? ' ' + comboTitle : ''} · 第 ${roundHole+1} 洞</h2>
-  <div class="small">${h.display} · 標準桿 ${h.par} · 難度 ${h.hcp}</div>
-  <button class="btn2" onclick="saveRound()">儲存回合</button>
+  <div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start">
+    <div>
+      <h2 style="font-size:24px;margin-bottom:4px">第 ${roundHole+1} 洞</h2>
+      <div class="small">${courseTitle}${comboTitle ? ' ' + comboTitle : ''}</div>
+      <div class="small">${h.display} · 標準桿 ${h.par} · 難度 ${h.hcp}</div>
+    </div>
+    <button class="btn2" style="width:auto;min-width:88px;padding:10px 12px;font-size:13px" onclick="saveRound()">儲存</button>
+  </div>
 </div>`;
 
   html+=`<div class="card"><h2>目前總桿</h2>`;
