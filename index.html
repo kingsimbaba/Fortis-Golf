@@ -945,11 +945,9 @@ function playScoreAnimation(result){
   overlay.innerHTML=`
     <div class="score-animation-box">
       ${scene.icon==='birdie'
-  ? `<div class="birdie-scene">
-      <div class="birdie-tree"></div>
-      <div class="birdie-woodpecker">🐦‍⬛</div>
-      <div class="birdie-chips">✦</div>
-    </div>`
+  ? `<video class="score-video" autoplay muted playsinline>
+    <source src="animations/birdie.mp4" type="video/mp4">
+  </video>`
   : scene.icon==='eagle'
   ? `<div class="eagle-scene">
       <div class="eagle-sky"></div>
