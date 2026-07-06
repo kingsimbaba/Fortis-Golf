@@ -956,10 +956,9 @@ function playScoreAnimation(result){
     <source src="animations/birdie.mp4" type="video/mp4">
   </video>`
   : scene.icon==='eagle'
-  ? `<div class="eagle-scene">
-      <div class="eagle-sky"></div>
-      <div class="eagle-bird">🦅</div>
-    </div>`
+  ? `<video class="score-video" autoplay muted playsinline preload="auto">
+    <source src="animations/eagle.mp4" type="video/mp4">
+  </video>`
   : scene.icon==='albatross'
   ? `<div class="albatross-scene">
       <div class="albatross-cloud one">☁️</div>
