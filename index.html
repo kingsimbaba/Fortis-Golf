@@ -952,7 +952,7 @@ function playScoreAnimation(result){
   overlay.innerHTML=`
     <div class="score-animation-box">
       ${scene.icon==='birdie'
-  ? `<video class="score-video" autoplay muted playsinline>
+  ? `<video class="score-video" autoplay muted playsinline preload="auto">
     <source src="animations/birdie.mp4" type="video/mp4">
   </video>`
   : scene.icon==='eagle'
