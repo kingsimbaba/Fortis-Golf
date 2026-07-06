@@ -980,9 +980,11 @@ function playScoreAnimation(result){
     </div>`
   : `<div class="score-animal">${scene.icon}</div>`
 }
+      ${scene.icon==='birdie' || scene.icon==='eagle' ? '' : `
       <div class="score-title">${scene.title}</div>
       <div class="score-player">${result.player} · ${result.score} 桿</div>
       <div class="small" style="margin-top:8px">${scene.text}</div>
+`}
     </div>
   `;
 
