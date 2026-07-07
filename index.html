@@ -519,7 +519,61 @@ function makePlayers(){
     `);
   }
 }
-function setupCourseSelect(){
+function getRecentCourses(){
+  try{
+    return JSON.parse(localStorage.getItem('recentCourses') || '[]');
+  }catch(e){
+    return [];
+  }
+}
+
+function saveRecentCourse(courseName, comboName){
+  let item = {
+    courseName,
+    comboName: comboName || '',
+    savedAt: Date.now()
+  };
+
+  let list = getRecentCourses()
+    .filter(x => !(x.courseName === item.courseName && x.comboName === item.comboName));
+
+  list.unshift(item);
+  list = list.slice(0,5);
+
+  localStorage.setItem('recentCourses', JSON.stringify(list));
+}
+
+function renderRecentCourses(){
+  let box = document.getElementById('recentCourses');
+  if(!box) return;
+
+  let list = getRecentCourses();
+  box.innerHTML = '';
+
+  if(!list.length){
+    box.innerHTML = '<div class="small">尚無最近球場</div>';
+    return;
+  }
+
+  list.forEach(item=>{
+    let btn=document.createElement('button');
+    btn.className='btn2';
+    btn.style.width='auto';
+    btn.style.padding='8px 12px';
+    btn.style.fontSize='13px';
+    btn.innerText = item.comboName ? item.courseName + ' ' + item.comboName : item.courseName;
+    btn.onclick=()=>{
+      document.getElementById('course').value = item.courseName;
+      document.getElementById('course').onchange();
+
+      if(item.comboName && document.getElementById('combo')){
+        document.getElementById('combo').value = item.comboName;
+      }
+    };
+    box.appendChild(btn);
+  });
+}
+  function setupCourseSelect(){
   let sel=document.getElementById('course');
   sel.innerHTML='';
   let countrySel=document.getElementById('country');
@@ -592,6 +646,8 @@ if(combos.length){
 
   sel.onchange();
 }
+
+  renderRecentCourses();
 
 function currentPlayers(){
   let n=+(document.getElementById('playerCount')?.value || 4);
