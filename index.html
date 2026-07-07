@@ -566,6 +566,9 @@ function renderRecentCourses(){
     btn.style.fontSize='13px';
     btn.innerText = item.comboName ? item.courseName + ' ' + item.comboName : item.courseName;
     btn.onclick=()=>{
+      document.getElementById('courseSearch').value = '';
+      setupCourseSelect();
+      
       document.getElementById('course').value = item.courseName;
       document.getElementById('course').onchange();
 
