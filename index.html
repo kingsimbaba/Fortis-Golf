@@ -960,11 +960,9 @@ function playScoreAnimation(result){
     <source src="animations/eagle.mp4" type="video/mp4">
   </video>`
   : scene.icon==='albatross'
-  ? `<div class="albatross-scene">
-      <div class="albatross-cloud one">☁️</div>
-      <div class="albatross-cloud two">☁️</div>
-      <div class="albatross-bird">🕊️</div>
-    </div>`
+  ? `<video class="score-video" autoplay muted playsinline preload="auto">
+    <source src="animations/albatross.mp4" type="video/mp4">
+  </video>`
   : scene.icon==='par'
   ? `<div class="par-scene">
       <div class="par-green"></div>
@@ -980,7 +978,7 @@ function playScoreAnimation(result){
     </div>`
   : `<div class="score-animal">${scene.icon}</div>`
 }
-      ${scene.icon==='birdie' || scene.icon==='eagle' ? '' : `
+      ${scene.icon==='birdie' || scene.icon==='eagle' || scene.icon==='albatross' ? '' : `
       <div class="score-title">${scene.title}</div>
       <div class="score-player">${result.player} · ${result.score} 桿</div>
       <div class="small" style="margin-top:8px">${scene.text}</div>
