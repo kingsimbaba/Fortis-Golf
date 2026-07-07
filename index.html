@@ -387,6 +387,9 @@ th{color:var(--muted)}
 <label>最近打過的球場</label>
 <div id="recentCourses" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px"></div>
 
+<label>搜尋球場</label>
+<input id="courseSearch" placeholder="輸入球場名稱..." oninput="setupCourseSelect()">
+
 <label>球場</label>
 <select id="course"></select></div><div id="comboBox" class="hidden"><label id="comboLabel">組合</label><select id="combo"></select></div><div><label>備註</label><input id="roundNote" placeholder="Sunday game"></div></div><p class="small">球場有超過18個洞，請選擇擊球的兩個場地.</p></div>
 <div class="card"><label>球員人數</label>
