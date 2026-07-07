@@ -384,6 +384,9 @@ th{color:var(--muted)}
 <section id="setup" class="page hidden"><div class="card"><h2>資料庫狀態</h2><div id="dbStatus" class="small">Connecting...</div></div><div class="card"><div class="card"><h2>顯示設定</h2><label>主題</label><select id="themeSelector" onchange="changeTheme()"><option value="dark">Dark</option><option value="light">Light</option><option value="contrast">High Contrast</option></select></div><h2>新回合</h2><div class="grid"><div><label>國家</label>
 <select id="country" onchange="setupCourseSelect()"></select>
 
+<label>最近打過的球場</label>
+<div id="recentCourses" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px"></div>
+
 <label>球場</label>
 <select id="course"></select></div><div id="comboBox" class="hidden"><label id="comboLabel">組合</label><select id="combo"></select></div><div><label>備註</label><input id="roundNote" placeholder="Sunday game"></div></div><p class="small">球場有超過18個洞，請選擇擊球的兩個場地.</p></div>
 <div class="card"><label>球員人數</label>
