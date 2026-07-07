@@ -588,6 +588,7 @@ if(countrySel && countrySel.options.length===0){
 }
 
 let selectedCountry = countrySel ? countrySel.value : 'Taiwan';
+let searchText = (document.getElementById('courseSearch')?.value || '').toLowerCase().trim();
 
 const normalCourses = db.courses
   .filter(c => (c.country || 'Taiwan') === selectedCountry)
@@ -620,6 +621,11 @@ if(selectedCountry === 'China'){
 }
 
 [...new Map([...normalCourses, ...comboParents].map(x => [x.value, x])).values()]
+  .filter(x =>
+    !searchText ||
+    x.label.toLowerCase().includes(searchText) ||
+    x.value.toLowerCase().includes(searchText)
+  )
   .sort((a,b)=>a.label.localeCompare(b.label))
   .forEach(x=>sel.add(new Option(x.label, x.value)));
   sel.onchange=()=>{
