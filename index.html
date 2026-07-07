@@ -2113,8 +2113,9 @@ function showPage(id){
   let nb=document.getElementById('nav'+id[0].toUpperCase()+id.slice(1)); 
   if(nb) nb.classList.add('active'); 
 
-  if(id==='summary') renderSummary(); 
+  if(id==='summary') renderSummary();
   if(id==='admin') renderAdmin();
+  if(id==='setup') renderRecentCourses();
 }
 function changeTheme(){
   const mode=document.getElementById('themeSelector')?.value||'dark';
