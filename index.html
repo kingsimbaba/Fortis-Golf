@@ -798,6 +798,7 @@ let selectedCombo=
 round.startHoleIndex = startHoleIndex;
 roundHole = startHoleIndex;
 
+  saveRecentCourse(selectedCourseType, selectedCombo);
   saveActiveRound();
   renderScore();
   showPage('scorePage');
