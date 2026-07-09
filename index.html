@@ -1493,14 +1493,14 @@ function renderPlayerStats(){
 
     stat[name].rounds[s.round_id]+=(+s.gross_score||0);
 
-    if(s.score_type==='博蒂') stat[name].birdies++;
-    if(s.score_type==='老鷹') stat[name].eagles++;
-    if(s.score_type==='信天翁') stat[name].albatross++;
-    if(s.score_type==='一桿進洞') stat[name].hio++;
-    if(s.score_type==='標準桿') stat[name].pars++;
-    if(s.score_type==='柏忌') stat[name].bogeys++;
-    if(s.score_type==='雙柏忌') stat[name].doubles++;
-    if(s.score_type==='三柏忌') stat[name].triples++;
+    if(s.score_type==='Birdie' || s.score_type==='博蒂') stat[name].birdies++;
+    if(s.score_type==='Eagle' || s.score_type==='老鷹') stat[name].eagles++;
+    if(s.score_type==='Hole In One' || s.score_type==='一桿進洞') stat[name].hio++;
+    if(s.score_type==='Albatross' || s.score_type==='信天翁') stat[name].albatross++;
+    if(s.score_type==='Par' || s.score_type==='標準桿') stat[name].pars++;
+    if(s.score_type==='Bogey' || s.score_type==='柏忌') stat[name].bogeys++;
+    if(s.score_type==='Double Bogey' || s.score_type==='雙柏忌') stat[name].doubles++;
+    if(s.score_type==='Triple Bogey' || s.score_type==='三柏忌') stat[name].triples++;
   });
 
   let rows=Object.entries(stat).map(([name,s])=>{
@@ -1634,11 +1634,11 @@ function renderSeasonLeaderboard(){
     if(!stat[name].rounds[s.round_id]) stat[name].rounds[s.round_id]=0;
     stat[name].rounds[s.round_id]+=(+s.gross_score||0);
 
-    if(s.score_type==='博蒂') stat[name].birdies++;
-    if(s.score_type==='老鷹') stat[name].eagles++;
-    if(s.score_type==='一桿進洞') stat[name].hio++;
-    if(s.score_type==='信天翁') stat[name].albatross++;
-    if(s.score_type==='標準桿') stat[name].pars++;
+    if(s.score_type==='Birdie' || s.score_type==='博蒂') stat[name].birdies++;
+    if(s.score_type==='Eagle' || s.score_type==='老鷹') stat[name].eagles++;
+    if(s.score_type==='Hole In One' || s.score_type==='一桿進洞') stat[name].hio++;
+    if(s.score_type==='Albatross' || s.score_type==='信天翁') stat[name].albatross++;
+    if(s.score_type==='Par' || s.score_type==='標準桿') stat[name].pars++;
   });
 
   let rows=Object.entries(stat).map(([name,s])=>{
@@ -1845,10 +1845,10 @@ function renderLifetimeRankings(){
 
     p.rounds[s.round_id]+=(+s.gross_score||0);
 
-    if(s.score_type==='Birdie') p.birdies++;
-    if(s.score_type==='Eagle') p.eagles++;
-    if(s.score_type==='Hole In One') p.hio++;
-    if(s.score_type==='Albatross') p.albatross++;
+    if(s.score_type==='Birdie' || s.score_type==='博蒂') p.birdies++;
+    if(s.score_type==='Eagle' || s.score_type==='老鷹') p.eagles++;
+    if(s.score_type==='Hole In One' || s.score_type==='一桿進洞') p.hio++;
+    if(s.score_type==='Albatross' || s.score_type==='信天翁') p.albatross++;
   });
 
   db.history.forEach(h=>{
