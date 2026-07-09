@@ -442,6 +442,13 @@ function showAuth(msg=''){
   document.getElementById('authMsg').innerHTML=msg;
 }
 async function handleLoggedIn(session){
+  const liveId = new URLSearchParams(window.location.search).get('live');
+
+  if(liveId){
+    await loadLiveRound(liveId);
+    return;
+  }
+
   currentSession=session; currentUser=session.user;
   await loadProfile();
   document.querySelector('.nav').classList.remove('hidden');
