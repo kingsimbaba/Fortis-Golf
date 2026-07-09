@@ -1778,9 +1778,9 @@ function renderLeaderboards(){
 
     stat[name].rounds[s.round_id]+=(+s.gross_score||0);
 
-    if(s.score_type==='Birdie'){
-      stat[name].birdies++;
-    }
+    if(s.score_type==='Birdie' || s.score_type==='博蒂'){
+  stat[name].birdies++;
+}
   });
 
   let rows=Object.entries(stat).map(([name,s])=>{
