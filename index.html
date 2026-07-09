@@ -1702,7 +1702,16 @@ function renderPlayerProfile(){
   let season=db.seasons.find(s=>s.active===true || s.active==='true' || s.active==='TRUE');
   let seasonScores=scores.filter(s=>+s.season_id===+season?.id);
 
-  function count(arr,type){return arr.filter(s=>s.score_type===type).length;}
+  function count(arr,type){
+  const types={
+    Birdie:['Birdie','博蒂'],
+    Eagle:['Eagle','老鷹'],
+    'Hole In One':['Hole In One','一桿進洞'],
+    Albatross:['Albatross','信天翁']
+  };
+
+  return arr.filter(s=>(types[type]||[type]).includes(s.score_type)).length;
+}
   function roundsObj(arr){return arr.reduce((a,s)=>{a[s.round_id]=(a[s.round_id]||0)+(+s.gross_score||0);return a;},{});}
   function avg(arr){let r=Object.values(roundsObj(arr)); return r.length?(r.reduce((a,b)=>a+b,0)/r.length).toFixed(1):'-';}
 
