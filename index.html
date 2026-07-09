@@ -775,6 +775,34 @@ function saveActiveRound(){
   }
 }
 
+async function loadLiveRound(roundId){
+  try{
+    const rows = await sb(`live_rounds?id=eq.${roundId}&select=*`);
+
+    if(!rows || !rows.length){
+      document.getElementById('liveViewerContent').innerHTML =
+        '<div class="card"><h2>找不到此即時回合</h2></div>';
+      showPage('liveViewer');
+      return;
+    }
+
+    const live = rows[0];
+
+    document.getElementById('liveViewerContent').innerHTML = `
+      <div class="card">
+        <h2>🏌️ 即時戰況</h2>
+        <div class="small">正在讀取回合資料...</div>
+      </div>
+    `;
+
+    showPage('liveViewer');
+
+  }catch(e){
+    document.getElementById('liveViewerContent').innerHTML =
+      '<div class="card"><h2>無法載入即時回合</h2></div>';
+    showPage('liveViewer');
+  }
+}
 function loadActiveRound(){
   try{
     let saved=localStorage.getItem('fortisActiveRound');
