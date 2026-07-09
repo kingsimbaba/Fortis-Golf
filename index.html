@@ -865,10 +865,8 @@ async function copyLiveLink(){
   await syncLiveRound();
 
   const link =
-    window.location.origin +
-    window.location.pathname +
-    '?live=' +
-    round.id;
+  'https://fortis-golf.vercel.app/?live=' +
+  round.id;
 
   try{
     await navigator.clipboard.writeText(link);
