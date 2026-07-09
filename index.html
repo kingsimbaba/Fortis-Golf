@@ -1634,11 +1634,11 @@ function renderSeasonLeaderboard(){
     if(!stat[name].rounds[s.round_id]) stat[name].rounds[s.round_id]=0;
     stat[name].rounds[s.round_id]+=(+s.gross_score||0);
 
-    if(s.score_type==='Birdie') stat[name].birdies++;
-    if(s.score_type==='Eagle') stat[name].eagles++;
-    if(s.score_type==='Hole In One') stat[name].hio++;
-    if(s.score_type==='Albatross') stat[name].albatross++;
-    if(s.score_type==='Par') stat[name].pars++;
+    if(s.score_type==='博蒂') stat[name].birdies++;
+    if(s.score_type==='老鷹') stat[name].eagles++;
+    if(s.score_type==='一桿進洞') stat[name].hio++;
+    if(s.score_type==='信天翁') stat[name].albatross++;
+    if(s.score_type==='標準桿') stat[name].pars++;
   });
 
   let rows=Object.entries(stat).map(([name,s])=>{
