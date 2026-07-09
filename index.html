@@ -1231,10 +1231,12 @@ function confirmHoleScores(){
   playScoreAnimation(animationResult);
 
 saveActiveRound();
+syncLiveRound();
 
 setTimeout(()=>{
   roundHole = (roundHole + 1) % 18;
   saveActiveRound();
+  syncLiveRound();
   scoreAnimationPlaying=false;
   renderScore();
 },2200);
