@@ -751,6 +751,28 @@ function saveActiveRound(){
   }
 }
 
+  async function syncLiveRound(){
+  if(!round) return;
+
+  try{
+    await sb('live_rounds',{
+      method:'POST',
+      headers:{
+        Prefer:'resolution=merge-duplicates'
+      },
+      body:JSON.stringify({
+        id:round.id,
+        round_data:round,
+        round_hole:roundHole,
+        updated_at:new Date().toISOString(),
+        active:true
+      })
+    });
+  }catch(e){
+    console.log('Live sync failed:', e.message);
+  }
+}
+
 function loadActiveRound(){
   try{
     let saved=localStorage.getItem('fortisActiveRound');
