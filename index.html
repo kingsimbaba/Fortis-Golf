@@ -996,7 +996,7 @@ function playScoreAnimation(result){
 
   let scene =
     par === 3 && result.score === 1 ? {
-      icon:'🐦💥', title:'一桿進洞！', text:'鳥群衝進洞口，引發大爆炸！'
+      icon:'hio', title:'一桿進洞！', text:'鳥群衝進洞口，引發大爆炸！'
     } :
     diff <= -3 ? {
       icon:'albatross', title:'信天翁！', text:'信天翁在藍天優雅展翅。'
@@ -1016,7 +1016,7 @@ function playScoreAnimation(result){
     diff === 2 ? {
       icon:'double-bogey', title:'雙柏忌', text:'球員連續折斷三支球桿。'
     } : {
-      icon:'🏌️‍♂️⛳🧳🌊', title:'三柏忌以上', text:'球員把整個高爾夫球袋連球桿一起丟進水裡！'
+      icon:'triple-bogey', title:'三柏忌以上', text:'球員把整個高爾夫球袋連球桿一起丟進水裡！'
     };
 
   let overlay=document.createElement('div');
@@ -1047,9 +1047,17 @@ function playScoreAnimation(result){
 ? `<video class="score-video" autoplay muted playsinline preload="auto">
     <source src="animations/double-bogey.mp4" type="video/mp4">
   </video>`
+: scene.icon==='hio'
+? `<video class="score-video" autoplay muted playsinline preload="auto">
+    <source src="animations/hio.mp4" type="video/mp4">
+  </video>`
+: scene.icon==='triple-bogey'
+? `<video class="score-video" autoplay muted playsinline preload="auto">
+    <source src="animations/triple-bogey.mp4" type="video/mp4">
+  </video>`
 : `<div class="score-animal">${scene.icon}</div>`
 }
-      ${['birdie','eagle','albatross','par','bogey','double-bogey'].includes(scene.icon) ? '' : `
+      ${['birdie','eagle','albatross','par','bogey','double-bogey','hio','triple-bogey'].includes(scene.icon) ? '' : `
       <div class="score-title">${scene.title}</div>
       <div class="score-player">${result.player} · ${result.score} 桿</div>
       <div class="small" style="margin-top:8px">${scene.text}</div>
