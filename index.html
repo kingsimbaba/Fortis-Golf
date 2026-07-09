@@ -841,6 +841,8 @@ document.getElementById('liveViewerContent').innerHTML = `
 
     showPage('liveViewer');
 
+    setTimeout(()=>loadLiveRound(roundId),5000);
+
   }catch(e){
     document.getElementById('liveViewerContent').innerHTML =
       '<div class="card"><h2>無法載入即時回合</h2></div>';
