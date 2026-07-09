@@ -810,6 +810,24 @@ async function loadLiveRound(roundId){
     showPage('liveViewer');
   }
 }
+async function copyLiveLink(){
+  if(!round) return;
+
+  await syncLiveRound();
+
+  const link =
+    window.location.origin +
+    window.location.pathname +
+    '?live=' +
+    round.id;
+
+  try{
+    await navigator.clipboard.writeText(link);
+    alert('即時分享連結已複製');
+  }catch(e){
+    prompt('複製此即時分享連結：', link);
+  }
+}
 function loadActiveRound(){
   try{
     let saved=localStorage.getItem('fortisActiveRound');
@@ -1230,7 +1248,10 @@ let html=holeNav+`<div class="card">
       <div class="small">${courseTitle}${comboTitle ? ' ' + comboTitle : ''}</div>
       <div class="small">${h.display} · 標準桿 ${h.par} · 難度 ${h.hcp}</div>
     </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end">
+    <button class="btn2" style="width:auto;min-width:88px;padding:10px 12px;font-size:13px" onclick="copyLiveLink()">分享</button>
     <button class="btn2" style="width:auto;min-width:88px;padding:10px 12px;font-size:13px" onclick="saveRound()">儲存</button>
+</div>
   </div>
 </div>`;
 
