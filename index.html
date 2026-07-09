@@ -429,8 +429,18 @@ async function init(){makePlayers(); await loadConfig(); await initAuth();}
 async function initAuth(){
   if(!SB.url||!SB.key||!window.supabase){showAuth('Missing Supabase config or Supabase library.');return;}
   authClient=window.supabase.createClient(SB.url,SB.key);
-  const {data}=await authClient.auth.getSession();
-  if(data&&data.session){await handleLoggedIn(data.session);} else showAuth('Please sign in.');
+  const liveId = new URLSearchParams(window.location.search).get('live');
+
+const {data}=await authClient.auth.getSession();
+
+if(liveId){
+  currentSession = data?.session || null;
+  await loadLiveRound(liveId);
+}else if(data&&data.session){
+  await handleLoggedIn(data.session);
+}else{
+  showAuth('Please sign in.');
+}
   authClient.auth.onAuthStateChange(async (event, session)=>{ if(session) await handleLoggedIn(session); else showAuth('Signed out.'); });
 }
 function showAuth(msg=''){
