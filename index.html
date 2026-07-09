@@ -795,12 +795,49 @@ async function loadLiveRound(roundId){
 
     const live = rows[0];
 
-    document.getElementById('liveViewerContent').innerHTML = `
-      <div class="card">
-        <h2>🏌️ 即時戰況</h2>
-        <div class="small">正在讀取回合資料...</div>
+    let r = live.round_data;
+let h = live.round_hole || 0;
+let c = calcFortis(r);
+
+let gross = r.players.map((p,i)=>{
+  let total = 0;
+  for(let x=0;x<18;x++){
+    if(r.scores[x][i] !== ''){
+      total += +r.scores[x][i];
+    }
+  }
+  return {name:p,total};
+});
+
+document.getElementById('liveViewerContent').innerHTML = `
+  <div class="card">
+    <h2>🏌️ 即時戰況</h2>
+    <div class="small">${r.courseName}${r.combo ? ' ' + r.combo : ''} · 第 ${h+1} 洞</div>
+    <div class="small">最後更新：${new Date(live.updated_at).toLocaleTimeString()}</div>
+  </div>
+
+  <div class="card">
+    <h2>目前總桿</h2>
+    ${gross.map(g=>`
+      <div class="leader-row">
+        <div><b>${g.name}</b></div>
+        <div class="score">${g.total}</div>
       </div>
-    `;
+    `).join('')}
+  </div>
+
+  <div class="card">
+    <h2>即時排行榜</h2>
+    ${r.players.map((p,i)=>({name:p,points:c.totals[i]}))
+      .sort((a,b)=>b.points-a.points)
+      .map((p,i)=>`
+        <div class="leader-row">
+          <div>${i+1}. <b>${p.name}</b></div>
+          <div class="score">${p.points}</div>
+        </div>
+      `).join('')}
+  </div>
+`;
 
     showPage('liveViewer');
 
