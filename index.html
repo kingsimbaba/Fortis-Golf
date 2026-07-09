@@ -834,6 +834,7 @@ roundHole = startHoleIndex;
 
   saveRecentCourse(selectedCourseType, selectedCombo);
   saveActiveRound();
+  syncLiveRound();
   renderScore();
   showPage('scorePage');
 }
@@ -1101,6 +1102,7 @@ function playScoreAnimation(result){
   if(next<1) next=1;
   round.scores[h][i]=next;
   saveActiveRound();
+  syncLiveRound();  
   renderScore();
 }
 
