@@ -1726,12 +1726,15 @@ function renderLatestRoundHighlight(){
   let r=db.rounds[0];
   if(!r)return '<div class="card summary-highlight"><h2>最近一場</h2><p class="small">尚無已儲存回合。</p></div>';
   let roundScores=db.scores.filter(s=>String(s.round_id)===String(r.id));
-  let totals={};
-  roundScores.forEach(s=>{let n=s.player_name||'Player';totals[n]=(totals[n]||0)+(+s.gross_score||+s.score||0)});
-  let winner=Object.entries(totals).sort((a,b)=>a[1]-b[1])[0];
-  let birdies=roundScores.filter(s=>String(s.score_type||'').toLowerCase()==='birdie').length;
-  let players=Object.keys(totals).length||((r.players||[]).length||'-');
-  return `<div class="card summary-highlight"><h2>最近一場精華</h2><div class="summary-highlight-grid"><div class="summary-stat"><span>日期</span><b>${String(r.played_at||r.created_at||'').slice(0,10)||'-'}</b></div><div class="summary-stat"><span>球場</span><b>${r.course_name||r.course||'-'}</b></div><div class="summary-stat"><span>領先</span><b>${winner?winner[0]:'-'}</b></div><div class="summary-stat"><span>博蒂 / 球員</span><b>${birdies} / ${players}</b></div></div></div>`;
+  let players=Array.isArray(r.players)?r.players:[];
+  let savedRound={players,initialRanks:r.initial_ranks||players.map((_,i)=>i+1),startHoleIndex:r.start_hole_index||0,course:r.course_data||[],scores:Array.from({length:18},()=>Array(players.length).fill(''))};
+  roundScores.forEach(s=>{let pi=players.indexOf(s.player_name),hi=(+s.hole_number||1)-1;if(pi>=0&&hi>=0&&hi<18)savedRound.scores[hi][pi]=+s.gross_score});
+  let fortisTotals=savedRound.course.length&&players.length?calcFortis(savedRound).totals:[];
+  let leaderIndex=fortisTotals.length?fortisTotals.map((points,i)=>({points,i})).sort((a,b)=>b.points-a.points)[0].i:-1;
+  let leader=leaderIndex>=0?players[leaderIndex]:'-';
+  let leaderPoints=leaderIndex>=0?fortisTotals[leaderIndex]:null;
+  let birdies=roundScores.filter(s=>['birdie','博蒂'].includes(String(s.score_type||'').toLowerCase())).length;
+  return `<div class="card summary-highlight"><h2>最近一場精華</h2><div class="summary-highlight-grid"><div class="summary-stat"><span>日期</span><b>${String(r.played_at||r.created_at||'').slice(0,10)||'-'}</b></div><div class="summary-stat"><span>球場</span><b>${r.course_name||r.course||'-'}</b></div><div class="summary-stat"><span>最大贏家</span><b>${leader}${leaderPoints===null?'':` (${leaderPoints>0?'+':''}${leaderPoints})`}</b></div><div class="summary-stat"><span>博蒂 / 球員</span><b>${birdies} / ${players.length||'-'}</b></div></div></div>`;
 }
 function applySummaryPlayerFilter(){
   if(summaryPlayer==='all')return;
