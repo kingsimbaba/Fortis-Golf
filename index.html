@@ -1733,8 +1733,9 @@ function renderLatestRoundHighlight(){
   let leaderIndex=fortisTotals.length?fortisTotals.map((points,i)=>({points,i})).sort((a,b)=>b.points-a.points)[0].i:-1;
   let leader=leaderIndex>=0?players[leaderIndex]:'-';
   let leaderPoints=leaderIndex>=0?fortisTotals[leaderIndex]:null;
-  let birdies=roundScores.filter(s=>['birdie','博蒂'].includes(String(s.score_type||'').toLowerCase())).length;
-  return `<div class="card summary-highlight"><h2>最近一場精華</h2><div class="summary-highlight-grid"><div class="summary-stat"><span>日期</span><b>${String(r.played_at||r.created_at||'').slice(0,10)||'-'}</b></div><div class="summary-stat"><span>球場</span><b>${courseNameZh(r.course_name||r.course||'-')}</b></div><div class="summary-stat"><span>最大贏家</span><b>${leader}${leaderPoints===null?'':` (${leaderPoints>0?'+':''}${leaderPoints})`}</b></div><div class="summary-stat"><span>博蒂 / 球員</span><b>${birdies} / ${players.length||'-'}</b></div></div></div>`;
+  let birdies=roundScores.filter(s=>(+s.gross_score)-(+s.par)===-1).length;
+  let eagles=roundScores.filter(s=>+s.par!==3&&(+s.gross_score)-(+s.par)===-2).length;
+  return `<div class="card summary-highlight"><h2>最近一場精華</h2><div class="summary-highlight-grid"><div class="summary-stat"><span>日期</span><b>${String(r.played_at||r.created_at||'').slice(0,10)||'-'}</b></div><div class="summary-stat"><span>球場</span><b>${courseNameZh(r.course_name||r.course||'-')}</b></div><div class="summary-stat"><span>最大贏家</span><b>${leader}${leaderPoints===null?'':` (${leaderPoints>0?'+':''}${leaderPoints})`}</b></div><div class="summary-stat"><span>博蒂 / 老鷹</span><b>${birdies} / ${eagles}</b></div></div></div>`;
 }
 function courseNameZh(name){
   let value=String(name||'').trim();
