@@ -1735,11 +1735,14 @@ function renderLatestRoundHighlight(){
   let leaderPoints=leaderIndex>=0?fortisTotals[leaderIndex]:null;
   let birdies=roundScores.filter(s=>(+s.gross_score)-(+s.par)===-1).length;
   let eagles=roundScores.filter(s=>+s.par!==3&&(+s.gross_score)-(+s.par)===-2).length;
-  return `<div class="card summary-highlight"><h2>最近一場精華</h2><div class="summary-highlight-grid"><div class="summary-stat"><span>日期</span><b>${String(r.played_at||r.created_at||'').slice(0,10)||'-'}</b></div><div class="summary-stat"><span>球場</span><b>${courseNameZh(r.course_name||r.course||'-')}</b></div><div class="summary-stat"><span>最大贏家</span><b>${leader}${leaderPoints===null?'':` (${leaderPoints>0?'+':''}${leaderPoints})`}</b></div><div class="summary-stat"><span>博蒂 / 老鷹</span><b>${birdies} / ${eagles}</b></div></div></div>`;
+  let albatrosses=roundScores.filter(s=>+s.par!==3&&(+s.gross_score)-(+s.par)<=-3).length;
+  let holesInOne=roundScores.filter(s=>+s.par===3&&+s.gross_score===1).length;
+  let bestAchievement=holesInOne?`一桿進洞 ${holesInOne}`:albatrosses?`信天翁 ${albatrosses}`:eagles?`老鷹 ${eagles}`:birdies?`博蒂 ${birdies}`:'—';
+  return `<div class="card summary-highlight"><h2>最近一場精華</h2><div class="summary-highlight-grid"><div class="summary-stat"><span>日期</span><b>${String(r.played_at||r.created_at||'').slice(0,10)||'-'}</b></div><div class="summary-stat"><span>球場</span><b>${courseNameZh(r.course_name||r.course||'-')}</b></div><div class="summary-stat"><span>最大贏家</span><b>${leader}${leaderPoints===null?'':` (${leaderPoints>0?'+':''}${leaderPoints})`}</b></div><div class="summary-stat"><span>最佳成績</span><b>${bestAchievement}</b></div></div></div>`;
 }
 function courseNameZh(name){
   let value=String(name||'').trim();
-  let names={'DH':'大溪高爾夫俱樂部','SR':'揚昇高爾夫鄉村俱樂部','TPE-A':'台北高爾夫俱樂部 A區','TPE-B':'台北高爾夫俱樂部 B區','TPE-C':'台北高爾夫俱樂部 C區','TPE-D':'台北高爾夫俱樂部 D區','TC-E':'台中國際高爾夫俱樂部 東區','TC-C':'台中國際高爾夫俱樂部 中區','TC-W':'台中國際高爾夫俱樂部 西區'};
+  let names={'DH':'大溪高爾夫俱樂部','SR':'揚昇高爾夫鄉村俱樂部','TPE':'台北高爾夫俱樂部','TPE-A':'台北高爾夫俱樂部 A區','TPE-B':'台北高爾夫俱樂部 B區','TPE-C':'台北高爾夫俱樂部 C區','TPE-D':'台北高爾夫俱樂部 D區','TC':'台中國際高爾夫俱樂部','TC-E':'台中國際高爾夫俱樂部 東區','TC-C':'台中國際高爾夫俱樂部 中區','TC-W':'台中國際高爾夫俱樂部 西區'};
   return names[value]||value;
 }
 function applySummaryPlayerFilter(){
