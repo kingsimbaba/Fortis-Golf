@@ -96,6 +96,16 @@ th{color:var(--muted)}
 }
 #summaryContent .small,
 #summaryContent .sub{font-size:10px}
+#summaryContent .summary-more{
+  width:100%;
+  min-height:34px;
+  margin-top:8px;
+  padding:7px 10px;
+  background:#18243a;
+  color:#c6f6d5;
+  border:1px solid #2f855a;
+}
+#summaryContent .summary-hidden{display:none}
 #summaryContent .trend{
   height:140px;
   margin-top:10px;
@@ -1660,7 +1670,42 @@ function renderHeadToHead(){
   html+='</table></div></div>';
   return html;
 }
-function renderSummary(){let html='<div class="card"><h2>私人恩怨資料庫</h2><div class="scroll"><table><tr><th>讓桿方</th><th>受讓方</th><th>洞數</th></tr>'; db.matchups.forEach(m=>html+=`<tr><td>${m.giver}</td><td>${m.receiver}</td><td>${m.holes_given}</td></tr>`); html+='</table></div></div>'; html+=renderSeasonLeaderboard();html+=renderPlayerProfile();html+=renderPlayerStats(); html+=renderLeaderboards(); html+=renderHeadToHead(); html+=renderLifetimeRankings(); html+=renderHandicapTrend(); html+=renderRankings(); html+=renderRoundHistory(); html+=renderMatchupHistory(); document.getElementById('summaryContent').innerHTML=html;}
+function renderSummary(){let html='<div class="card"><h2>私人恩怨資料庫</h2><div class="scroll"><table><tr><th>讓桿方</th><th>受讓方</th><th>洞數</th></tr>'; db.matchups.forEach(m=>html+=`<tr><td>${m.giver}</td><td>${m.receiver}</td><td>${m.holes_given}</td></tr>`); html+='</table></div></div>'; html+=renderSeasonLeaderboard();html+=renderPlayerProfile();html+=renderPlayerStats(); html+=renderLeaderboards(); html+=renderHeadToHead(); html+=renderLifetimeRankings(); html+=renderHandicapTrend(); html+=renderRankings(); html+=renderRoundHistory(); html+=renderMatchupHistory(); document.getElementById('summaryContent').innerHTML=html; compactSummarySections();}
+function compactSummarySections(){
+  let groupNo=0;
+  document.querySelectorAll('#summaryContent .card').forEach(card=>{
+    card.querySelectorAll('.scroll > table').forEach(table=>{
+      let rows=Array.from(table.rows).slice(1);
+      if(rows.length<=5)return;
+      let group='summaryGroup'+(++groupNo);
+      rows.slice(5).forEach(row=>{row.classList.add('summary-hidden',group)});
+      addSummaryToggle(table.parentElement,group,rows.length);
+    });
+
+    let teams=Array.from(card.children).filter(el=>el.classList.contains('team'));
+    if(teams.length>5){
+      let group='summaryGroup'+(++groupNo);
+      teams.slice(5).forEach(team=>team.classList.add('summary-hidden',group));
+      addSummaryToggle(card,group,teams.length,true);
+    }
+  });
+}
+function addSummaryToggle(afterElement,group,total,append=false){
+  let button=document.createElement('button');
+  button.className='summary-more';
+  button.dataset.group=group;
+  button.dataset.total=total;
+  button.textContent=`顯示全部 (${total})`;
+  button.onclick=()=>toggleSummaryGroup(button);
+  if(append)afterElement.appendChild(button);
+  else afterElement.insertAdjacentElement('afterend',button);
+}
+function toggleSummaryGroup(button){
+  let items=document.querySelectorAll('.'+button.dataset.group);
+  let opening=Array.from(items).some(item=>item.classList.contains('summary-hidden'));
+  items.forEach(item=>item.classList.toggle('summary-hidden',!opening));
+  button.textContent=opening?'收合至 5 筆':`顯示全部 (${button.dataset.total})`;
+}
 function renderPlayerStats(){
   let stat={};
 
