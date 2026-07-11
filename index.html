@@ -3,6 +3,10 @@
 <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
 <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#09111f">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>地獄倒霉鬼</title><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
@@ -105,7 +109,20 @@ th{color:var(--muted)}
   color:#c6f6d5;
   border:1px solid #2f855a;
 }
-#summaryContent .summary-hidden{display:none}
+#summaryContent .summary-hidden,#summaryContent .summary-filter-hidden{display:none}
+#summaryContent .summary-toolbar{grid-column:1/-1}
+#summaryContent .summary-card-title{display:flex;align-items:center;gap:8px}
+#summaryContent .summary-card-title h2{flex:1;margin:0}
+#summaryContent .summary-collapse{width:auto!important;min-width:38px;padding:5px 9px!important;background:#18243a!important}
+#summaryContent .summary-card-body.collapsed{display:none}
+#summaryContent .summary-highlight{grid-column:1/-1;border-color:#2f855a;background:linear-gradient(135deg,var(--panel),rgba(47,133,90,.18))}
+#summaryContent .summary-highlight-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+#summaryContent .summary-stat{padding:9px;border-radius:10px;background:#0e1728;text-align:center}
+#summaryContent .summary-stat b{display:block;font-size:17px;color:#68d391}
+#summaryContent .swipe-hint{display:none;text-align:right;margin:3px 0 0}
+.loading-box{padding:18px;text-align:center;color:var(--muted)}
+.loading-box::before{content:'⛳';display:block;font-size:28px;animation:pulse 1s ease-in-out infinite}
+@keyframes pulse{50%{transform:scale(1.15);opacity:.55}}
 #summaryContent .trend{
   height:140px;
   margin-top:10px;
@@ -118,6 +135,10 @@ th{color:var(--muted)}
   #summaryContent .card h2{font-size:14px;margin-bottom:6px}
   #summaryContent table{font-size:10px}
   #summaryContent th,#summaryContent td{padding:5px 4px}
+  #summaryContent .summary-highlight-grid{grid-template-columns:repeat(2,1fr)}
+  #summaryContent .scroll{position:relative}
+  #summaryContent .scroll th:first-child,#summaryContent .scroll td:first-child{position:sticky;left:0;z-index:1;background:var(--panel);box-shadow:2px 0 0 var(--line)}
+  #summaryContent .swipe-hint{display:block}
 }
 
 @media(max-width:760px){
@@ -496,7 +517,12 @@ let currentPage='setup';
 let useIndividualMatchups=true;
 let SB={url:'',key:''}, authClient=null, currentSession=null, currentUser=null, currentProfile=null, db={courses:[],holes:[],course_combos:[],matchups:[],players:[],rounds:[],scores:[],history:[],seasons:[]}, round=null, roundHole=0, localRounds=[];
 const courseIdName={1:'DH',2:'SR',3:'TPE-A',4:'TPE-B',5:'TPE-C',6:'TPE-D',8:'TC-E',9:'TC-C',10:'TC-W'};
-async function init(){makePlayers(); await loadConfig(); await initAuth();}
+async function init(){
+  makePlayers();
+  if('serviceWorker' in navigator)navigator.serviceWorker.register('/sw.js').catch(()=>{});
+  await loadConfig();
+  await initAuth();
+}
 async function initAuth(){
   if(!SB.url||!SB.key||!window.supabase){showAuth('Missing Supabase config or Supabase library.');return;}
   authClient=window.supabase.createClient(SB.url,SB.key);
@@ -583,7 +609,10 @@ async function loadPaged(path){
 
   return all;
 }
-async function loadAll(){try{db.courses=await sb('courses?select=*&order=id'); db.holes = await loadPaged('holes?select=*&order=course_id,hole_number');db.course_combos=await sb('course_combos?select=*&order=id'); db.matchups=await sb('matchups?select=*&order=id'); db.players=await sb('players?select=*&order=name').catch(()=>[]); db.rounds=await sb('fortis_rounds?select=*&order=id.desc&limit=30').catch(()=>[]); db.scores=await sb('hole_scores?select=*&order=round_id.desc,hole_number&limit=1000').catch(()=>[]); db.history=await sb('matchup_history?select=*&order=id.desc&limit=200').catch(()=>[]);
+async function loadAll(){
+document.getElementById('dbStatus').innerHTML='<span class="small">Loading Supabase data…</span>';
+if(document.getElementById('summaryContent'))document.getElementById('summaryContent').innerHTML='<div class="card loading-box">正在載入統計資料…</div>';
+try{db.courses=await sb('courses?select=*&order=id'); db.holes = await loadPaged('holes?select=*&order=course_id,hole_number');db.course_combos=await sb('course_combos?select=*&order=id'); db.matchups=await sb('matchups?select=*&order=id'); db.players=await sb('players?select=*&order=name').catch(()=>[]); db.rounds=await sb('fortis_rounds?select=*&order=id.desc&limit=30').catch(()=>[]); db.scores=await sb('hole_scores?select=*&order=round_id.desc,hole_number&limit=1000').catch(()=>[]); db.history=await sb('matchup_history?select=*&order=id.desc&limit=200').catch(()=>[]);
 
 try{
   db.seasons=await sb('seasons?select=*&order=id');
@@ -592,7 +621,7 @@ try{
   db.seasons=[];
 }
 
-setupCourseSelect(); document.getElementById('dbStatus').innerHTML=`<span class="ok">Supabase connected.</span> Courses: ${db.courses.length}, holes: ${db.holes.length}, matchups: ${db.matchups.length}, rounds: ${db.rounds.length}`; document.getElementById('dataView').innerHTML=`Courses ${db.courses.length}<br>Holes ${db.holes.length}<br>Matchups ${db.matchups.length}<br>Players ${db.players.length}<br>Rounds ${db.rounds.length}<br>History ${db.history.length}<br>Seasons ${db.seasons.length}`;}catch(e){document.getElementById('dbStatus').innerHTML='<span class="bad">Supabase error: '+e.message+'</span>';}}
+setupCourseSelect(); document.getElementById('dbStatus').innerHTML=`<span class="ok">Supabase connected.</span> Courses: ${db.courses.length}, holes: ${db.holes.length}, matchups: ${db.matchups.length}, rounds: ${db.rounds.length}`; document.getElementById('dataView').innerHTML=`Courses ${db.courses.length}<br>Holes ${db.holes.length}<br>Matchups ${db.matchups.length}<br>Players ${db.players.length}<br>Rounds ${db.rounds.length}<br>History ${db.history.length}<br>Seasons ${db.seasons.length}`;}catch(e){let retry=`<button class="btn2" onclick="loadAll()">重試載入</button>`;document.getElementById('dbStatus').innerHTML='<span class="bad">Supabase error: '+e.message+'</span> '+retry;if(document.getElementById('summaryContent'))document.getElementById('summaryContent').innerHTML=`<div class="card"><h2>資料載入失敗</h2><p class="bad">${e.message}</p>${retry}</div>`;}}
 function makePlayers(){
   let n=+(document.getElementById('playerCount')?.value || 4);
   let names=['','','',''];
@@ -1670,7 +1699,45 @@ function renderHeadToHead(){
   html+='</table></div></div>';
   return html;
 }
-function renderSummary(){let html='<div class="card"><h2>私人恩怨資料庫</h2><div class="scroll"><table><tr><th>讓桿方</th><th>受讓方</th><th>洞數</th></tr>'; db.matchups.forEach(m=>html+=`<tr><td>${m.giver}</td><td>${m.receiver}</td><td>${m.holes_given}</td></tr>`); html+='</table></div></div>'; html+=renderSeasonLeaderboard();html+=renderPlayerProfile();html+=renderPlayerStats(); html+=renderLeaderboards(); html+=renderHeadToHead(); html+=renderLifetimeRankings(); html+=renderHandicapTrend(); html+=renderRankings(); html+=renderRoundHistory(); html+=renderMatchupHistory(); document.getElementById('summaryContent').innerHTML=html; compactSummarySections();}
+let summaryPlayer='all';
+function renderSummary(){
+  let playerNames=[...new Set(db.players.map(p=>p.name).concat(db.scores.map(s=>s.player_name)).filter(Boolean))].sort();
+  let html=`<div class="card summary-toolbar"><h2>統計篩選</h2><label>查看球員</label><select onchange="summaryPlayer=this.value;renderSummary()"><option value="all">所有球員</option>${playerNames.map(n=>`<option value="${n}" ${summaryPlayer===n?'selected':''}>${n}</option>`).join('')}</select></div>`;
+  html+=renderLatestRoundHighlight();
+  html+=renderSeasonLeaderboard();
+  html+=renderLifetimeRankings();
+  html+=renderLeaderboards();
+  html+=renderRankings();
+  html+=renderRoundHistory();
+  html+=renderMatchupHistory();
+  html+=renderPlayerProfile();
+  html+=renderPlayerStats();
+  html+=renderHeadToHead();
+  html+=renderHandicapTrend();
+  html+='<div class="card"><h2>私人恩怨資料庫</h2><div class="scroll"><table><tr><th>讓桿方</th><th>受讓方</th><th>洞數</th></tr>';
+  db.matchups.forEach(m=>html+=`<tr><td>${m.giver}</td><td>${m.receiver}</td><td>${m.holes_given}</td></tr>`);
+  html+='</table></div></div>';
+  document.getElementById('summaryContent').innerHTML=html;
+  applySummaryPlayerFilter();
+  compactSummarySections();
+  prepareSummaryCards();
+}
+function renderLatestRoundHighlight(){
+  let r=db.rounds[0];
+  if(!r)return '<div class="card summary-highlight"><h2>最近一場</h2><p class="small">尚無已儲存回合。</p></div>';
+  let roundScores=db.scores.filter(s=>String(s.round_id)===String(r.id));
+  let totals={};
+  roundScores.forEach(s=>{let n=s.player_name||'Player';totals[n]=(totals[n]||0)+(+s.gross_score||+s.score||0)});
+  let winner=Object.entries(totals).sort((a,b)=>a[1]-b[1])[0];
+  let birdies=roundScores.filter(s=>String(s.score_type||'').toLowerCase()==='birdie').length;
+  let players=Object.keys(totals).length||((r.players||[]).length||'-');
+  return `<div class="card summary-highlight"><h2>最近一場精華</h2><div class="summary-highlight-grid"><div class="summary-stat"><span>日期</span><b>${String(r.played_at||r.created_at||'').slice(0,10)||'-'}</b></div><div class="summary-stat"><span>球場</span><b>${r.course_name||r.course||'-'}</b></div><div class="summary-stat"><span>領先</span><b>${winner?winner[0]:'-'}</b></div><div class="summary-stat"><span>博蒂 / 球員</span><b>${birdies} / ${players}</b></div></div></div>`;
+}
+function applySummaryPlayerFilter(){
+  if(summaryPlayer==='all')return;
+  document.querySelectorAll('#summaryContent table').forEach(table=>Array.from(table.rows).slice(1).forEach(row=>row.classList.toggle('summary-filter-hidden',!row.textContent.includes(summaryPlayer))));
+  document.querySelectorAll('#summaryContent .team').forEach(team=>team.classList.toggle('summary-filter-hidden',!team.textContent.includes(summaryPlayer)));
+}
 function compactSummarySections(){
   let groupNo=0;
   document.querySelectorAll('#summaryContent .card').forEach(card=>{
@@ -1688,6 +1755,23 @@ function compactSummarySections(){
       teams.slice(5).forEach(team=>team.classList.add('summary-hidden',group));
       addSummaryToggle(card,group,teams.length,true);
     }
+  });
+}
+function prepareSummaryCards(){
+  let cards=Array.from(document.querySelectorAll('#summaryContent > .card:not(.summary-toolbar):not(.summary-highlight)'));
+  document.querySelectorAll('#summaryContent .scroll').forEach(scroll=>scroll.insertAdjacentHTML('afterend','<div class="small swipe-hint">左右滑動查看更多 ↔</div>'));
+  cards.forEach((card,index)=>{
+    let heading=card.querySelector(':scope > h2');
+    if(!heading)return;
+    let title=document.createElement('div');title.className='summary-card-title';
+    card.insertBefore(title,heading);title.appendChild(heading);
+    let body=document.createElement('div');body.className='summary-card-body';
+    while(title.nextSibling)body.appendChild(title.nextSibling);
+    card.appendChild(body);
+    let button=document.createElement('button');button.className='summary-collapse';button.type='button';button.setAttribute('aria-label','展開或收合');
+    let collapsed=index>=5;body.classList.toggle('collapsed',collapsed);button.textContent=collapsed?'＋':'－';
+    button.onclick=()=>{let closed=body.classList.toggle('collapsed');button.textContent=closed?'＋':'－'};
+    title.appendChild(button);
   });
 }
 function addSummaryToggle(afterElement,group,total,append=false){
@@ -2211,7 +2295,7 @@ function renderHandicapTrend(){
     let arr=pairs[key].slice(-10);
     let max=Math.max(...arr.map(x=>x.after),1);
 
-    html+=`<div class="team"><b>${key}</b><div class="trend">`;
+    html+=`<div class="team"><b>${key}</b><span class="small" style="float:right">最新讓桿 ${arr[arr.length-1].after}</span><div class="trend">`;
 
     arr.forEach(x=>{
       let height=Math.max(8,(x.after/max)*110);
@@ -2220,8 +2304,8 @@ function renderHandicapTrend(){
 
     html+='</div><div class="trend-labels">';
 
-    arr.forEach((x,i)=>{
-      html+=`<div>${i+1}</div>`;
+    arr.forEach(x=>{
+      html+=`<div>${x.label}</div>`;
     });
 
     html+='</div></div>';
