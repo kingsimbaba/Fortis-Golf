@@ -49,6 +49,67 @@ th{color:var(--muted)}
 .trend-labels{display:flex;gap:8px;font-size:10px;color:var(--muted)}
 .trend-labels div{flex:1;text-align:center}
 
+/* Compact Summary dashboard — presentation only; scoring logic is unchanged. */
+#summaryContent{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:10px;
+}
+#summaryContent .card{
+  min-width:0;
+  margin:0;
+  padding:12px;
+  border-radius:14px;
+  box-shadow:0 4px 14px rgba(0,0,0,.16);
+}
+#summaryContent .card h2{
+  margin-bottom:8px;
+  font-size:15px;
+  line-height:1.2;
+}
+#summaryContent .card label{
+  margin:5px 0 3px;
+  font-size:11px;
+}
+#summaryContent .card input,
+#summaryContent .card select,
+#summaryContent .card button{
+  min-height:36px;
+  padding:8px 10px;
+  border-radius:10px;
+  font-size:13px;
+}
+#summaryContent .match,
+#summaryContent .team,
+#summaryContent .leader-row{
+  margin:5px 0;
+  padding:8px;
+  border-radius:10px;
+}
+#summaryContent .leader-row{gap:6px}
+#summaryContent .score{font-size:20px}
+#summaryContent table{font-size:11px}
+#summaryContent th,
+#summaryContent td{
+  padding:6px 5px;
+  white-space:nowrap;
+}
+#summaryContent .small,
+#summaryContent .sub{font-size:10px}
+#summaryContent .trend{
+  height:96px;
+  margin-top:6px;
+  padding:7px 3px;
+}
+
+@media(max-width:760px){
+  #summaryContent{grid-template-columns:1fr;gap:8px}
+  #summaryContent .card{padding:10px;border-radius:12px}
+  #summaryContent .card h2{font-size:14px;margin-bottom:6px}
+  #summaryContent table{font-size:10px}
+  #summaryContent th,#summaryContent td{padding:5px 4px}
+}
+
 @media(max-width:760px){
   .grid,.grid4{grid-template-columns:1fr}
   .wrap{padding:10px}
