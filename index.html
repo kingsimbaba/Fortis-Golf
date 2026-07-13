@@ -502,7 +502,7 @@ th{color:var(--muted)}
 </label><div id="matchupSetup" class="small">請先輸入球員，然後點選載入個人對戰。</div></div></section>
 <section id="scorePage" class="page hidden"><div id="scoreContent"></div></section><section id="liveViewer" class="page hidden">
   <div id="liveViewerContent"></div>
-</section><section id="summary" class="page hidden"><div id="summaryContent"></div></section><section id="data" class="page hidden"><div class="card"><h2>Database</h2><button class="btn2" onclick="loadAll()">Reload from Supabase</button><div id="dataView" class="small" style="margin-top:10px"></div></div></section><section id="admin" class="page hidden"><div id="adminContent"></div></section></div>
+</section><section id="summary" class="page hidden"><div id="summaryContent"></div></section><section id="data" class="page hidden"><div class="card"><h2>Database</h2><button class="btn2" onclick="forceFullSync(this)">Refresh from server</button><div id="dataView" class="small" style="margin-top:10px"></div></div></section><section id="admin" class="page hidden"><div id="adminContent"></div></section></div>
 <div class="nav hidden">
   <button id="navSetup" class="active" onclick="showPage('setup')">⚙️<br>設定</button>
   <button id="navScorePage" onclick="showPage('scorePage')">⛳<br>計分</button>
@@ -515,11 +515,14 @@ let profilePlayer='';
 let scoreAnimationPlaying=false;
 let currentPage='setup';
 let useIndividualMatchups=true;
+let lastForegroundSync=0;
 let SB={url:'',key:''}, authClient=null, currentSession=null, currentUser=null, currentProfile=null, db={courses:[],holes:[],course_combos:[],matchups:[],players:[],rounds:[],scores:[],history:[],seasons:[]}, round=null, roundHole=0, localRounds=[];
 const courseIdName={1:'DH',2:'SR',3:'TPE-A',4:'TPE-B',5:'TPE-C',6:'TPE-D',8:'TC-E',9:'TC-C',10:'TC-W'};
 async function init(){
   makePlayers();
-  if('serviceWorker' in navigator)navigator.serviceWorker.register('/sw.js').catch(()=>{});
+  if('serviceWorker' in navigator){
+    navigator.serviceWorker.register('/sw.js').then(reg=>reg.update()).catch(()=>{});
+  }
   await loadConfig();
   await initAuth();
 }
@@ -591,8 +594,39 @@ async function signUpUser(){
 }
 async function signOutUser(){await authClient.auth.signOut();}
 
-async function loadConfig(){try{let r=await fetch('/api/config'); let j=await r.json(); SB.url=j.supabaseUrl; SB.key=j.supabaseAnonKey; document.getElementById('dbStatus').innerHTML=SB.url&&SB.key?'<span class="ok">Connected to Vercel config.</span>':'<span class="bad">Missing env vars.</span>';}catch(e){document.getElementById('dbStatus').innerHTML='<span class="bad">Could not load /api/config.</span>';}}
-async function sb(path,opts={}){if(!SB.url||!SB.key) throw new Error('Missing Supabase config'); let r=await fetch(`${SB.url}/rest/v1/${path}`,{...opts,headers:{apikey:SB.key,Authorization:`Bearer ${currentSession?.access_token||SB.key}`,'Content-Type':'application/json',Prefer:'return=representation',...(opts.headers||{})}}); if(!r.ok){let t=await r.text(); throw new Error(t)} return await r.json();}
+async function loadConfig(){try{let r=await fetch('/api/config',{cache:'no-store'}); let j=await r.json(); SB.url=j.supabaseUrl; SB.key=j.supabaseAnonKey; document.getElementById('dbStatus').innerHTML=SB.url&&SB.key?'<span class="ok">Connected to Vercel config.</span>':'<span class="bad">Missing env vars.</span>';}catch(e){document.getElementById('dbStatus').innerHTML='<span class="bad">Could not load /api/config.</span>';}}
+async function sb(path,opts={}){if(!SB.url||!SB.key) throw new Error('Missing Supabase config'); let r=await fetch(`${SB.url}/rest/v1/${path}`,{cache:'no-store',...opts,headers:{apikey:SB.key,Authorization:`Bearer ${currentSession?.access_token||SB.key}`,'Content-Type':'application/json','Cache-Control':'no-cache',Pragma:'no-cache',Prefer:'return=representation',...(opts.headers||{})}}); if(!r.ok){let t=await r.text(); throw new Error(t)} return await r.json();}
+
+async function forceFullSync(button){
+  if(button){button.disabled=true;button.textContent='Refreshing…';}
+  try{
+    if('caches' in window){
+      const names=await caches.keys();
+      await Promise.all(names.map(name=>caches.delete(name)));
+    }
+    if('serviceWorker' in navigator){
+      const reg=await navigator.serviceWorker.getRegistration();
+      if(reg) await reg.update();
+    }
+    await loadAll();
+    renderSummary();
+    if(currentPage==='admin') renderAdmin();
+    lastForegroundSync=Date.now();
+  }catch(e){
+    alert('Refresh failed: '+e.message);
+  }finally{
+    if(button){button.disabled=false;button.textContent='Refresh from server';}
+  }
+}
+
+async function refreshAfterForeground(){
+  if(document.visibilityState!=='visible'||!currentSession||Date.now()-lastForegroundSync<15000) return;
+  lastForegroundSync=Date.now();
+  await loadAll();
+  renderSummary();
+}
+document.addEventListener('visibilitychange',()=>{refreshAfterForeground().catch(console.error);});
+window.addEventListener('pageshow',()=>{refreshAfterForeground().catch(console.error);});
 async function loadPaged(path){
   let all = [];
   let from = 0;
