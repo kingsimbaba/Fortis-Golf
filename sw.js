@@ -1,4 +1,4 @@
-const CACHE='fortis-golf-v3';
+const CACHE='fortis-golf-v4';
 const ASSETS=['/index.html','/manifest.webmanifest','/icon-192.png','/icon-512.png','/apple-touch-icon.png'];
 
 self.addEventListener('install',event=>{
@@ -27,20 +27,24 @@ self.addEventListener('fetch',event=>{
   const url=new URL(request.url);
   if(request.method!=='GET'||url.pathname.startsWith('/api/')) return;
 
-  const needsFreshCopy=request.mode==='navigate'||url.pathname.endsWith('.mp4');
-  if(needsFreshCopy){
+  // Safari streams video with Range requests (HTTP 206). Pass every MP4
+  // request directly to the network; partial responses cannot enter Cache Storage.
+  if(url.pathname.endsWith('.mp4')){
+    event.respondWith(fetch(request,{cache:'no-store'}));
+    return;
+  }
+
+  if(request.mode==='navigate'){
     event.respondWith((async()=>{
       try{
         const response=await fetch(request,{cache:'no-store'});
         if(response.ok){
           const cache=await caches.open(CACHE);
-          const key=request.mode==='navigate'?'/index.html':request;
-          await cache.put(key,response.clone());
+          await cache.put('/index.html',response.clone());
         }
         return response;
       }catch(error){
-        const key=request.mode==='navigate'?'/index.html':request;
-        return (await caches.match(key))||Response.error();
+        return (await caches.match('/index.html'))||Response.error();
       }
     })());
     return;
