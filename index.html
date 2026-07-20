@@ -1778,10 +1778,28 @@ function renderLatestRoundHighlight(){
   let leaderIndex=fortisTotals.length?fortisTotals.map((points,i)=>({points,i})).sort((a,b)=>b.points-a.points)[0].i:-1;
   let leader=leaderIndex>=0?players[leaderIndex]:'-';
   let leaderPoints=leaderIndex>=0?fortisTotals[leaderIndex]:null;
-  let birdies=roundScores.filter(s=>(+s.gross_score)-(+s.par)===-1).length;
-  let eagles=roundScores.filter(s=>+s.par!==3&&(+s.gross_score)-(+s.par)===-2).length;
-  let albatrosses=roundScores.filter(s=>+s.par!==3&&(+s.gross_score)-(+s.par)<=-3).length;
-  let holesInOne=roundScores.filter(s=>+s.par===3&&+s.gross_score===1).length;
+  let leaderScores = leaderIndex >= 0
+  ? roundScores.filter(s => s.player_name === leader)
+  : [];
+
+  let birdies = leaderScores.filter(
+  s => (+s.gross_score) - (+s.par) === -1
+  ).length;
+
+  let eagles = leaderScores.filter(
+  s => +s.par !== 3 &&
+       (+s.gross_score) - (+s.par) === -2
+  ).length;
+
+  let albatrosses = leaderScores.filter(
+  s => +s.par !== 3 &&
+       (+s.gross_score) - (+s.par) <= -3
+  ).length;
+
+  let holesInOne = leaderScores.filter(
+  s => +s.par === 3 &&
+       +s.gross_score === 1
+  ).length;
   let bestAchievement=holesInOne?`一桿進洞 ${holesInOne}`:albatrosses?`信天翁 ${albatrosses}`:eagles?`老鷹 ${eagles}`:birdies?`博蒂 ${birdies}`:'—';
   return `<div class="card summary-highlight"><h2>最近一場精華</h2><div class="summary-highlight-grid"><div class="summary-stat"><span>日期</span><b>${String(r.played_at||r.created_at||'').slice(0,10)||'-'}</b></div><div class="summary-stat"><span>球場</span><b>${courseNameZh(r.course_name||r.course||'-')}</b></div><div class="summary-stat"><span>最大贏家</span><b>${leader}${leaderPoints===null?'':` (${leaderPoints>0?'+':''}${leaderPoints})`}</b></div><div class="summary-stat"><span>最佳成績</span><b>${bestAchievement}</b></div></div></div>`;
 }
