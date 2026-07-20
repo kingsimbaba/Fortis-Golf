@@ -1616,6 +1616,7 @@ let rr=await sb('fortis_rounds',{method:'POST',body:JSON.stringify({
   round_name:round.note,
   course_name:round.courseName,
   course_combo:round.combo,
+  played_at:new Date().toISOString(),
   season_id:activeSeason?.id||null,
   players:round.players,
   initial_ranks:round.initialRanks,
@@ -2383,7 +2384,9 @@ function renderRoundHistory(){
   html+='<div class="scroll"><table><tr><th>日期</th><th>回合名稱</th><th>球場</th><th>球員</th><th>回播</th></tr>';
 
   db.rounds.forEach(r=>{
-    let sc=db.scores.filter(s=>s.round_id===r.id);
+    let sc=db.scores.filter(
+    s => String(s.round_id) === String(r.id)
+);
     let players=r.players || [...new Set(sc.map(s=>s.player_name))];
 
     html+=`
