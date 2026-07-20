@@ -737,10 +737,20 @@ function renderRecentCourses(){
   sel.innerHTML='';
   let countrySel=document.getElementById('country');
 
-if(countrySel && countrySel.options.length===0){
-  [...new Set(db.courses.map(c=>c.country || 'Taiwan'))]
+let previousCountry = countrySel?.value || 'Taiwan';
+
+if(countrySel){
+  countrySel.innerHTML = '';
+
+  [...new Set(db.courses.map(c => c.country || 'Taiwan'))]
     .sort()
-    .forEach(c=>countrySel.add(new Option(c,c)));
+    .forEach(c => countrySel.add(new Option(c, c)));
+
+  if([...countrySel.options].some(option => option.value === previousCountry)){
+    countrySel.value = previousCountry;
+  }else if([...countrySel.options].some(option => option.value === 'Taiwan')){
+    countrySel.value = 'Taiwan';
+  }
 }
 
 let selectedCountry = countrySel ? countrySel.value : 'Taiwan';
