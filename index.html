@@ -1563,20 +1563,6 @@ if(round.players.length > 2 && row){
       <p class="small">雙人模式不使用 8421 配對計分，僅計算個人對戰與獎勵。</p>
     </div>`;
 }
-  <div class="grid">
-    <div class="team" style="text-align:center">
-      <div class="small">第一組</div>
-      <h2>${row.team1.map(i=>round.players[i]).join(' + ')}</h2>
-      <div class="score">${row.t1}</div>
-    </div>
-
-    <div class="team" style="text-align:center">
-      <div class="small">第二組</div>
-      <h2>${team2Name}</h2>
-      <div class="score">${row.t2}</div>
-    </div>
-  </div>
-</div>`;
 
   html+=individualHtml();
   document.getElementById('scoreContent').innerHTML=html;
