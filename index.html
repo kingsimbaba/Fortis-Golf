@@ -1584,10 +1584,12 @@ let bonusText =
   r.bonusA-r.bonusB < 0 ? `${r.b} +${Math.abs(r.bonusA-r.bonusB)}` :
   '無';
 
+let displayResult = r.match + (isLarryMode ? 0 : (r.bonusA - r.bonusB));
+
 let finalText =
-  r.totalResult > 0 ? `${r.a} +${r.totalResult}` :
-  r.totalResult < 0 ? `${r.b} +${Math.abs(r.totalResult)}` :
-  '平手';
+  displayResult > 0 ? `${r.a} +${displayResult}` :
+  displayResult < 0 ? `${r.b} +${Math.abs(displayResult)}` :
+  "平手";
 
 html+=`
   <div class="team">
