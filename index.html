@@ -1527,7 +1527,7 @@ for(let i=0;i<round.players.length;i++){
     儲存並前往下一洞 →
   </button>`;
 
-let row=c.rows[roundHole];
+let row = c.rows[roundHole];
 
 html+=`
   </div>
@@ -1536,11 +1536,33 @@ html+=`
     <button class="btn2" onclick="roundHole=Math.min(17,roundHole+1);renderScore()">下一洞 →</button>
   </div>`;
 
+if(round.players.length > 2 && row){
   let team2Name = row.team2.length===1
-  ? row.team2.map(i=>round.players[i]).join(' + ') + ' x2'
-  : row.team2.map(i=>round.players[i]).join(' + ');
+    ? row.team2.map(i=>round.players[i]).join(' + ') + ' x2'
+    : row.team2.map(i=>round.players[i]).join(' + ');
 
-html+=`<div class="card"><h2>目前配對</h2>
+  html+=`<div class="card"><h2>目前配對</h2>
+    <div class="grid">
+      <div class="team" style="text-align:center">
+        <div class="small">第一組</div>
+        <h2>${row.team1.map(i=>round.players[i]).join(' + ')}</h2>
+        <div class="score">${row.t1}</div>
+      </div>
+
+      <div class="team" style="text-align:center">
+        <div class="small">第二組</div>
+        <h2>${team2Name}</h2>
+        <div class="score">${row.t2}</div>
+      </div>
+    </div>
+  </div>`;
+}else{
+  html+=`
+    <div class="card">
+      <h2>雙人對戰</h2>
+      <p class="small">雙人模式不使用 8421 配對計分，僅計算個人對戰與獎勵。</p>
+    </div>`;
+}
   <div class="grid">
     <div class="team" style="text-align:center">
       <div class="small">第一組</div>
