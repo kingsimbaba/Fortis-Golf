@@ -2310,19 +2310,25 @@ function renderLifetimeRankings(){
       diffPoints;
 
     return {
-      name,
-      rounds:roundCount,
-      avg:roundCount?avg.toFixed(1):'-',
-      wins:s.wins,
-      losses:s.losses,
-      ties:s.ties,
-      holeDiff:s.holeDiff,
-      birdies:s.birdies,
-      eagles:s.eagles,
-      hio:s.hio,
-      albatross:s.albatross,
-      lifetimeScore:lifetimeScore.toFixed(1)
-    };
+  name,
+  rounds:roundCount,
+  avg:roundCount ? avg.toFixed(1) : '-',
+  wins:s.wins,
+  losses:s.losses,
+  ties:s.ties,
+  holeDiff:s.holeDiff,
+  birdies:s.birdies,
+  eagles:s.eagles,
+  hio:s.hio,
+  albatross:s.albatross,
+
+  scoringPoints:scoringPoints.toFixed(1),
+  winPoints:winPoints.toFixed(1),
+  bonusPoints:bonusPoints.toFixed(1),
+  diffPoints:diffPoints.toFixed(1),
+
+  lifetimeScore:lifetimeScore.toFixed(1)
+};
   }).sort((a,b)=>parseFloat(b.lifetimeScore)-parseFloat(a.lifetimeScore));
 
   let html='<div class="card"><h2>生涯排行榜</h2>';
@@ -2334,7 +2340,14 @@ function renderLifetimeRankings(){
     html+=`<tr>
       <td>${medal}</td>
       <td><b>${r.name}</b></td>
-      <td>${r.lifetimeScore}</td>
+      <td>
+  <button
+    class="btn2"
+    style="width:auto;min-height:32px;padding:6px 10px;font-size:13px"
+    onclick='openPowerPopup(${JSON.stringify(r)})'>
+    ${r.lifetimeScore}
+  </button>
+</td>
       <td>${r.avg}</td>
       <td>${r.wins}-${r.losses}-${r.ties}</td>
       <td>${r.holeDiff>0?'+':''}${r.holeDiff}</td>
@@ -2348,6 +2361,101 @@ function renderLifetimeRankings(){
   html+='</div>';
 
   return html;
+}
+function openPowerPopup(r){
+  document.getElementById('powerPopup')?.remove();
+
+  const bonusDetails = [
+    `博蒂 ${r.birdies} × 1 = ${r.birdies}`,
+    `老鷹 ${r.eagles} × 3 = ${r.eagles * 3}`,
+    `一桿進洞 ${r.hio} × 10 = ${r.hio * 10}`,
+    `信天翁 ${r.albatross} × 10 = ${r.albatross * 10}`
+  ].join('<br>');
+
+  let popup=document.createElement('div');
+  popup.id='powerPopup';
+  popup.className='score-animation';
+
+  popup.innerHTML=`
+    <div
+      class="score-animation-box"
+      style="max-width:430px;text-align:left"
+      onclick="event.stopPropagation()">
+
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:12px">
+        <div>
+          <div class="small">生涯戰力分析</div>
+          <h2 style="font-size:24px;margin:2px 0 0">${r.name}</h2>
+        </div>
+
+        <button
+          class="btn2"
+          style="width:auto;min-width:44px;padding:8px 12px"
+          onclick="closePowerPopup()">
+          ✕
+        </button>
+      </div>
+
+      <div class="team" style="margin-top:14px">
+        <div class="leader-row">
+          <div>
+            <b>平均桿貢獻</b>
+            <div class="small">100 − ${r.avg}</div>
+          </div>
+          <div class="score">${r.scoringPoints}</div>
+        </div>
+
+        <div class="leader-row">
+          <div>
+            <b>個人對戰貢獻</b>
+            <div class="small">
+              ${r.wins} 勝 × 3 + ${r.ties} 平
+            </div>
+          </div>
+          <div class="score">${r.winPoints}</div>
+        </div>
+
+        <div class="leader-row">
+          <div>
+            <b>特殊成績貢獻</b>
+            <div class="small">${bonusDetails}</div>
+          </div>
+          <div class="score">${r.bonusPoints}</div>
+        </div>
+
+        <div class="leader-row">
+          <div>
+            <b>洞數差貢獻</b>
+            <div class="small">
+              ${r.holeDiff > 0 ? '+' : ''}${r.holeDiff} × 0.5
+            </div>
+          </div>
+          <div class="score">${r.diffPoints}</div>
+        </div>
+      </div>
+
+      <div
+        class="card"
+        style="margin:12px 0 0;text-align:center;border-color:#38a169">
+        <div class="small">總戰力</div>
+        <div class="score" style="font-size:36px">${r.lifetimeScore}</div>
+        <div class="small">
+          ${r.rounds} 回合 · 平均桿 ${r.avg} ·
+          ${r.wins}-${r.losses}-${r.ties}
+        </div>
+      </div>
+
+      <button style="margin-top:12px" onclick="closePowerPopup()">
+        關閉
+      </button>
+    </div>
+  `;
+
+  popup.onclick=closePowerPopup;
+  document.body.appendChild(popup);
+}
+function closePowerPopup(){
+  document.getElementById('powerPopup')?.remove();
 }
 function renderHandicapTrend(){
   let pairs={};
@@ -2752,4 +2860,9 @@ function closeReplay() {
   const box = document.getElementById('replayPanel');
   if (box) box.remove();
 }
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){
+    closePowerPopup();
+  }
+});
 </script></body></html>
