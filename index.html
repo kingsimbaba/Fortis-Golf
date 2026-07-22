@@ -1,0 +1,3233 @@
+
+<!doctype html><html lang="en"><head>
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#09111f">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>地獄倒霉鬼</title><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{
+  --bg:#09111f;--panel:#121c2e;--line:#26364f;--text:#f7fafc;--muted:#a7b1c2;--green:#38a169;--red:#fc8181;
+  --cardShadow:0 8px 24px rgba(0,0,0,.22);
+}
+.light-theme{--bg:#f7fafc;--panel:#ffffff;--line:#cbd5e0;--text:#1a202c;--muted:#4a5568;--green:#2f855a;--red:#e53e3e}
+.high-contrast{--bg:#000000;--panel:#111111;--line:#ffffff;--text:#ffffff;--muted:#e2e8f0;--green:#00ff66;--red:#ff4444}
+
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,Segoe UI,Arial,sans-serif;padding-bottom:86px;line-height:1.35}
+header{position:sticky;top:0;background:rgba(9,17,31,.96);border-bottom:1px solid var(--line);padding:14px 16px;z-index:2;backdrop-filter:blur(8px)}
+h1{font-size:22px;margin:0;font-weight:900}
+h2{font-size:18px;margin:0 0 12px;font-weight:900}
+.sub,.small{color:var(--muted);font-size:12px}
+.wrap{max-width:980px;margin:0 auto;padding:14px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:16px;margin:12px 0;box-shadow:var(--cardShadow)}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+label{display:block;font-size:12px;color:var(--muted);margin:8px 0 5px}
+input,select,button{width:100%;border-radius:14px;border:1px solid #33445f;background:#0f1a2b;color:var(--text);padding:13px;font-size:16px}
+button{background:linear-gradient(135deg,#2f855a,#38a169);border:0;font-weight:900;cursor:pointer;min-height:46px}
+.btn2{background:#1f2f48;border:1px solid #33445f}
+.btn-red{background:#742a2a}
+.hidden{display:none!important}
+.match,.team{background:#0e1728;border:1px solid var(--line);border-radius:16px;padding:12px;margin:10px 0}
+.toggle{display:flex;align-items:center;gap:8px}
+.toggle input{width:auto}
+.leader-row{display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:center;background:#0e1728;border:1px solid var(--line);padding:12px;border-radius:15px;margin:8px 0}
+.score{font-size:24px;font-weight:900;color:#68d391}
+.scroll{overflow:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{border-bottom:1px solid var(--line);padding:9px;text-align:center}
+th{color:var(--muted)}
+.nav{position:fixed;bottom:0;left:0;right:0;background:rgba(9,17,31,.96);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(5,1fr);gap:6px;padding:8px;z-index:5}
+.nav button{font-size:12px;padding:10px 5px;background:#18243a;min-height:44px}
+.nav button.active{background:#2f855a}
+.ok{color:#68d391}
+.bad{color:var(--red)}
+.trend{display:flex;align-items:end;gap:8px;height:130px;border-bottom:1px solid var(--line);padding:10px 4px;margin-top:10px}
+.bar{flex:1;background:var(--green);border-radius:8px 8px 0 0;min-width:14px;position:relative}
+.bar span{position:absolute;top:-22px;left:50%;transform:translateX(-50%);font-size:11px;color:var(--text)}
+.trend-labels{display:flex;gap:8px;font-size:10px;color:var(--muted)}
+.trend-labels div{flex:1;text-align:center}
+
+/* Compact Summary dashboard — presentation only; scoring logic is unchanged. */
+#summaryContent{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:10px;
+}
+#summaryContent .card{
+  min-width:0;
+  margin:0;
+  padding:12px;
+  border-radius:14px;
+  box-shadow:0 4px 14px rgba(0,0,0,.16);
+}
+#summaryContent .card h2{
+  margin-bottom:8px;
+  font-size:15px;
+  line-height:1.2;
+}
+#summaryContent .card label{
+  margin:5px 0 3px;
+  font-size:11px;
+}
+#summaryContent .card input,
+#summaryContent .card select,
+#summaryContent .card button{
+  min-height:36px;
+  padding:8px 10px;
+  border-radius:10px;
+  font-size:13px;
+}
+#summaryContent .match,
+#summaryContent .team,
+#summaryContent .leader-row{
+  margin:5px 0;
+  padding:8px;
+  border-radius:10px;
+}
+#summaryContent .leader-row{gap:6px}
+#summaryContent .score{font-size:20px}
+#summaryContent table{font-size:11px}
+#summaryContent th,
+#summaryContent td{
+  padding:6px 5px;
+  white-space:nowrap;
+}
+#summaryContent .small,
+#summaryContent .sub{font-size:10px}
+#summaryContent .summary-more{
+  width:100%;
+  min-height:34px;
+  margin-top:8px;
+  padding:7px 10px;
+  background:#18243a;
+  color:#c6f6d5;
+  border:1px solid #2f855a;
+}
+#summaryContent .summary-hidden,#summaryContent .summary-filter-hidden{display:none}
+#summaryContent .summary-toolbar{grid-column:1/-1}
+#summaryContent .summary-card-title{display:flex;align-items:center;gap:8px}
+#summaryContent .summary-card-title h2{flex:1;margin:0}
+#summaryContent .summary-collapse{width:auto!important;min-width:38px;padding:5px 9px!important;background:#18243a!important}
+#summaryContent .summary-card-body.collapsed{display:none}
+#summaryContent .summary-highlight{grid-column:1/-1;border-color:#2f855a;background:linear-gradient(135deg,var(--panel),rgba(47,133,90,.18))}
+#summaryContent .summary-highlight-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+#summaryContent .summary-stat{padding:9px;border-radius:10px;background:#0e1728;text-align:center}
+#summaryContent .summary-stat b{display:block;font-size:17px;color:#68d391}
+#summaryContent .swipe-hint{display:none;text-align:right;margin:3px 0 0}
+.loading-box{padding:18px;text-align:center;color:var(--muted)}
+.loading-box::before{content:'⛳';display:block;font-size:28px;animation:pulse 1s ease-in-out infinite}
+@keyframes pulse{50%{transform:scale(1.15);opacity:.55}}
+#summaryContent .trend{
+  height:140px;
+  margin-top:10px;
+  padding:22px 3px 7px;
+}
+
+@media(max-width:760px){
+  #summaryContent{grid-template-columns:1fr;gap:8px}
+  #summaryContent .card{padding:10px;border-radius:12px}
+  #summaryContent .card h2{font-size:14px;margin-bottom:6px}
+  #summaryContent table{font-size:10px}
+  #summaryContent th,#summaryContent td{padding:5px 4px}
+  #summaryContent .summary-highlight-grid{grid-template-columns:repeat(2,1fr)}
+  #summaryContent .scroll{position:relative}
+  #summaryContent .scroll th:first-child,#summaryContent .scroll td:first-child{position:sticky;left:0;z-index:1;background:var(--panel);box-shadow:2px 0 0 var(--line)}
+  #summaryContent .swipe-hint{display:block}
+}
+
+@media(max-width:760px){
+  .grid,.grid4{grid-template-columns:1fr}
+  .wrap{padding:10px}
+  header{padding:12px 14px}
+  h1{font-size:20px}
+  h2{font-size:17px}
+  .card{border-radius:16px;padding:14px;margin:10px 0}
+  input,select,button{font-size:16px;padding:14px;min-height:48px}
+  .leader-row{grid-template-columns:1fr auto;gap:8px}
+  .leader-row .small{grid-column:2}
+  .score{font-size:28px}
+  .team{padding:14px;border-radius:16px}
+  .team h2{font-size:20px}
+  table{font-size:12px}
+  th,td{padding:8px 6px}
+  .nav{padding:7px;gap:5px}
+  .nav button{font-size:12px;padding:9px 3px}
+}@media(max-width:760px){
+  #scorePage .card:first-child button{
+    font-weight:900;
+  }
+
+  #scorePage .score{
+    text-shadow:0 1px 2px rgba(0,0,0,.35);
+  }
+
+  #scorePage .team{
+    border-width:2px;
+  }
+
+  .high-contrast #scorePage button{
+    border:2px solid #ffffff;
+  }
+
+  .high-contrast #scorePage .score{
+    color:#00ff66;
+  }
+}
+  .score-animation{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.72);
+  z-index:9999;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  padding:24px;
+}
+
+.score-animation-box{
+  background:var(--panel);
+  border:2px solid var(--line);
+  border-radius:24px;
+  padding:28px;
+  max-width:360px;
+  width:100%;
+  box-shadow:0 20px 60px rgba(0,0,0,.45);
+  animation:popIn .25s ease-out;
+}
+
+.score-animal{
+  font-size:72px;
+  line-height:1;
+  margin-bottom:12px;
+  animation:bounceAnimal .9s ease-in-out infinite;
+}
+
+.score-title{
+  font-size:28px;
+  font-weight:900;
+  margin-bottom:8px;
+}
+
+.score-player{
+  font-size:18px;
+  color:var(--muted);
+}
+
+@keyframes popIn{
+  from{transform:scale(.85);opacity:0}
+  to{transform:scale(1);opacity:1}
+}
+
+@keyframes bounceAnimal{
+  0%,100%{transform:translateY(0) rotate(0)}
+  50%{transform:translateY(-12px) rotate(-4deg)}
+}
+.birdie-scene{
+  position:relative;
+  height:180px;
+  overflow:hidden;
+}
+
+.birdie-tree{
+  position:absolute;
+  left:55%;
+  bottom:20px;
+  width:42px;
+  height:130px;
+  background:#7a4a25;
+  border-radius:18px;
+}
+
+.birdie-woodpecker{
+  position:absolute;
+  left:28%;
+  top:54px;
+  font-size:70px;
+  transform:scaleX(-1);
+  animation:peckBird .22s infinite;
+}
+
+.birdie-chips{
+  position:absolute;
+  left:58%;
+  top:74px;
+  font-size:28px;
+  animation:woodChips .45s infinite;
+}
+
+@keyframes peckBird{
+  0%,100%{
+    transform:scaleX(-1) translateX(0) rotate(0deg);
+  }
+  50%{
+    transform:scaleX(-1) translateX(-18px) rotate(-8deg);
+  }
+}
+
+@keyframes woodChips{
+  0%{opacity:0;transform:scale(.5) translateX(0)}
+  50%{opacity:1;transform:scale(1.2) translateX(15px)}
+  100%{opacity:0;transform:scale(.5) translateX(30px)}
+}
+.eagle-scene{
+  position:relative;
+  height:180px;
+  overflow:hidden;
+}
+
+.eagle-sky{
+  position:absolute;
+  inset:0;
+  background:linear-gradient(#4aa3ff,#cdefff);
+  border-radius:18px;
+}
+
+.eagle-bird{
+  position:absolute;
+  left:-80px;
+  top:22px;
+  font-size:76px;
+  animation:eagleDive 1.4s ease-in-out infinite;
+}
+
+@keyframes eagleDive{
+  0%{
+    transform:translate(420px,-35px) scale(.8) rotate(-3deg);
+  }
+
+  35%{
+    transform:translate(220px,-55px) scale(1.05) rotate(3deg);
+  }
+
+  70%{
+    transform:translate(20px,-20px) scale(1.15) rotate(-2deg);
+  }
+
+  100%{
+    transform:translate(-180px,-60px) scale(.9) rotate(2deg);
+  }
+}
+.albatross-scene{
+  position:relative;
+  height:180px;
+  overflow:hidden;
+  border-radius:18px;
+  background:linear-gradient(#55b7ff,#dff5ff);
+}
+
+.albatross-bird{
+  position:absolute;
+  left:50%;
+  top:56px;
+  transform:translateX(-50%);
+  font-size:92px;
+  animation:albatrossSpread 1.8s ease-in-out infinite;
+}
+
+.albatross-cloud{
+  position:absolute;
+  font-size:42px;
+  opacity:.8;
+  animation:cloudDrift 3s linear infinite;
+}
+
+.albatross-cloud.one{left:20px;top:22px}
+.albatross-cloud.two{right:26px;top:42px;animation-delay:.8s}
+
+@keyframes albatrossSpread{
+  0%,100%{
+    transform:translateX(-50%) scaleX(1) scaleY(1);
+  }
+  50%{
+    transform:translateX(-50%) scaleX(1.65) scaleY(.92);
+  }
+}
+
+@keyframes cloudDrift{
+  0%{transform:translateX(0)}
+  100%{transform:translateX(-35px)}
+}
+.par-scene{
+  position:relative;
+  height:180px;
+  overflow:hidden;
+  border-radius:18px;
+  background:linear-gradient(#65c466 0%,#3f9f45 100%);
+}
+
+.par-green{
+  position:absolute;
+  left:0;
+  right:0;
+  bottom:0;
+  height:70px;
+  background:#267a32;
+}
+
+.par-cup{
+  position:absolute;
+  right:48px;
+  bottom:54px;
+  width:42px;
+  height:16px;
+  background:#111;
+  border-radius:50%;
+}
+
+.par-flag{
+  position:absolute;
+  right:64px;
+  bottom:66px;
+  width:4px;
+  height:70px;
+  background:#ffffff;
+}
+
+.par-flag:after{
+  content:'';
+  position:absolute;
+  top:0;
+  left:4px;
+  border-top:11px solid transparent;
+  border-bottom:11px solid transparent;
+  border-left:30px solid #ff4444;
+}
+
+.par-ball{
+  position:absolute;
+  left:18px;
+  bottom:64px;
+  width:22px;
+  height:22px;
+  background:#ffffff;
+  border-radius:50%;
+  box-shadow:inset -3px -3px 0 rgba(0,0,0,.12);
+  animation:ballDrop 1.7s ease-in-out infinite;
+}
+
+@keyframes ballDrop{
+  0%{transform:translate(0,0) scale(1);opacity:1}
+  65%{transform:translate(220px,0) scale(1);opacity:1}
+  78%{transform:translate(228px,9px) scale(.65);opacity:1}
+  79%,100%{transform:translate(228px,13px) scale(.1);opacity:0}
+}
+.bogey-scene{
+  position:relative;
+  height:180px;
+  overflow:hidden;
+  border-radius:18px;
+  background:linear-gradient(#8fd3ff,#dff5ff);
+}
+
+.bogey-ground{
+  position:absolute;
+  left:0;
+  right:0;
+  bottom:0;
+  height:55px;
+  background:#4f9b45;
+}
+
+.bogey-golfer{
+  position:absolute;
+  left:50%;
+  bottom:42px;
+  font-size:76px;
+  transform:translateX(-50%);
+  animation:bogeyRage .9s ease-in-out infinite;
+}
+
+.bogey-club{
+  position:absolute;
+  left:57%;
+  top:67px;
+  font-size:48px;
+  animation:clubBreak .9s ease-in-out infinite;
+}
+
+@keyframes bogeyRage{
+  0%,100%{transform:translateX(-50%) rotate(0)}
+  40%{transform:translateX(-50%) rotate(-10deg)}
+  65%{transform:translateX(-50%) rotate(8deg)}
+}
+
+@keyframes clubBreak{
+  0%,45%{transform:rotate(-25deg) scale(1)}
+  55%{transform:rotate(25deg) scale(1)}
+  65%,100%{transform:rotate(55deg) scale(.7);opacity:.35}
+}
+.score-video{
+  width:100%;
+  height:220px;
+  object-fit:cover;
+  border-radius:18px;
+  display:block;
+}
+</style></head><body>
+<header><h1>地獄倒霉鬼</h1><div class="sub">雲端版 · 歷史紀錄 · 排行榜 · 管理員 · 多人使用</div><div id="userBar" class="small"></div></header><div class="wrap">
+<section id="auth" class="page"><div class="card"><h2>登入</h2><p class="small">請輸入電子郵件再按登入即可.</p><div class="grid"><div><label>電子郵件</label><input id="authEmail" type="email" placeholder="you@example.com"></div><div><label>密碼</label><input id="authPassword" type="password" placeholder="Password"></div><button onclick="signInUser()">登入</button><button class="btn2" onclick="signUpUser()">建立帳號</button></div><div id="authMsg" class="small" style="margin-top:10px"></div></div></section>
+<section id="setup" class="page hidden"><div class="card"><h2>資料庫狀態</h2><div id="dbStatus" class="small">Connecting...</div></div><div class="card"><div class="card"><h2>顯示設定</h2><label>主題</label><select id="themeSelector" onchange="changeTheme()"><option value="dark">Dark</option><option value="light">Light</option><option value="contrast">High Contrast</option></select></div><h2>新回合</h2><div class="grid"><div><label>國家</label>
+<select id="country" onchange="setupCourseSelect()"></select>
+
+<label>最近打過的球場</label>
+<div id="recentCourses" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px"></div>
+
+<label>搜尋球場</label>
+<input id="courseSearch" placeholder="輸入球場名稱..." oninput="setupCourseSelect()">
+
+<label>球場</label>
+<select id="course"></select></div><div id="comboBox" class="hidden"><label id="comboLabel">組合</label><select id="combo"></select></div><div><label>備註</label><input id="roundNote" placeholder="Sunday game"></div></div><p class="small">球場有超過18個洞，請選擇擊球的兩個場地.</p></div>
+<div class="card"><label>球員人數</label>
+<select id="playerCount" onchange="makePlayers(); renderMatchups();">
+  <option value="4" selected>4 位球員</option>
+  <option value="3">3 位球員</option>
+  <option value="2">2 位球員</option>
+</select><h2>球員 + 第一洞開球距離</h2><div class="grid4" id="playerInputs"></div><div class="grid" style="margin-top:12px"><button class="btn2" onclick="loadLastGroup()">載入上一場</button><button class="btn2" onclick="renderMatchups()">載入個人對戰</button><button onclick="startRound()">開始回合</button></div><p class="small">地獄倒霉鬼永遠開啟,不需要個人對戰可關閉.</p></div>
+<div class="card"><h2>個人對戰</h2><label class="toggle">
+  <input type="checkbox" id="useIndividualMatchups" checked onchange="toggleIndividualMatchups(this.checked)">
+  使用個人對戰
+  <br>
+
+<label class="toggle">
+  <input type="checkbox" id="countPar3Strokes">
+  立偉模式
+</label>
+</label><div id="matchupSetup" class="small">請先輸入球員，然後點選載入個人對戰。</div></div></section>
+<section id="scorePage" class="page hidden"><div id="scoreContent"></div></section><section id="liveViewer" class="page hidden">
+  <div id="liveViewerContent"></div>
+</section><section id="summary" class="page hidden"><div id="summaryContent"></div></section><section id="data" class="page hidden"><div class="card"><h2>Database</h2><button class="btn2" onclick="forceFullSync(this)">Refresh from server</button><div id="dataView" class="small" style="margin-top:10px"></div></div></section><section id="admin" class="page hidden"><div id="adminContent"></div></section></div>
+<div class="nav hidden">
+  <button id="navSetup" class="active" onclick="showPage('setup')">⚙️<br>設定</button>
+  <button id="navScorePage" onclick="showPage('scorePage')">⛳<br>計分</button>
+  <button id="navSummary" onclick="showPage('summary')">📊<br>統計</button>
+  <button id="navData" onclick="showPage('data')">🗄️<br>資料</button>
+  <button id="navAdmin" class="hidden" onclick="showPage('admin')">🔧<br>管理</button>
+</div>
+<script>
+let profilePlayer='';
+let scoreAnimationPlaying=false;
+let currentPage='setup';
+let useIndividualMatchups=true;
+let lastForegroundSync=0;
+let SB={url:'',key:''}, authClient=null, currentSession=null, currentUser=null, currentProfile=null, db={courses:[],holes:[],course_combos:[],matchups:[],players:[],rounds:[],scores:[],history:[],seasons:[]}, round=null, roundHole=0, localRounds=[];
+const courseIdName={1:'DH',2:'SR',3:'TPE-A',4:'TPE-B',5:'TPE-C',6:'TPE-D',8:'TC-E',9:'TC-C',10:'TC-W'};
+function courseLocalizedName(c){
+  if(!c) return '';
+  if(c.country==='Japan') return c.display_name_ja||c.display_name_zh||c.display_name||c.course_name;
+  if(['Taiwan','China'].includes(c.country)) return c.display_name_zh||c.display_name||c.display_name_ja||c.course_name;
+  return c.display_name||c.display_name_zh||c.display_name_ja||c.course_name;
+}
+function courseAdminName(c){
+  if(!c) return '';
+  return [c.display_name_zh,c.display_name_ja,c.display_name].filter(Boolean).filter((v,i,a)=>a.indexOf(v)===i).join(' / ')||c.course_name;
+}
+async function init(){
+  makePlayers();
+  if('serviceWorker' in navigator){
+    navigator.serviceWorker.register('/sw.js').then(reg=>reg.update()).catch(()=>{});
+  }
+  await loadConfig();
+  await initAuth();
+}
+async function initAuth(){
+  if(!SB.url||!SB.key||!window.supabase){showAuth('Missing Supabase config or Supabase library.');return;}
+  authClient=window.supabase.createClient(SB.url,SB.key);
+  const liveId = new URLSearchParams(window.location.search).get('live');
+
+const {data}=await authClient.auth.getSession();
+
+if(liveId){
+  currentSession = data?.session || null;
+  await loadLiveRound(liveId);
+}else if(data&&data.session){
+  await handleLoggedIn(data.session);
+}else{
+  showAuth('Please sign in.');
+}
+  authClient.auth.onAuthStateChange(async (event, session)=>{ if(session) await handleLoggedIn(session); else showAuth('Signed out.'); });
+}
+function showAuth(msg=''){
+  currentSession=null;currentUser=null;currentProfile=null;
+  document.querySelector('.nav').classList.add('hidden');
+  document.querySelectorAll('.page').forEach(p=>p.classList.add('hidden'));
+  document.getElementById('auth').classList.remove('hidden');
+  document.getElementById('userBar').innerHTML='Not signed in';
+  document.getElementById('authMsg').innerHTML=msg;
+}
+async function handleLoggedIn(session){
+  const liveId = new URLSearchParams(window.location.search).get('live');
+
+  if(liveId){
+    await loadLiveRound(liveId);
+    return;
+  }
+
+  currentSession=session; currentUser=session.user;
+  await loadProfile();
+  document.querySelector('.nav').classList.remove('hidden');
+  document.getElementById('navAdmin').classList.toggle('hidden', !(currentProfile&&currentProfile.role==='admin'));
+  document.getElementById('userBar').innerHTML=`${currentUser.email} · ${currentProfile?.role||'player'} · <button class="btn2" style="width:auto;padding:6px 10px;font-size:12px" onclick="signOutUser()">Sign out</button>`;
+  await loadAll(); 
+  renderSummary(); 
+
+  if(loadActiveRound()){
+    renderScore();
+    showPage('scorePage');
+}else{
+  showPage(currentPage || 'setup');
+}
+}
+async function loadProfile(){
+  let rows=[];
+  try{rows=await sb(`profiles?id=eq.${currentUser.id}&select=*`);}catch(e){rows=[];}
+  if(rows&&rows.length){currentProfile=rows[0]; return;}
+  const name=(currentUser.email||'').split('@')[0]||'Player';
+  try{let created=await sb('profiles',{method:'POST',body:JSON.stringify({id:currentUser.id,email:currentUser.email,display_name:name,role:'player'})}); currentProfile=created[0];}
+  catch(e){currentProfile={id:currentUser.id,email:currentUser.email,display_name:name,role:'player'};}
+}
+async function signInUser(){
+  const email=document.getElementById('authEmail').value.trim(), password=document.getElementById('authPassword').value;
+  const {error}=await authClient.auth.signInWithPassword({email,password});
+  document.getElementById('authMsg').innerHTML=error?`<span class="bad">${error.message}</span>`:'Signing in...';
+}
+async function signUpUser(){
+  const email=document.getElementById('authEmail').value.trim(), password=document.getElementById('authPassword').value;
+  const {error}=await authClient.auth.signUp({email,password});
+  document.getElementById('authMsg').innerHTML=error?`<span class="bad">${error.message}</span>`:'Account created. If email confirmation is enabled, check email. Then sign in.';
+}
+async function signOutUser(){await authClient.auth.signOut();}
+
+async function loadConfig(){try{let r=await fetch('/api/config',{cache:'no-store'}); let j=await r.json(); SB.url=j.supabaseUrl; SB.key=j.supabaseAnonKey; document.getElementById('dbStatus').innerHTML=SB.url&&SB.key?'<span class="ok">Connected to Vercel config.</span>':'<span class="bad">Missing env vars.</span>';}catch(e){document.getElementById('dbStatus').innerHTML='<span class="bad">Could not load /api/config.</span>';}}
+async function sb(path,opts={}){if(!SB.url||!SB.key) throw new Error('Missing Supabase config'); let r=await fetch(`${SB.url}/rest/v1/${path}`,{cache:'no-store',...opts,headers:{apikey:SB.key,Authorization:`Bearer ${currentSession?.access_token||SB.key}`,'Content-Type':'application/json','Cache-Control':'no-cache',Pragma:'no-cache',Prefer:'return=representation',...(opts.headers||{})}}); if(!r.ok){let t=await r.text(); throw new Error(t)} return await r.json();}
+
+async function forceFullSync(button){
+  if(button){button.disabled=true;button.textContent='Refreshing…';}
+  try{
+    if('caches' in window){
+      const names=await caches.keys();
+      await Promise.all(names.map(name=>caches.delete(name)));
+    }
+    if('serviceWorker' in navigator){
+      const reg=await navigator.serviceWorker.getRegistration();
+      if(reg) await reg.update();
+    }
+    await loadAll();
+    renderSummary();
+    if(currentPage==='admin') renderAdmin();
+    lastForegroundSync=Date.now();
+  }catch(e){
+    alert('Refresh failed: '+e.message);
+  }finally{
+    if(button){button.disabled=false;button.textContent='Refresh from server';}
+  }
+}
+
+async function refreshAfterForeground(){
+  if(document.visibilityState!=='visible'||!currentSession||Date.now()-lastForegroundSync<15000) return;
+  lastForegroundSync=Date.now();
+  await loadAll();
+  renderSummary();
+}
+document.addEventListener('visibilitychange',()=>{refreshAfterForeground().catch(console.error);});
+window.addEventListener('pageshow',()=>{refreshAfterForeground().catch(console.error);});
+async function loadPaged(path){
+  let all = [];
+  let from = 0;
+  const size = 1000;
+
+  while(true){
+    const rows = await sb(`${path}&limit=${size}&offset=${from}`);
+    all.push(...rows);
+
+    if(rows.length < size) break;
+
+    from += size;
+  }
+
+  return all;
+}
+async function loadAll(){
+document.getElementById('dbStatus').innerHTML='<span class="small">Loading Supabase data…</span>';
+if(document.getElementById('summaryContent'))document.getElementById('summaryContent').innerHTML='<div class="card loading-box">正在載入統計資料…</div>';
+try{db.courses=await sb('courses?select=*&order=id'); db.holes = await loadPaged('holes?select=*&order=course_id,hole_number');db.course_combos=await sb('course_combos?select=*&order=id'); db.matchups=await sb('matchups?select=*&order=id'); db.players=await sb('players?select=*&order=name').catch(()=>[]); db.rounds=await sb('fortis_rounds?select=*&order=id.desc&limit=30').catch(()=>[]); db.scores=await sb('hole_scores?select=*&order=round_id.desc,hole_number&limit=1000').catch(()=>[]); db.history=await sb('matchup_history?select=*&order=id.desc&limit=200').catch(()=>[]);
+
+try{
+  db.seasons=await sb('seasons?select=*&order=id');
+}catch(e){
+  alert('Seasons load error: '+e.message);
+  db.seasons=[];
+}
+
+setupCourseSelect(); document.getElementById('dbStatus').innerHTML=`<span class="ok">Supabase connected.</span> Courses: ${db.courses.length}, holes: ${db.holes.length}, matchups: ${db.matchups.length}, rounds: ${db.rounds.length}`; document.getElementById('dataView').innerHTML=`Courses ${db.courses.length}<br>Holes ${db.holes.length}<br>Matchups ${db.matchups.length}<br>Players ${db.players.length}<br>Rounds ${db.rounds.length}<br>History ${db.history.length}<br>Seasons ${db.seasons.length}`;}catch(e){let retry=`<button class="btn2" onclick="loadAll()">重試載入</button>`;document.getElementById('dbStatus').innerHTML='<span class="bad">Supabase error: '+e.message+'</span> '+retry;if(document.getElementById('summaryContent'))document.getElementById('summaryContent').innerHTML=`<div class="card"><h2>資料載入失敗</h2><p class="bad">${e.message}</p>${retry}</div>`;}}
+function makePlayers(){
+  let n=+(document.getElementById('playerCount')?.value || 4);
+  let names=['','','',''];
+  let box=document.getElementById('playerInputs');
+  box.innerHTML='';
+
+  for(let i=0;i<n;i++){
+    box.insertAdjacentHTML('beforeend',`
+      <div>
+        <label>球員 ${i+1}</label>
+        <input id="p${i}" value="${names[i]||''}">
+        <label>第一洞開球距離</label>
+        <select id="r${i}">
+          ${[1,2,3,4].slice(0,n).map(x=>`<option>${x}</option>`).join('')}
+        </select>
+      </div>
+    `);
+  }
+}
+function getRecentCourses(){
+  try{
+    return JSON.parse(localStorage.getItem('recentCourses') || '[]');
+  }catch(e){
+    return [];
+  }
+}
+
+function saveRecentCourse(courseName, comboName){
+  let item = {
+    courseName,
+    comboName: comboName || '',
+    savedAt: Date.now()
+  };
+
+  let list = getRecentCourses()
+    .filter(x => !(x.courseName === item.courseName && x.comboName === item.comboName));
+
+  list.unshift(item);
+  list = list.slice(0,5);
+
+  localStorage.setItem('recentCourses', JSON.stringify(list));
+}
+
+function renderRecentCourses(){
+  let box = document.getElementById('recentCourses');
+  if(!box) return;
+
+  let list = getRecentCourses();
+  box.innerHTML = '';
+
+  if(!list.length){
+    box.innerHTML = '<div class="small">尚無最近球場</div>';
+    return;
+  }
+
+  list.forEach(item=>{
+    let btn=document.createElement('button');
+    btn.className='btn2';
+    btn.style.width='auto';
+    btn.style.padding='8px 12px';
+    btn.style.fontSize='13px';
+    btn.innerText = item.comboName ? item.courseName + ' ' + item.comboName : item.courseName;
+    btn.onclick=()=>{
+      document.getElementById('courseSearch').value = '';
+      setupCourseSelect();
+      
+      document.getElementById('course').value = item.courseName;
+      document.getElementById('course').onchange();
+
+      if(item.comboName && document.getElementById('combo')){
+        document.getElementById('combo').value = item.comboName;
+      }
+    };
+    box.appendChild(btn);
+  });
+}
+  function setupCourseSelect(){
+  let sel=document.getElementById('course');
+  sel.innerHTML='';
+  let countrySel=document.getElementById('country');
+
+let previousCountry = countrySel?.value || 'Taiwan';
+
+if(countrySel){
+  countrySel.innerHTML = '';
+
+  [...new Set(db.courses.map(c => c.country || 'Taiwan'))]
+    .sort()
+    .forEach(c => countrySel.add(new Option(c, c)));
+
+  if([...countrySel.options].some(option => option.value === previousCountry)){
+    countrySel.value = previousCountry;
+  }else if([...countrySel.options].some(option => option.value === 'Taiwan')){
+    countrySel.value = 'Taiwan';
+  }
+}
+
+let selectedCountry = countrySel ? countrySel.value : 'Taiwan';
+let searchText = (document.getElementById('courseSearch')?.value || '').toLowerCase().trim();
+
+const normalCourses = db.courses
+  .filter(c => (c.country || 'Taiwan') === selectedCountry)
+  .filter(c => !c.course_group)
+  .map(c => ({
+    label: courseLocalizedName(c),
+    value: c.course_name
+  }));
+
+let comboParents = (db.course_combos || [])
+  .filter(c => (c.country || 'Taiwan') === selectedCountry)
+  .filter(c => c.active !== false)
+  .map(c => ({
+    label: c.parent_course_name,
+    value: c.parent_course_code
+  }));
+
+if(selectedCountry === 'Vietnam'){
+  comboParents.push({
+    label: '新山',
+    value: 'TSN'
+  });
+}
+
+if(selectedCountry === 'China'){
+  comboParents.push({
+    label: '天馬',
+    value: 'TM'
+  });
+}
+
+[...new Map([...normalCourses, ...comboParents].map(x => [x.value, x])).values()]
+  .filter(x =>
+    !searchText ||
+    x.label.toLowerCase().includes(searchText) ||
+    x.value.toLowerCase().includes(searchText)
+  )
+  .sort((a,b)=>a.label.localeCompare(b.label))
+  .forEach(x=>sel.add(new Option(x.label, x.value)));
+  sel.onchange=()=>{
+    const comboBox=document.getElementById('comboBox');
+    const combo=document.getElementById('combo');
+
+    combo.innerHTML='';
+
+  const combos = (db.course_combos || [])
+  .filter(x => x.parent_course_code === sel.value)
+  .filter(x => x.active !== false);
+
+if(combos.length){
+  combos.forEach(x =>
+    combo.add(new Option(
+      x.playable_display_name || x.combo_display_name || x.combo_code,
+      x.combo_code
+    ))
+  );
+
+  comboBox.classList.remove('hidden');
+  comboBox.querySelector('label').innerText = 'Combo';
+}else{
+  comboBox.classList.add('hidden');
+}
+  };
+
+  sel.onchange();
+}
+
+  renderRecentCourses();
+
+function currentPlayers(){
+  let n=+(document.getElementById('playerCount')?.value || 4);
+
+  return [0,1,2,3]
+    .slice(0,n)
+    .map(i =>
+      document.getElementById('p'+i).value.trim() || `Player ${i+1}`
+    );
+}
+function loadLastGroup(){let rid=db.rounds?.[0]?.id; if(!rid)return alert('No previous round found.'); let names=[...new Set(db.scores.filter(s=>s.round_id===rid).map(s=>s.player_name))].slice(0,4); if(names.length<4)return alert('Could not find 4 players from last round.'); names.forEach((n,i)=>document.getElementById('p'+i).value=n); renderMatchups(); alert('Loaded last group: '+names.join(', '));}
+function pairKey(a,b){return [a,b].sort().join('___')}
+function findMatchup(a,b){let rec=db.matchups.find(m=>pairKey(m.giver,m.receiver)===pairKey(a,b)); if(rec) return {id:rec.id,a,b,active:true,giver:rec.giver,receiver:rec.receiver,strokes:+rec.holes_given||0}; return {id:null,a,b,active:true,giver:a,receiver:b,strokes:0};}
+function renderMatchups(){if(!useIndividualMatchups){
+  document.getElementById('matchupSetup').innerHTML =
+    '<p class="small">Individual matchups are OFF for this round.</p>';
+  return;
+}
+                          
+  let p=currentPlayers(), pairs=[]; for(let i=0;i<p.length;i++) for(let j=i+1;j<p.length;j++) pairs.push(findMatchup(p[i],p[j])); let html=''; pairs.forEach((m,idx)=>{html+=`<div class="match"><label class="toggle"><input type="checkbox" id="mAct${idx}" checked> ${m.a} vs ${m.b}</label><div class="grid"><div><label>Giver</label><select id="mG${idx}"><option ${m.giver===m.a?'selected':''}>${m.a}</option><option ${m.giver===m.b?'selected':''}>${m.b}</option></select></div><div><label>Receiver</label><select id="mR${idx}"><option ${m.receiver===m.a?'selected':''}>${m.a}</option><option ${m.receiver===m.b?'selected':''}>${m.b}</option></select></div><div><label>Current holes given</label><input type="number" id="mS${idx}" value="${m.strokes}"></div><div><label>Saved</label><input disabled value="${m.strokes?m.giver+' gives '+m.receiver+' '+m.strokes:'Scratch / new matchup'}"></div></div></div>`}); document.getElementById('matchupSetup').innerHTML=html;}
+function toggleIndividualMatchups(on){
+  useIndividualMatchups=on;
+
+  document.querySelectorAll('[id^="mAct"]').forEach(x=>{
+    x.checked=on;
+  });
+
+  renderMatchups();
+}  
+function readMatchups(){if(!useIndividualMatchups){
+  return [];
+}let p=currentPlayers(), pairs=[]; for(let i=0;i<p.length;i++) for(let j=i+1;j<p.length;j++) pairs.push(findMatchup(p[i],p[j])); return pairs.map((m,idx)=>({...m,active:document.getElementById('mAct'+idx)?.checked!==false,giver:document.getElementById('mG'+idx)?.value||m.giver,receiver:document.getElementById('mR'+idx)?.value||m.receiver,strokes:+(document.getElementById('mS'+idx)?.value||0)}));}
+function buildCourse(){
+  let c=document.getElementById('course').value;
+  let comboBox=document.getElementById('comboBox');
+  let combo=document.getElementById('combo');
+  let keys=[];
+
+  if(!comboBox.classList.contains('hidden') && combo.value){
+    let comboValue=combo.value.trim();
+
+    if(comboValue.includes('+')){
+      keys=comboValue.split('+').map(x=>x.trim());
+    }else{
+      keys=comboValue.split('');
+    }
+
+    keys=keys.map(x=>{
+      if(x.startsWith(c+'-')){
+        return x;
+      }
+
+      return c+'-'+x;
+    });
+
+  }else{
+    keys=[c];
+  }
+
+  let holes=[];
+
+  keys.forEach(k=>{
+    let course=db.courses.find(x=>x.course_name===k);
+
+    if(!course){
+      alert('Course not found: '+k);
+      return;
+    }
+
+    let arr=db.holes
+      .filter(h=>+h.course_id===+course.id)
+      .sort((a,b)=>a.hole_number-b.hole_number);
+
+    arr.forEach(h=>holes.push({
+      display:k+' #'+h.hole_number,
+      par:h.par,
+      hcp:h.handicap_index,
+      strokeEligible:h.stroke_eligible,
+      roundHole:holes.length+1
+    }));
+  });
+
+  return holes;
+}
+
+function saveActiveRound(){
+  if(round){
+    localStorage.setItem('fortisActiveRound', JSON.stringify({round, roundHole}));
+  }
+}
+
+  async function syncLiveRound(){
+  if(!round) return;
+
+  try{
+    await sb('live_rounds',{
+      method:'POST',
+      headers:{
+        Prefer:'resolution=merge-duplicates'
+      },
+      body:JSON.stringify({
+        id:round.id,
+        round_data:round,
+        round_hole:roundHole,
+        updated_at:new Date().toISOString(),
+        active:true
+      })
+    });
+  }catch(e){
+    console.log('Live sync failed:', e.message);
+  }
+}
+
+async function loadLiveRound(roundId){
+  try{
+    const rows = await sb(`live_rounds?id=eq.${roundId}&select=*`);
+
+    if(!rows || !rows.length){
+      document.getElementById('liveViewerContent').innerHTML =
+        '<div class="card"><h2>找不到此即時回合</h2></div>';
+      showPage('liveViewer');
+      return;
+    }
+
+    const live = rows[0];
+
+    let r = live.round_data;
+let h = live.round_hole || 0;
+let c = calcFortis(r);
+
+let gross = r.players.map((p,i)=>{
+  let total = 0;
+  for(let x=0;x<18;x++){
+    if(r.scores[x][i] !== ''){
+      total += +r.scores[x][i];
+    }
+  }
+  return {name:p,total};
+});
+
+document.getElementById('liveViewerContent').innerHTML = `
+  <div class="card">
+    <h2>🏌️ 即時戰況</h2>
+    <div class="small">${r.courseName}${r.combo ? ' ' + r.combo : ''} · 第 ${h+1} 洞</div>
+    <div class="small">最後更新：${new Date(live.updated_at).toLocaleTimeString()}</div>
+  </div>
+
+  <div class="card">
+    <h2>目前總桿</h2>
+    ${gross.map(g=>`
+      <div class="leader-row">
+        <div><b>${g.name}</b></div>
+        <div class="score">${g.total}</div>
+      </div>
+    `).join('')}
+  </div>
+
+  <div class="card">
+    <h2>即時排行榜</h2>
+    ${r.players.map((p,i)=>({name:p,points:c.totals[i]}))
+      .sort((a,b)=>b.points-a.points)
+      .map((p,i)=>`
+        <div class="leader-row">
+          <div>${i+1}. <b>${p.name}</b></div>
+          <div class="score">${p.points}</div>
+        </div>
+      `).join('')}
+  </div>
+`;
+
+    showPage('liveViewer');
+
+    setTimeout(()=>loadLiveRound(roundId),5000);
+
+  }catch(e){
+    document.getElementById('liveViewerContent').innerHTML =
+      '<div class="card"><h2>無法載入即時回合</h2></div>';
+    showPage('liveViewer');
+  }
+}
+async function copyLiveLink(){
+  if(!round) return;
+
+  await syncLiveRound();
+
+  const link =
+  'https://fortis-golf.vercel.app/?live=' +
+  round.id;
+
+  try{
+    await navigator.clipboard.writeText(link);
+    alert('即時分享連結已複製');
+  }catch(e){
+    prompt('複製此即時分享連結：', link);
+  }
+}
+function loadActiveRound(){
+  try{
+    let saved=localStorage.getItem('fortisActiveRound');
+    if(!saved) return false;
+    let data=JSON.parse(saved);
+    if(!data.round) return false;
+    round=data.round;
+    roundHole=data.roundHole||0;
+    return true;
+  }catch(e){
+    return false;
+  }
+}
+
+function clearActiveRound(){
+  localStorage.removeItem('fortisActiveRound');
+}
+function startRound(){
+  if(!document.getElementById('matchupSetup').querySelector('.match')) renderMatchups();
+
+ let n=currentPlayers().length;
+let ranks=[...Array(n).keys()].map(i=>+document.getElementById('r'+i).value);
+
+if(new Set(ranks).size!==n){
+  alert('Ranks must have no duplicates.');
+  return;
+}
+
+  let course=buildCourse();
+  if(course.length!==18){
+    alert('Selected course/combo does not have 18 holes.');
+    return;
+  }
+
+  let selectedCourseType=document.getElementById('course').value;
+let selectedCombo=
+  !document.getElementById('comboBox').classList.contains('hidden')
+    ? document.getElementById('combo').value
+    : null;
+
+  round={
+    id:Date.now(),
+    note:document.getElementById('roundNote').value,
+    courseName:selectedCourseType,
+    combo:selectedCombo,
+    players:currentPlayers(),
+    initialRanks:currentPlayers().map((_,i)=>+document.getElementById('r'+i).value),
+    matchups:readMatchups(),
+    course,
+    scores:Array.from({length:18},()=>Array(currentPlayers().length).fill('')),
+    created:new Date().toISOString()
+  };
+
+  let startHole = prompt("Starting hole? (1-18)", "1");
+  let startHoleIndex = Math.max(0, Math.min(17, (+startHole || 1) - 1));
+
+round.startHoleIndex = startHoleIndex;
+roundHole = startHoleIndex;
+
+  saveRecentCourse(selectedCourseType, selectedCombo);
+  saveActiveRound();
+  syncLiveRound();
+  renderScore();
+  showPage('scorePage');
+}
+
+
+function playerPoint(score,par){let d=score-par; if(d<=-2)return 16; if(d===-1)return 8; if(d===0)return 4; if(d===1)return 2; if(d===2)return 1; return 0;}
+function calcFortis(r){
+  let n=r.players.length;
+  if(n===2){
+    return {totals:[0,0], rows:[]};
+  }
+
+  let totals=Array(n).fill(0), rows=[];
+
+  let startIndex = r.startHoleIndex ?? 0;
+  let playOrder = Array.from({length:18}, (_,i)=>(startIndex+i)%18);
+  let prevRanks = r.initialRanks.map((rank,i)=>({i,rank}));
+
+  for(let orderIndex=0; orderIndex<18; orderIndex++){
+    let h = playOrder[orderIndex];
+
+    let arr=r.players.map((p,i)=>{
+      let scoreForPairing;
+
+      if(orderIndex===0){
+        scoreForPairing = r.initialRanks[i];
+      }else{
+        let prevHole = playOrder[orderIndex-1];
+        scoreForPairing = r.scores[prevHole][i]==='' ? 999 : +r.scores[prevHole][i];
+      }
+
+      return {
+        i,
+        score: scoreForPairing,
+        rank: prevRanks.find(x=>x.i===i).rank
+      };
+    });
+
+    arr.sort((a,b)=>a.score-b.score || a.rank-b.rank);
+    prevRanks = arr.map((x,idx)=>({
+  i:x.i,
+  rank:idx+1
+}));
+
+    if(n===3){
+      let best=arr[0].i, mid=arr[1].i, worst=arr[2].i;
+
+      let bestPts = r.scores[h][best]==='' ? 0 : playerPoint(+r.scores[h][best], r.course[h].par);
+      let worstPts = r.scores[h][worst]==='' ? 0 : playerPoint(+r.scores[h][worst], r.course[h].par);
+      let midPts = r.scores[h][mid]==='' ? 0 : playerPoint(+r.scores[h][mid], r.course[h].par);
+
+      let teamBW = bestPts + worstPts;
+      let middle = midPts * 2;
+      let diff = teamBW - middle;
+
+      totals[best] += diff;
+      totals[worst] += diff;
+      totals[mid] -= diff * 2;
+
+      rows[h]={h,team1:[best,worst],team2:[mid],t1:teamBW,t2:middle};
+    }
+
+    if(n===4){
+      let team1=[arr[0].i,arr[3].i];
+      let team2=[arr[1].i,arr[2].i];
+
+      let t1 = team1.reduce((a,i)=>
+  a + (r.scores[h][i]==='' ? 0 : playerPoint(+r.scores[h][i], r.course[h].par)), 0
+);
+
+      let t2 = team2.reduce((a,i)=>
+  a + (r.scores[h][i]==='' ? 0 : playerPoint(+r.scores[h][i], r.course[h].par)), 0
+);
+
+      let diff = t1 - t2;
+
+      team1.forEach(i=>totals[i]+=diff);
+      team2.forEach(i=>totals[i]-=diff);
+
+      rows[h]={h,team1,team2,t1,t2};
+    }
+  }
+
+  return {totals,rows};
+}
+function eligibleStrokeHoles(course,n){
+  const countPar3 = document.getElementById('countPar3Strokes')?.checked === true;
+
+  return [...course]
+    .filter(h => countPar3 || h.strokeEligible)
+    .sort((a,b)=>a.hcp-b.hcp)
+    .slice(0,n)
+    .map(h=>h.roundHole);
+}
+function bonusForScore(score,par){
+  let diff=score-par;
+  if(par===3 && score===1) return 10;
+  if(diff<=-3) return 10;
+  if(diff===-2) return 5;
+  if(diff===-1) return 1;
+  return 0;
+}
+
+function calcIndividual(r){
+  return r.matchups.map(m=>{
+    if(!m.active)return{...m,skipped:true};
+
+    let ai=r.players.indexOf(m.a),
+        bi=r.players.indexOf(m.b),
+        strokeHoles=eligibleStrokeHoles(r.course,+m.strokes||0),
+        match=0,
+        bonusA=0,
+        bonusB=0,
+        totalResult=0;
+    startResult = (m.receiver === m.a ? m.strokes : -m.strokes);
+
+    for(let h=0;h<18;h++){
+      let sa=r.scores[h][ai],
+          sb=r.scores[h][bi],
+          hole=r.course[h];
+
+      if(sa==="" || sb==="") continue;
+
+      let aStroke=strokeHoles.includes(h+1)&&m.receiver===m.a?1:0;
+      let bStroke=strokeHoles.includes(h+1)&&m.receiver===m.b?1:0;
+
+      let na=+sa-aStroke;
+      let nb=+sb-bStroke;
+
+      if(na<nb)match++;
+      else if(nb<na)match--;
+
+      let isLarryMode = document.getElementById('countPar3Strokes')?.checked === true;
+
+if(!isLarryMode){
+  bonusA+=bonusForScore(+sa,hole.par);
+  bonusB+=bonusForScore(+sb,hole.par);
+}
+    }
+
+    totalResult=startResult+match+bonusA-bonusB;
+
+    return {
+  ...m,
+  strokeHoles,
+  match,
+  bonusA,
+  bonusB,
+  startResult,
+  totalResult,
+  winner: totalResult>0 ? m.a : totalResult<0 ? m.b : 'Tie'
+};
+  });
+}
+  function nextGive(m){
+  let result=+(m.totalResult ?? m.match) || 0;
+  let steps=Math.floor(Math.abs(result)/3);
+
+  if(!steps){
+    return {giver:m.giver,receiver:m.receiver,strokes:+m.strokes||0};
+  }
+
+  let strokes=+m.strokes||0,
+      giver=m.giver,
+      receiver=m.receiver;
+
+  if(m.winner===m.giver){
+    strokes+=steps;
+  }else if(m.winner===m.receiver){
+    strokes-=steps;
+    if(strokes<0){
+      [giver,receiver]=[receiver,giver];
+      strokes=Math.abs(strokes);
+    }
+  }
+
+  return {giver,receiver,strokes};
+}
+function playScoreAnimation(result){
+  let par = round.course[roundHole].par;
+  let diff = result.diff;
+
+  let scene =
+    par === 3 && result.score === 1 ? {
+      icon:'hio', title:'一桿進洞！', text:'鳥群衝進洞口，引發大爆炸！'
+    } :
+    diff <= -3 ? {
+      icon:'albatross', title:'信天翁！', text:'信天翁在藍天優雅展翅。'
+    } :
+    diff === -2 ? {
+      icon:'eagle', title:'老鷹！', text:'白頭鷹展翅滑翔！'
+    } :
+    diff === -1 ? {
+      icon:'birdie', title:'博蒂！', text:'啄木鳥瘋狂啄木頭！'
+    } :
+    diff === 0 ? {
+      icon:'par', title:'標準桿', text:'高爾夫球冷靜進洞。'
+    } :
+    diff === 1 ? {
+      icon:'bogey', title:'柏忌', text:'球員氣到折斷一支球桿。'
+    } :
+    diff === 2 ? {
+      icon:'double-bogey', title:'雙柏忌', text:'球員連續折斷三支球桿。'
+    } : {
+      icon:'triple-bogey', title:'三柏忌以上', text:'球員把整個高爾夫球袋連球桿一起丟進水裡！'
+    };
+
+  let overlay=document.createElement('div');
+  overlay.className='score-animation';
+  overlay.innerHTML=`
+    <div class="score-animation-box">
+      ${scene.icon==='birdie'
+  ? `<video class="score-video" autoplay muted playsinline preload="auto">
+    <source src="animations/birdie.mp4" type="video/mp4">
+  </video>`
+  : scene.icon==='eagle'
+  ? `<video class="score-video" autoplay muted playsinline preload="auto">
+    <source src="animations/eagle.mp4" type="video/mp4">
+  </video>`
+  : scene.icon==='albatross'
+  ? `<video class="score-video" autoplay muted playsinline preload="auto">
+    <source src="animations/albatross.mp4" type="video/mp4">
+  </video>`
+  : scene.icon==='par'
+  ? `<video class="score-video" autoplay muted playsinline preload="auto">
+    <source src="animations/par.mp4?v=20260713-2" type="video/mp4">
+  </video>`
+  : scene.icon==='bogey'
+? `<video class="score-video" autoplay muted playsinline preload="auto">
+    <source src="animations/bogey.mp4" type="video/mp4">
+  </video>`
+: scene.icon==='double-bogey'
+? `<video class="score-video" autoplay muted playsinline preload="auto">
+    <source src="animations/double-bogey.mp4" type="video/mp4">
+  </video>`
+: scene.icon==='hio'
+? `<video class="score-video" autoplay muted playsinline preload="auto">
+    <source src="animations/hio.mp4" type="video/mp4">
+  </video>`
+: scene.icon==='triple-bogey'
+? `<video class="score-video" autoplay muted playsinline preload="auto">
+    <source src="animations/triple-bogey.mp4" type="video/mp4">
+  </video>`
+: `<div class="score-animal">${scene.icon}</div>`
+}
+      ${['birdie','eagle','albatross','par','bogey','double-bogey','hio','triple-bogey'].includes(scene.icon) ? '' : `
+      <div class="score-title">${scene.title}</div>
+      <div class="score-player">${result.player} · ${result.score} 桿</div>
+      <div class="small" style="margin-top:8px">${scene.text}</div>
+`}
+    </div>
+  `;
+
+  document.body.appendChild(overlay);
+
+  setTimeout(()=>{
+    overlay.remove();
+  },6000);
+}
+  function changeScore(h,i,delta){
+  let current=round.scores[h][i];
+  let par=round.course[h].par;
+  let next=current==='' ? par+delta : +current+delta;
+
+  if(next<1) next=1;
+  round.scores[h][i]=next;
+  saveActiveRound();
+  syncLiveRound();  
+  renderScore();
+}
+
+function confirmHoleScores(){
+    if(scoreAnimationPlaying) return;
+      scoreAnimationPlaying=true;
+
+  for(let i=0;i<round.players.length;i++){
+    if(round.scores[roundHole][i] === ''){
+      round.scores[roundHole][i] = round.course[roundHole].par;
+    }
+  }
+
+  let par = round.course[roundHole].par;
+
+  let results = round.players.map((player,i)=>({
+    player,
+    score: +round.scores[roundHole][i],
+    diff: +round.scores[roundHole][i] - par
+  }));
+
+  let goodScores = results.filter(r=>r.diff < 0);
+
+  let animationResult;
+
+  if(goodScores.length){
+    animationResult = goodScores.sort((a,b)=>a.score-b.score)[0];
+  }else{
+    animationResult = results.sort((a,b)=>b.score-a.score)[0];
+  }
+
+  playScoreAnimation(animationResult);
+
+saveActiveRound();
+syncLiveRound();
+
+setTimeout(()=>{
+  roundHole = (roundHole + 1) % 18;
+  saveActiveRound();
+  syncLiveRound();
+  scoreAnimationPlaying=false;
+  renderScore();
+},2200);
+}
+  
+function renderScore(){
+  let c=calcFortis(round), h=round.course[roundHole];
+
+  let holeNav='<div class="card"><h2>選擇球洞</h2><div style="display:grid;grid-template-columns:repeat(6,1fr);gap:6px">';
+
+for(let i=0;i<18;i++){
+  let played = round.scores[i].some(x=>x !== '');
+  holeNav += `
+    <button
+      style="
+        min-width:0;
+        padding:10px 4px;
+        ${i===roundHole ? 'background:#38a169;font-size:18px;' : ''}
+        ${played && i!==roundHole ? 'background:#1f2f48;' : ''}
+      "
+      onclick="roundHole=${i};renderScore()">
+      ${i+1}
+    </button>`;
+}
+
+holeNav += '</div></div>';
+
+  let courseRec = db.courses.find(c => c.course_name === round.courseName);
+
+let comboRec = db.course_combos.find(c =>
+  c.parent_course_code === round.courseName &&
+  c.combo_code === round.combo
+);
+
+let courseTitle =
+  courseLocalizedName(courseRec) ||
+  comboRec?.parent_course_name ||
+  round.courseName;
+
+let comboTitle =
+  comboRec?.playable_display_name ||
+  comboRec?.combo_display_name ||
+  round.combo ||
+  '';
+
+let html=holeNav+`<div class="card">
+  <div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start">
+    <div>
+      <h2 style="font-size:24px;margin-bottom:4px">第 ${roundHole+1} 洞</h2>
+      <div class="small">${courseTitle}${comboTitle ? ' ' + comboTitle : ''}</div>
+      <div class="small">${h.display} · 標準桿 ${h.par} · 難度 ${h.hcp}</div>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end">
+    <button class="btn2" style="width:auto;min-width:88px;padding:10px 12px;font-size:13px" onclick="copyLiveLink()">分享</button>
+    <button class="btn2" style="width:auto;min-width:88px;padding:10px 12px;font-size:13px" onclick="saveRound()">儲存</button>
+</div>
+  </div>
+</div>`;
+
+  html+=`<div class="card">
+  <div class="grid" style="gap:10px">
+    <div>
+      <h2>目前總桿</h2>`;
+
+round.players.forEach((p,i)=>{
+  let grossTotal=0;
+
+  for(let h=0;h<18;h++){
+    if(round.scores[h][i] !== ''){
+      grossTotal += +round.scores[h][i];
+    }
+  }
+
+  html+=`
+    <div class="leader-row" style="padding:8px 10px;margin:5px 0">
+      <div><b>${p}</b></div>
+      <div class="score" style="font-size:22px">${grossTotal}</div>
+    </div>`;
+});
+
+html+=`
+    </div>
+    <div>
+      <h2>即時排行榜</h2>`;
+
+round.players.map((_,i)=>i)
+  .sort((a,b)=>c.totals[b]-c.totals[a])
+  .forEach((i,k)=>{
+    html+=`
+      <div class="leader-row" style="padding:8px 10px;margin:5px 0">
+        <div>${k+1}. <b>${round.players[i]}</b></div>
+        <div class="score" style="font-size:22px">${c.totals[i]}</div>
+      </div>`;
+  });
+
+html+=`
+    </div>
+  </div>
+</div>`;
+
+  html+=`<div class="card"><h2>輸入桿數</h2>`;
+
+for(let i=0;i<round.players.length;i++){
+  let val=round.scores[roundHole][i];
+  let showVal=val==='' ? h.par : val;
+  let diff=showVal-h.par;
+
+  let scoreName =
+    diff===-3?'信天翁':
+    diff===-2?'老鷹':
+    diff===-1?'博蒂':
+    diff===0?'標準桿':
+    diff===1?'柏忌':
+    diff===2?'雙柏忌':
+    diff===3?'三柏忌':
+    '+'+diff;
+
+  html+=`
+    <div class="team" style="display:grid;grid-template-columns:1fr 58px 76px 58px;gap:8px;align-items:center">
+      <div>
+        <h2 style="margin:0">${round.players[i]}</h2>
+        <div class="small">Par ${h.par} · ${scoreName}</div>
+      </div>
+
+      <button class="btn2" style="font-size:24px;padding:12px" onclick="changeScore(${roundHole},${i},-1)">−</button>
+
+      <div style="text-align:center;font-size:34px;font-weight:900">
+        ${showVal}
+      </div>
+
+      <button style="font-size:24px;padding:12px" onclick="changeScore(${roundHole},${i},1)">+</button>
+    </div>`;
+}
+  html+=`
+  <button onclick="confirmHoleScores()" style="font-size:18px;padding:16px">
+    儲存並前往下一洞 →
+  </button>`;
+
+let row = c.rows[roundHole];
+
+html+=`
+  </div>
+  <div class="grid" style="margin-top:10px">
+    <button class="btn2" onclick="roundHole=Math.max(0,roundHole-1);renderScore()">← 上一洞</button>
+    <button class="btn2" onclick="roundHole=Math.min(17,roundHole+1);renderScore()">下一洞 →</button>
+  </div>`;
+
+if(round.players.length > 2 && row){
+  let team2Name = row.team2.length===1
+    ? row.team2.map(i=>round.players[i]).join(' + ') + ' x2'
+    : row.team2.map(i=>round.players[i]).join(' + ');
+
+  html+=`<div class="card"><h2>目前配對</h2>
+    <div class="grid">
+      <div class="team" style="text-align:center">
+        <div class="small">第一組</div>
+        <h2>${row.team1.map(i=>round.players[i]).join(' + ')}</h2>
+        <div class="score">${row.t1}</div>
+      </div>
+
+      <div class="team" style="text-align:center">
+        <div class="small">第二組</div>
+        <h2>${team2Name}</h2>
+        <div class="score">${row.t2}</div>
+      </div>
+    </div>
+  </div>`;
+}else{
+  html+=`
+    <div class="card">
+      <h2>雙人對戰</h2>
+      <p class="small">雙人模式不使用 8421 配對計分，僅計算個人對戰與獎勵。</p>
+    </div>`;
+}
+
+  html+=individualHtml();
+  document.getElementById('scoreContent').innerHTML=html;
+}
+function individualHtml(){
+  let res=calcIndividual(round);
+  let html='<div class="card"><h2>個人對戰即時戰況</h2>';
+
+  res.forEach(r=>{
+    if(r.skipped){
+      html+=`<div class="team">${r.a} vs ${r.b}: 已關閉</div>`;
+    }else{
+      let handicapText =
+  r.startResult > 0 ? `${r.a} +${r.startResult}` :
+  r.startResult < 0 ? `${r.b} +${Math.abs(r.startResult)}` :
+  '平手';
+
+let matchText =
+  r.match > 0 ? `${r.a} +${r.match}` :
+  r.match < 0 ? `${r.b} +${Math.abs(r.match)}` :
+  '平手';
+
+let isLarryMode = r.larryMode === true || r.mode === 'larry';
+
+let bonusText =
+  r.bonusA-r.bonusB > 0 ? `${r.a} +${r.bonusA-r.bonusB}` :
+  r.bonusA-r.bonusB < 0 ? `${r.b} +${Math.abs(r.bonusA-r.bonusB)}` :
+  '無';
+
+let displayResult = r.match + (isLarryMode ? 0 : (r.bonusA - r.bonusB));
+
+let finalText =
+  displayResult > 0 ? `${r.a} +${displayResult}` :
+  displayResult < 0 ? `${r.b} +${Math.abs(displayResult)}` :
+  "平手";
+
+html+=`
+  <div class="team">
+    <div style="display:flex;justify-content:space-between;gap:10px;align-items:center">
+      <b>${r.a} vs ${r.b}</b>
+      <span class="score" style="font-size:22px">${finalText}</span>
+    </div>
+
+    <div class="grid4" style="margin-top:8px">
+      <div><span class="small">讓桿</span><br><b>${handicapText}</b></div>
+      <div><span class="small">對戰</span><br><b>${matchText}</b></div>
+      ${isLarryMode ? '' : `<div><span class="small">獎勵</span><br><b>${bonusText}</b></div>`}
+      <div><span class="small">最終</span><br><b>${finalText}</b></div>
+    </div>
+  </div>
+`;
+    }
+  });
+
+  html+='</div>';
+  return html;
+}
+async function saveRound(){try{let activeSeason=db.seasons.find(s=>s.active===true || s.active==='true' || s.active==='TRUE');
+
+let rr=await sb('fortis_rounds',{method:'POST',body:JSON.stringify({
+  round_name:round.note,
+  course_name:round.courseName,
+  course_combo:round.combo,
+  played_at:new Date().toISOString(),
+  season_id:activeSeason?.id||null,
+  players:round.players,
+  initial_ranks:round.initialRanks,
+  matchups:round.matchups,
+  course_data:round.course,
+  start_hole_index:round.startHoleIndex || 0
+})}); let round_id=rr[0].id; let scores=[];
+let lastPlayedHole=-1;
+
+for(let h=0;h<18;h++){
+  if(round.scores[h].some(x=>x!=='')){
+    lastPlayedHole=h;
+  }
+}
+if(lastPlayedHole<0){
+  alert('No scores entered yet.');
+  return;
+}
+for(let h=0;h<=lastPlayedHole;h++){
+  for(let i=0;i<round.players.length;i++){
+
+    const hole=round.course[h];
+
+let gross = round.scores[h][i] === ''
+  ? hole.par
+  : +round.scores[h][i];
+
+    let scoreType='';
+
+    if(hole.par===3){
+  if(gross===1) scoreType='一桿進洞';
+  else if(gross===2) scoreType='博蒂';
+  else if(gross===3) scoreType='標準桿';
+  else if(gross===4) scoreType='柏忌';
+  else if(gross===5) scoreType='雙柏忌';
+  else scoreType=(gross-hole.par)+' 桿超標';
+}
+else{
+  const diff=gross-hole.par;
+
+  if(diff<=-3) scoreType='信天翁';
+  else if(diff===-2) scoreType='老鷹';
+  else if(diff===-1) scoreType='博蒂';
+  else if(diff===0) scoreType='標準桿';
+  else if(diff===1) scoreType='柏忌';
+  else if(diff===2) scoreType='雙柏忌';
+  else if(diff===3) scoreType='三柏忌';
+  else scoreType='+'+diff;
+}
+
+  scores.push({
+      round_id,
+      season_id:activeSeason?.id||null,
+      player_name:round.players[i],
+      hole_number:h+1,
+      gross_score:gross,
+
+      par:hole.par,
+      handicap_index:hole.hcp,
+      course_hole:hole.display,
+      course_label:round.courseName,
+      score_type:scoreType
+    });
+  }
+} if(scores.length) await sb('hole_scores',{method:'POST',body:JSON.stringify(scores)}); for(const r of calcIndividual(round)){if(r.skipped)continue; let n=nextGive(r); if(r.id) await sb(`matchups?id=eq.${r.id}`,{method:'PATCH',body:JSON.stringify({giver:n.giver,receiver:n.receiver,holes_given:n.strokes,updated_at:new Date().toISOString()})}); else await sb('matchups',{method:'POST',body:JSON.stringify({giver:n.giver,receiver:n.receiver,holes_given:n.strokes})}); let giverResult = r.giver === r.a
+  ? r.totalResult
+  : -r.totalResult; await sb('matchup_history',{method:'POST',body:JSON.stringify({giver:r.giver,receiver:r.receiver,before_holes:r.strokes,after_holes:n.strokes,result_holes:giverResult,course:round.courseName+(round.combo?' '+round.combo:'')})});} localRounds.push(round); await loadAll(); clearActiveRound(); alert('Saved to Supabase. Check fortis_rounds, hole_scores, matchup_history, and matchups.'); renderSummary(); showPage('summary');}catch(e){alert('Save failed: '+e.message)}}
+function renderHeadToHead(){
+  let records={};
+
+  db.history.forEach(h=>{
+    let p1=h.giver;
+    let p2=h.receiver;
+    let key=[p1,p2].sort().join(' vs ');
+
+    if(!records[key]){
+      records[key]={
+        players:key,
+        pA:key.split(' vs ')[0],
+        pB:key.split(' vs ')[1],
+        winsA:0,
+        winsB:0,
+        ties:0,
+        holeDiffA:0
+      };
+    }
+
+    let rec=records[key];
+    let result=+h.result_holes||0;
+
+    let winner='';
+    if(result>0) winner=h.giver;
+    if(result<0) winner=h.receiver;
+
+    if(result===0){
+      rec.ties++;
+    }else if(winner===rec.pA){
+      rec.winsA++;
+      rec.holeDiffA+=Math.abs(result);
+    }else if(winner===rec.pB){
+      rec.winsB++;
+      rec.holeDiffA-=Math.abs(result);
+    }
+  });
+
+  let html='<div class="card"><h2>對戰記錄</h2>';
+  html+='<div class="scroll"><table><tr><th>對戰組合</th><th>戰績</th><th>洞數差</th><th>目前讓桿</th></tr>';
+
+  Object.values(records)
+    .sort((a,b)=>(b.winsA+b.winsB+b.ties)-(a.winsA+a.winsB+a.ties))
+    .forEach(r=>{
+      let current=db.matchups.find(m=>[m.giver,m.receiver].sort().join(' vs ')===r.players);
+      let handicap = current
+      ? `${current.giver} 讓 ${current.receiver} ${current.holes_given} 洞`
+      : '-';
+
+      html+=`<tr>
+        <td><b>${r.players}</b></td>
+        <td>${r.pA} ${r.winsA} 勝｜${r.pB} ${r.winsB} 勝｜平手 ${r.ties}</td>
+        <td>${r.holeDiffA>0?'+':''}${r.holeDiffA}</td>
+        <td>${handicap}</td>
+      </tr>`;
+    });
+
+  html+='</table></div></div>';
+  return html;
+}
+let summaryPlayer='all';
+function renderSummary(){
+  let playerNames=[...new Set(db.players.map(p=>p.name).concat(db.scores.map(s=>s.player_name)).filter(Boolean))].sort();
+  let html=`<div class="card summary-toolbar"><h2>統計篩選</h2><label>查看球員</label><select onchange="summaryPlayer=this.value;renderSummary()"><option value="all">所有球員</option>${playerNames.map(n=>`<option value="${n}" ${summaryPlayer===n?'selected':''}>${n}</option>`).join('')}</select></div>`;
+  html+=renderLatestRoundHighlight();
+  html+=renderSeasonLeaderboard();
+  html+=renderLifetimeRankings();
+  html+=renderLeaderboards();
+  html+=renderRankings();
+  html+=renderRoundHistory();
+  html+=renderMatchupHistory();
+  html+=renderPlayerProfile();
+  html+=renderPlayerStats();
+  html+=renderHeadToHead();
+  html+=renderHandicapTrend();
+  html+='<div class="card"><h2>私人恩怨資料庫</h2><div class="scroll"><table><tr><th>讓桿方</th><th>受讓方</th><th>洞數</th></tr>';
+  db.matchups.forEach(m=>html+=`<tr><td>${m.giver}</td><td>${m.receiver}</td><td>${m.holes_given}</td></tr>`);
+  html+='</table></div></div>';
+  document.getElementById('summaryContent').innerHTML=html;
+  applySummaryPlayerFilter();
+  compactSummarySections();
+  prepareSummaryCards();
+}
+function renderLatestRoundHighlight(){
+  let r=db.rounds[0];
+  if(!r)return '<div class="card summary-highlight"><h2>最近一場</h2><p class="small">尚無已儲存回合。</p></div>';
+  let roundScores=db.scores.filter(s=>String(s.round_id)===String(r.id));
+  let players=Array.isArray(r.players)?r.players:[];
+  let savedRound={players,initialRanks:r.initial_ranks||players.map((_,i)=>i+1),startHoleIndex:r.start_hole_index||0,course:r.course_data||[],scores:Array.from({length:18},()=>Array(players.length).fill(''))};
+  roundScores.forEach(s=>{let pi=players.indexOf(s.player_name),hi=(+s.hole_number||1)-1;if(pi>=0&&hi>=0&&hi<18)savedRound.scores[hi][pi]=+s.gross_score});
+  let fortisTotals=savedRound.course.length&&players.length?calcFortis(savedRound).totals:[];
+  let leaderIndex=fortisTotals.length?fortisTotals.map((points,i)=>({points,i})).sort((a,b)=>b.points-a.points)[0].i:-1;
+  let leader=leaderIndex>=0?players[leaderIndex]:'-';
+  let leaderPoints=leaderIndex>=0?fortisTotals[leaderIndex]:null;
+  let leaderScores = leaderIndex >= 0
+  ? roundScores.filter(s => s.player_name === leader)
+  : [];
+
+  let birdies = leaderScores.filter(
+  s => (+s.gross_score) - (+s.par) === -1
+  ).length;
+
+  let eagles = leaderScores.filter(
+  s => +s.par !== 3 &&
+       (+s.gross_score) - (+s.par) === -2
+  ).length;
+
+  let albatrosses = leaderScores.filter(
+  s => +s.par !== 3 &&
+       (+s.gross_score) - (+s.par) <= -3
+  ).length;
+
+  let holesInOne = leaderScores.filter(
+  s => +s.par === 3 &&
+       +s.gross_score === 1
+  ).length;
+  let bestAchievement=holesInOne?`一桿進洞 ${holesInOne}`:albatrosses?`信天翁 ${albatrosses}`:eagles?`老鷹 ${eagles}`:birdies?`博蒂 ${birdies}`:'—';
+  return `<div class="card summary-highlight"><h2>最近一場精華</h2><div class="summary-highlight-grid"><div class="summary-stat"><span>日期</span><b>${String(r.played_at||r.created_at||'').slice(0,10)||'-'}</b></div><div class="summary-stat"><span>球場</span><b>${courseNameZh(r.course_name||r.course||'-')}</b></div><div class="summary-stat"><span>最大贏家</span><b>${leader}${leaderPoints===null?'':` (${leaderPoints>0?'+':''}${leaderPoints})`}</b></div><div class="summary-stat"><span>最佳成績</span><b>${bestAchievement}</b></div></div></div>`;
+}
+function courseNameZh(name){
+  let value=String(name||'').trim();
+  let names={'DH':'大溪高爾夫俱樂部','SR':'揚昇高爾夫鄉村俱樂部','TPE':'台北高爾夫俱樂部','TPE-A':'台北高爾夫俱樂部 A區','TPE-B':'台北高爾夫俱樂部 B區','TPE-C':'台北高爾夫俱樂部 C區','TPE-D':'台北高爾夫俱樂部 D區','TC':'台中國際高爾夫俱樂部','TC-E':'台中國際高爾夫俱樂部 東區','TC-C':'台中國際高爾夫俱樂部 中區','TC-W':'台中國際高爾夫俱樂部 西區'};
+  return names[value]||value;
+}
+function applySummaryPlayerFilter(){
+  if(summaryPlayer==='all')return;
+  document.querySelectorAll('#summaryContent table').forEach(table=>Array.from(table.rows).slice(1).forEach(row=>row.classList.toggle('summary-filter-hidden',!row.textContent.includes(summaryPlayer))));
+  document.querySelectorAll('#summaryContent .team').forEach(team=>team.classList.toggle('summary-filter-hidden',!team.textContent.includes(summaryPlayer)));
+}
+function compactSummarySections(){
+  let groupNo=0;
+  document.querySelectorAll('#summaryContent .card').forEach(card=>{
+    card.querySelectorAll('.scroll > table').forEach(table=>{
+      let rows=Array.from(table.rows).slice(1);
+      if(rows.length<=5)return;
+      let group='summaryGroup'+(++groupNo);
+      rows.slice(5).forEach(row=>{row.classList.add('summary-hidden',group)});
+      addSummaryToggle(table.parentElement,group,rows.length);
+    });
+
+    let teams=Array.from(card.children).filter(el=>el.classList.contains('team'));
+    if(teams.length>5){
+      let group='summaryGroup'+(++groupNo);
+      teams.slice(5).forEach(team=>team.classList.add('summary-hidden',group));
+      addSummaryToggle(card,group,teams.length,true);
+    }
+  });
+}
+function prepareSummaryCards(){
+  let cards=Array.from(document.querySelectorAll('#summaryContent > .card:not(.summary-toolbar):not(.summary-highlight)'));
+  document.querySelectorAll('#summaryContent .scroll').forEach(scroll=>scroll.insertAdjacentHTML('afterend','<div class="small swipe-hint">左右滑動查看更多 ↔</div>'));
+  cards.forEach((card,index)=>{
+    let heading=card.querySelector(':scope > h2');
+    if(!heading)return;
+    let title=document.createElement('div');title.className='summary-card-title';
+    card.insertBefore(title,heading);title.appendChild(heading);
+    let body=document.createElement('div');body.className='summary-card-body';
+    while(title.nextSibling)body.appendChild(title.nextSibling);
+    card.appendChild(body);
+    let button=document.createElement('button');button.className='summary-collapse';button.type='button';button.setAttribute('aria-label','展開或收合');
+    let collapsed=index>=5;body.classList.toggle('collapsed',collapsed);button.textContent=collapsed?'＋':'－';
+    button.onclick=()=>{let closed=body.classList.toggle('collapsed');button.textContent=closed?'＋':'－'};
+    title.appendChild(button);
+  });
+}
+function addSummaryToggle(afterElement,group,total,append=false){
+  let button=document.createElement('button');
+  button.className='summary-more';
+  button.dataset.group=group;
+  button.dataset.total=total;
+  button.textContent=`顯示全部 (${total})`;
+  button.onclick=()=>toggleSummaryGroup(button);
+  if(append)afterElement.appendChild(button);
+  else afterElement.insertAdjacentElement('afterend',button);
+}
+function toggleSummaryGroup(button){
+  let items=document.querySelectorAll('.'+button.dataset.group);
+  let opening=Array.from(items).some(item=>item.classList.contains('summary-hidden'));
+  items.forEach(item=>item.classList.toggle('summary-hidden',!opening));
+  button.textContent=opening?'收合至 5 筆':`顯示全部 (${button.dataset.total})`;
+}
+function renderPlayerStats(){
+  let stat={};
+
+  db.scores.forEach(s=>{
+    let name=s.player_name;
+    if(!name) return;
+
+    if(!stat[name]){
+      stat[name]={
+        holes:0,
+        totalGross:0,
+        rounds:{},
+        birdies:0,
+        eagles:0,
+        albatross:0,
+        hio:0,
+        pars:0,
+        bogeys:0,
+        doubles:0,
+        triples:0
+      };
+    }
+
+    stat[name].holes++;
+    stat[name].totalGross+=(+s.gross_score||0);
+
+    if(!stat[name].rounds[s.round_id]){
+      stat[name].rounds[s.round_id]=0;
+    }
+
+    stat[name].rounds[s.round_id]+=(+s.gross_score||0);
+
+    if(s.score_type==='Birdie' || s.score_type==='博蒂') stat[name].birdies++;
+    if(s.score_type==='Eagle' || s.score_type==='老鷹') stat[name].eagles++;
+    if(s.score_type==='Hole In One' || s.score_type==='一桿進洞') stat[name].hio++;
+    if(s.score_type==='Albatross' || s.score_type==='信天翁') stat[name].albatross++;
+    if(s.score_type==='Par' || s.score_type==='標準桿') stat[name].pars++;
+    if(s.score_type==='Bogey' || s.score_type==='柏忌') stat[name].bogeys++;
+    if(s.score_type==='Double Bogey' || s.score_type==='雙柏忌') stat[name].doubles++;
+    if(s.score_type==='Triple Bogey' || s.score_type==='三柏忌') stat[name].triples++;
+  });
+
+  let rows=Object.entries(stat).map(([name,s])=>{
+
+    let roundScores=Object.values(s.rounds);
+
+    let rounds=roundScores.length;
+
+    let avgRound=rounds
+      ? (s.totalGross/rounds).toFixed(1)
+      : '-';
+
+    let avgHole=s.holes
+      ? (s.totalGross/s.holes).toFixed(2)
+      : '-';
+
+    let bestRound=roundScores.length
+      ? Math.min(...roundScores)
+      : '-';
+
+    return {
+      name,
+      rounds,
+      holes:s.holes,
+      avgRound,
+      avgHole,
+      bestRound,
+      birdies:s.birdies,
+      eagles:s.eagles,
+      albatross:s.albatross,
+      hio:s.hio,
+      pars:s.pars,
+      bogeys:s.bogeys,
+      doubles:s.doubles,
+      triples:s.triples
+    };
+
+  }).sort((a,b)=>parseFloat(a.avgRound)-parseFloat(b.avgRound));
+
+  let html=`
+  <div class="card">
+    <h2>球員數據看板</h2>
+  `;
+
+  if(!rows.length){
+    html+=`
+      <p class="small">
+        尚無球員成績資料.
+      </p>
+    </div>
+    `;
+    return html;
+  }
+
+  html+=`
+  <div class="scroll">
+  <table>
+    <tr>
+      <th>球員</th>
+      <th>回合</th>
+      <th>最佳</th>
+      <th>平均</th>
+      <th>博蒂</th>
+      <th>老鷹</th>
+      <th>一桿進洞</th>
+      <th>標準桿</th>
+      <th>柏忌</th>
+      <th>雙柏忌</th>
+    </tr>
+  `;
+
+  rows.forEach(r=>{
+    html+=`
+    <tr>
+      <td><b>${r.name}</b></td>
+      <td>${r.rounds}</td>
+      <td>${r.bestRound}</td>
+      <td>${r.avgRound}</td>
+      <td>${r.birdies}</td>
+      <td>${r.eagles}</td>
+      <td>${r.hio}</td>
+      <td>${r.pars}</td>
+      <td>${r.bogeys}</td>
+      <td>${r.doubles}</td>
+    </tr>
+    `;
+  });
+
+  html+=`
+    </table>
+    </div>
+
+    <p class="small">
+      數據依照已儲存的成績計算.
+    </p>
+  </div>
+  `;
+
+  return html;
+}
+
+function renderSeasonLeaderboard(){  
+  let activeSeason=db.seasons.find(s=>s.active===true || s.active==='true' || s.active==='TRUE');
+  if(!activeSeason){
+    return '<div class="card"><h2>球季排行榜</h2><p class="small">目前沒有啟用中的球季.</p></div>';
+  }
+
+  let seasonScores=db.scores.filter(s=>+s.season_id===+activeSeason.id);
+  let stat={};
+
+  seasonScores.forEach(s=>{
+    let name=s.player_name;
+    if(!name) return;
+
+    if(!stat[name]){
+      stat[name]={
+        rounds:{},
+        holes:0,
+        gross:0,
+        birdies:0,
+        eagles:0,
+        hio:0,
+        albatross:0,
+        pars:0
+      };
+    }
+
+    stat[name].holes++;
+    stat[name].gross+=(+s.gross_score||0);
+
+    if(!stat[name].rounds[s.round_id]) stat[name].rounds[s.round_id]=0;
+    stat[name].rounds[s.round_id]+=(+s.gross_score||0);
+
+    if(s.score_type==='Birdie' || s.score_type==='博蒂') stat[name].birdies++;
+    if(s.score_type==='Eagle' || s.score_type==='老鷹') stat[name].eagles++;
+    if(s.score_type==='Hole In One' || s.score_type==='一桿進洞') stat[name].hio++;
+    if(s.score_type==='Albatross' || s.score_type==='信天翁') stat[name].albatross++;
+    if(s.score_type==='Par' || s.score_type==='標準桿') stat[name].pars++;
+  });
+
+  let rows=Object.entries(stat).map(([name,s])=>{
+    let rounds=Object.keys(s.rounds).length;
+    let avg=rounds ? (s.gross/rounds).toFixed(1) : '-';
+    let seasonPoints =
+      s.birdies*1 +
+      s.eagles*5 +
+      s.hio*10 +
+      s.albatross*10 +
+      s.pars*0.25 -
+      (parseFloat(avg)||0);
+
+    return {
+      name,
+      rounds,
+      avg,
+      birdies:s.birdies,
+      eagles:s.eagles,
+      hio:s.hio,
+      albatross:s.albatross,
+      seasonPoints:seasonPoints.toFixed(1)
+    };
+  }).sort((a,b)=>parseFloat(b.seasonPoints)-parseFloat(a.seasonPoints));
+
+  let html=`<div class="card"><h2>${activeSeason.season_name} 排行榜</h2>`;
+
+  if(!rows.length){
+    return html+'<p class="small">本球季尚未有成績.</p></div>';
+  }
+
+  html+='<div class="scroll"><table><tr><th>排名</th><th>球員</th><th>分數</th><th>回合</th><th>平均</th><th>博蒂</th><th>老鷹</th><th>一桿進洞</th></tr>';
+
+  rows.forEach((r,i)=>{
+    let medal=i===0?'🥇':i===1?'🥈':i===2?'🥉':i+1;
+    html+=`<tr>
+      <td>${medal}</td>
+      <td><b>${r.name}</b></td>
+      <td>${r.seasonPoints}</td>
+      <td>${r.rounds}</td>
+      <td>${r.avg}</td>
+      <td>${r.birdies}</td>
+      <td>${r.eagles}</td>
+      <td>${r.hio}</td>
+    </tr>`;
+  });
+
+  html+='</table></div>';
+  html+='<p class="small">Season leaderboard uses only scores with current active season_id.</p>';
+  html+='</div>';
+
+  return html;
+}
+
+function renderPlayerProfile(){
+  let names=[...new Set(db.scores.map(s=>s.player_name).filter(Boolean))].sort();
+  if(!profilePlayer && names.length) profilePlayer=names[0];
+
+  let player=profilePlayer;
+  let scores=db.scores.filter(s=>s.player_name===player);
+  let season=db.seasons.find(s=>s.active===true || s.active==='true' || s.active==='TRUE');
+  let seasonScores=scores.filter(s=>+s.season_id===+season?.id);
+
+  function count(arr,type){
+  const types={
+    Birdie:['Birdie','博蒂'],
+    Eagle:['Eagle','老鷹'],
+    'Hole In One':['Hole In One','一桿進洞'],
+    Albatross:['Albatross','信天翁']
+  };
+
+  return arr.filter(s=>(types[type]||[type]).includes(s.score_type)).length;
+}
+  function roundsObj(arr){return arr.reduce((a,s)=>{a[s.round_id]=(a[s.round_id]||0)+(+s.gross_score||0);return a;},{});}
+  function avg(arr){let r=Object.values(roundsObj(arr)); return r.length?(r.reduce((a,b)=>a+b,0)/r.length).toFixed(1):'-';}
+
+  let seasonRounds=Object.values(roundsObj(seasonScores));
+  let lifeRounds=Object.values(roundsObj(scores));
+  let best=lifeRounds.length?Math.min(...lifeRounds):'-';
+
+  let recent=Object.entries(roundsObj(scores)).slice(-5).reverse();
+
+  let html=`<div class="card"><h2>球員資料</h2>
+    <label>選擇球員</label>
+    <select onchange="profilePlayer=this.value;renderSummary()">
+      ${names.map(n=>`<option ${n===player?'selected':''}>${n}</option>`).join('')}
+    </select>
+
+    <div class="team">
+      <h2>${player}</h2>
+      <div class="grid4">
+        <div><b>${seasonRounds.length}</b><br><span class="small">賽季回合</span></div>
+        <div><b>${avg(seasonScores)}</b><br><span class="small">賽季平均</span></div>
+        <div><b>${count(seasonScores,'Birdie')}</b><br><span class="small">博蒂</span></div>
+        <div><b>${count(seasonScores,'Eagle')}</b><br><span class="small">老鷹</span></div>
+      </div>
+    </div>
+
+    <div class="team">
+      <h2>生涯成績</h2>
+      <div class="grid4">
+        <div><b>${lifeRounds.length}</b><br><span class="small">總回合</span></div>
+        <div><b>${avg(scores)}</b><br><span class="small">平均</span></div>
+        <div><b>${best}</b><br><span class="small">最佳成績</span></div>
+        <div><b>${count(scores,'Hole In One')}</b><br><span class="small">一桿進洞</span></div>
+      </div>
+    </div>
+
+    <div class="team">
+      <h2>最近一回合</h2>
+      ${recent.length?recent.map(([rid,total])=>`<div class="leader-row"><div>Round ${rid}</div><div class="score">${total}</div><div class="small">gross</div></div>`).join(''):'<p class="small">No recent rounds.</p>'}
+    </div>
+  </div>`;
+
+  return html;
+}
+function renderLeaderboards(){
+    let stat={};
+
+  db.scores.forEach(s=>{
+    let name=s.player_name;
+    if(!name) return;
+
+    if(!stat[name]){
+      stat[name]={
+        total:0,
+        rounds:{},
+        birdies:0
+      };
+    }
+
+    stat[name].total+=(+s.gross_score||0);
+
+    if(!stat[name].rounds[s.round_id]){
+      stat[name].rounds[s.round_id]=0;
+    }
+
+    stat[name].rounds[s.round_id]+=(+s.gross_score||0);
+
+    if(s.score_type==='Birdie' || s.score_type==='博蒂'){
+  stat[name].birdies++;
+}
+  });
+
+  let rows=Object.entries(stat).map(([name,s])=>{
+    let rounds=Object.values(s.rounds).length;
+    let avg=rounds ? (s.total/rounds).toFixed(1) : '0.0';
+
+    return {
+      name,
+      avg,
+      birdies:s.birdies
+    };
+  });
+
+  let avgRows=[...rows].sort((a,b)=>parseFloat(a.avg)-parseFloat(b.avg));
+  let birdieRows=[...rows].sort((a,b)=>b.birdies-a.birdies);
+
+  let html='<div class="card"><h2>平均桿數排行榜</h2>';
+  html+='<div class="scroll"><table><tr><th>排名</th><th>球員</th><th>平均桿數</th></tr>';
+
+  avgRows.forEach((r,i)=>{
+    let medal=i===0?'🥇':i===1?'🥈':i===2?'🥉':i+1;
+    html+=`<tr><td>${medal}</td><td><b>${r.name}</b></td><td>${r.avg}</td></tr>`;
+  });
+
+  html+='</table></div></div>';
+
+  html+='<div class="card"><h2>博蒂排行榜</h2>';
+  html+='<div class="scroll"><table><tr><th>排名</th><th>球員</th><th>博蒂</th></tr>';
+
+  birdieRows.forEach((r,i)=>{
+    let medal=i===0?'🥇':i===1?'🥈':i===2?'🥉':i+1;
+    html+=`<tr><td>${medal}</td><td><b>${r.name}</b></td><td>${r.birdies}</td></tr>`;
+  });
+
+  html+='</table></div></div>';
+
+  return html;
+}
+function renderLifetimeRankings(){
+  let stat={};
+
+  function ensure(name){
+    if(!stat[name]){
+      stat[name]={
+        rounds:{},
+        totalGross:0,
+        birdies:0,
+        eagles:0,
+        hio:0,
+        albatross:0,
+        wins:0,
+        losses:0,
+        ties:0,
+        holeDiff:0
+      };
+    }
+    return stat[name];
+  }
+
+  db.scores.forEach(s=>{
+    let name=s.player_name;
+    if(!name) return;
+
+    let p=ensure(name);
+
+    p.totalGross+=(+s.gross_score||0);
+
+    if(!p.rounds[s.round_id]){
+      p.rounds[s.round_id]=0;
+    }
+
+    p.rounds[s.round_id]+=(+s.gross_score||0);
+
+    if(s.score_type==='Birdie' || s.score_type==='博蒂') p.birdies++;
+    if(s.score_type==='Eagle' || s.score_type==='老鷹') p.eagles++;
+    if(s.score_type==='Hole In One' || s.score_type==='一桿進洞') p.hio++;
+    if(s.score_type==='Albatross' || s.score_type==='信天翁') p.albatross++;
+  });
+
+  db.history.forEach(h=>{
+    let giver=ensure(h.giver);
+    let receiver=ensure(h.receiver);
+    let r=+h.result_holes||0;
+
+    if(r>0){
+      giver.wins++;
+      receiver.losses++;
+      giver.holeDiff+=r;
+      receiver.holeDiff-=r;
+    }else if(r<0){
+      receiver.wins++;
+      giver.losses++;
+      receiver.holeDiff+=Math.abs(r);
+      giver.holeDiff-=Math.abs(r);
+    }else{
+      giver.ties++;
+      receiver.ties++;
+    }
+  });
+
+  let rows=Object.entries(stat).map(([name,s])=>{
+    let roundCount=Object.keys(s.rounds).length;
+    let avg=roundCount ? s.totalGross/roundCount : 999;
+    let winPoints=s.wins*3+s.ties;
+    let scoringPoints=Math.max(0,100-avg);
+    let bonusPoints=s.birdies*1+s.eagles*3+s.hio*10+s.albatross*10;
+    let diffPoints=s.holeDiff*0.5;
+
+    let lifetimeScore=
+      scoringPoints+
+      winPoints+
+      bonusPoints+
+      diffPoints;
+
+    return {
+  name,
+  rounds:roundCount,
+  avg:roundCount ? avg.toFixed(1) : '-',
+  wins:s.wins,
+  losses:s.losses,
+  ties:s.ties,
+  holeDiff:s.holeDiff,
+  birdies:s.birdies,
+  eagles:s.eagles,
+  hio:s.hio,
+  albatross:s.albatross,
+
+  scoringPoints:scoringPoints.toFixed(1),
+  winPoints:winPoints.toFixed(1),
+  bonusPoints:bonusPoints.toFixed(1),
+  diffPoints:diffPoints.toFixed(1),
+
+  lifetimeScore:lifetimeScore.toFixed(1)
+};
+  }).sort((a,b)=>parseFloat(b.lifetimeScore)-parseFloat(a.lifetimeScore));
+
+  let html='<div class="card"><h2>生涯排行榜</h2>';
+  html+='<div class="scroll"><table><tr><th>排名</th><th>球員</th><th>戰力</th><th>平均桿數</th><th>勝-敗-平</th><th>洞數 +/-</th><th>博蒂</th><th>老鷹</th></tr>';
+
+  rows.forEach((r,i)=>{
+    let medal=i===0?'🥇':i===1?'🥈':i===2?'🥉':i+1;
+
+    html+=`<tr>
+      <td>${medal}</td>
+      <td><b>${r.name}</b></td>
+      <td>
+  <button
+    class="btn2"
+    style="width:auto;min-height:32px;padding:6px 10px;font-size:13px"
+    onclick='openPowerPopup(${JSON.stringify(r)})'>
+    ${r.lifetimeScore}
+  </button>
+</td>
+      <td>${r.avg}</td>
+      <td>${r.wins}-${r.losses}-${r.ties}</td>
+      <td>${r.holeDiff>0?'+':''}${r.holeDiff}</td>
+      <td>${r.birdies}</td>
+      <td>${r.eagles}</td>
+    </tr>`;
+  });
+
+  html+='</table></div>';
+  html+='<p class="small">Score = scoring average + match wins + birdie/eagle bonuses + hole differential.</p>';
+  html+='</div>';
+
+  return html;
+}
+function openPowerPopup(r){
+  document.getElementById('powerPopup')?.remove();
+
+  const bonusDetails = [
+    `博蒂 ${r.birdies} × 1 = ${r.birdies}`,
+    `老鷹 ${r.eagles} × 3 = ${r.eagles * 3}`,
+    `一桿進洞 ${r.hio} × 10 = ${r.hio * 10}`,
+    `信天翁 ${r.albatross} × 10 = ${r.albatross * 10}`
+  ].join('<br>');
+
+  let popup=document.createElement('div');
+  popup.id='powerPopup';
+  popup.className='score-animation';
+
+  popup.innerHTML=`
+    <div
+      class="score-animation-box"
+      style="max-width:430px;text-align:left"
+      onclick="event.stopPropagation()">
+
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:12px">
+        <div>
+          <div class="small">生涯戰力分析</div>
+          <h2 style="font-size:24px;margin:2px 0 0">${r.name}</h2>
+        </div>
+
+        <button
+          class="btn2"
+          style="width:auto;min-width:44px;padding:8px 12px"
+          onclick="closePowerPopup()">
+          ✕
+        </button>
+      </div>
+
+      <div class="team" style="margin-top:14px">
+        <div class="leader-row">
+          <div>
+            <b>平均桿貢獻</b>
+            <div class="small">100 − ${r.avg}</div>
+          </div>
+          <div class="score">${r.scoringPoints}</div>
+        </div>
+
+        <div class="leader-row">
+          <div>
+            <b>個人對戰貢獻</b>
+            <div class="small">
+              ${r.wins} 勝 × 3 + ${r.ties} 平
+            </div>
+          </div>
+          <div class="score">${r.winPoints}</div>
+        </div>
+
+        <div class="leader-row">
+          <div>
+            <b>特殊成績貢獻</b>
+            <div class="small">${bonusDetails}</div>
+          </div>
+          <div class="score">${r.bonusPoints}</div>
+        </div>
+
+        <div class="leader-row">
+          <div>
+            <b>洞數差貢獻</b>
+            <div class="small">
+              ${r.holeDiff > 0 ? '+' : ''}${r.holeDiff} × 0.5
+            </div>
+          </div>
+          <div class="score">${r.diffPoints}</div>
+        </div>
+      </div>
+
+      <div
+        class="card"
+        style="margin:12px 0 0;text-align:center;border-color:#38a169">
+        <div class="small">總戰力</div>
+        <div class="score" style="font-size:36px">${r.lifetimeScore}</div>
+        <div class="small">
+          ${r.rounds} 回合 · 平均桿 ${r.avg} ·
+          ${r.wins}-${r.losses}-${r.ties}
+        </div>
+      </div>
+
+      <button style="margin-top:12px" onclick="closePowerPopup()">
+        關閉
+      </button>
+    </div>
+  `;
+
+  popup.onclick=closePowerPopup;
+  document.body.appendChild(popup);
+}
+function closePowerPopup(){
+  document.getElementById('powerPopup')?.remove();
+}
+function renderHandicapTrend(){
+  let pairs={};
+
+  db.history.slice().reverse().forEach(h=>{
+    let key=[h.giver,h.receiver].sort().join(' vs ');
+
+    if(!pairs[key]){
+      pairs[key]=[];
+    }
+
+    pairs[key].push({
+      label:(h.played_at||'').slice(5,10)||'Round',
+      giver:h.giver,
+      receiver:h.receiver,
+      after:+h.after_holes||0,
+      course:h.course||''
+    });
+  });
+
+  let html='<div class="card"><h2>讓桿走勢圖</h2>';
+
+  let keys=Object.keys(pairs);
+
+  if(!keys.length){
+    return html+'<p class="small">No matchup history yet.</p></div>';
+  }
+
+  keys.forEach(key=>{
+    let arr=pairs[key].slice(-10);
+    let max=Math.max(...arr.map(x=>x.after),1);
+
+    html+=`<div class="team"><b>${key}</b><span class="small" style="float:right">最新讓桿 ${arr[arr.length-1].after}</span><div class="trend">`;
+
+    arr.forEach(x=>{
+      let height=Math.max(8,(x.after/max)*110);
+      html+=`<div class="bar" style="height:${height}px"><span>${x.after}</span></div>`;
+    });
+
+    html+='</div><div class="trend-labels">';
+
+    arr.forEach(x=>{
+      html+=`<div>${x.label}</div>`;
+    });
+
+    html+='</div></div>';
+  });
+
+  html+='<p class="small">Shows last 10 handicap values after each matchup update.</p>';
+  html+='</div>';
+
+  return html;
+}
+function renderRankings(){let stat={}; function ensure(n){if(!stat[n])stat[n]={wins:0,losses:0,ties:0,holes:0}; return stat[n]} db.history.forEach(h=>{let a=h.giver,b=h.receiver,r=+h.result_holes||0; ensure(a);ensure(b); if(r>0){stat[a].wins++;stat[b].losses++;stat[a].holes+=r;stat[b].holes-=r}else if(r<0){stat[b].wins++;stat[a].losses++;stat[b].holes+=Math.abs(r);stat[a].holes-=Math.abs(r)}else{stat[a].ties++;stat[b].ties++}}); let rows=Object.entries(stat).sort((a,b)=>(b[1].wins*3+b[1].ties+b[1].holes/10)-(a[1].wins*3+a[1].ties+a[1].holes/10)); let html='<div class="card"><h2>個人排行榜</h2><div class="scroll"><table><tr><th>球員</th><th>勝</th><th>敗</th><th>平</th><th>洞數 +/-</th></tr>'; rows.forEach(([n,s])=>html+=`<tr><td>${n}</td><td>${s.wins}</td><td>${s.losses}</td><td>${s.ties}</td><td>${s.holes}</td></tr>`); return html+'</table></div><p class="small">Rankings use saved matchup history. Positive result means the giver won; negative means receiver won.</p></div>'}
+function renderRoundHistory(){
+  let html='<div class="card"><h2>賽事紀錄與回播</h2>';
+
+  if(!db.rounds.length){
+    return html+'<p class="small">尚無儲存回合</p></div>';
+  }
+
+  html+='<div class="scroll"><table><tr><th>日期</th><th>回合名稱</th><th>球場</th><th>球員</th><th>回播</th></tr>';
+
+  db.rounds.forEach(r=>{
+    let sc=db.scores.filter(
+    s => String(s.round_id) === String(r.id)
+);
+    let players=r.players || [...new Set(sc.map(s=>s.player_name))];
+
+    html+=`
+      <tr>
+        <td>${r.played_at ? new Date(r.played_at).toLocaleDateString() : ''}</td>
+        <td>${r.round_name || ''}</td>
+        <td>${r.course_name || ''}${r.course_combo ? ' '+r.course_combo : ''}</td>
+        <td>${players.join('<br>')}</td>
+        <td><button class="btn2" onclick="replayRound('${r.id}')">回播</button></td>
+      </tr>`;
+  });
+
+  html+='</table></div></div>';
+  return html;
+}
+function renderMatchupHistory(){let html='<div class="card"><h2>近期讓桿紀錄</h2><div class="scroll"><table><tr><th>日期</th><th>對戰</th><th>戰前</th><th>結果</th><th>戰後</th><th>球場</th></tr>'; db.history.slice(0,50).forEach(h=>{let r=+h.result_holes||0, res=r>0?`${h.giver} +${r}`:r<0?`${h.receiver} +${Math.abs(r)}`:'Tie'; html+=`<tr><td>${(h.played_at||'').slice(0,10)}</td><td>${h.giver} vs ${h.receiver}</td><td>${h.before_holes}</td><td>${res}</td><td>${h.after_holes}</td><td>${h.course||''}</td></tr>`}); return html+'</table></div></div>'}
+
+function renderAdmin(){
+  const courseOptions=db.courses.map(c=>`<option value="${c.id}">${c.course_name}</option>`).join('');
+  if(!(currentProfile&&currentProfile.role==='admin')){
+    document.getElementById('adminContent').innerHTML=`<div class="card"><h2>Admin Only</h2><p class="small">You are signed in as ${currentUser?.email||''}. Ask the admin to change your role to admin in the profiles table.</p></div>`;
+    return;
+  }
+  document.getElementById('adminContent').innerHTML=`
+  <div class="card"><h2>Admin</h2><button class="btn-red" onclick="adminResetStats()">Reset Stats Only</button><button onclick="adminStartNewSeason()">
+  Start New Season</button><button class="btn2" onclick="loadAll().then(renderAdmin)">Reload database</button><p class="small">Use this page on your iPhone to add players, courses, matchup handicaps, holes, and user roles.</p></div>
+  <div class="card"><h2>User Management</h2><button class="btn2" onclick="loadAdminUsers()">Reload Users</button><div id="adminUsers" class="small" style="margin-top:10px">Loading users...</div><p class="small">Roles: admin = full access, player = scoring/viewing, guest = view-only. Active=false disables the account in the app UI.</p></div>
+  <div class="card"><h2>Add Player</h2><div class="grid"><div><label>Player Name</label><input id="admPlayer" placeholder="Ralf"></div><div><label>&nbsp;</label><button onclick="adminAddPlayer()">Add Player</button></div></div></div>
+  <div class="card">
+    <h2>🏌️ 球場管理 — 新增球場</h2>
+    <div class="grid">
+      <div>
+        <label>球場代碼 *</label>
+        <input id="admCourse" placeholder="例如：YS、TPE-A、TM-N" maxlength="30">
+      </div>
+      <div>
+        <label>英文名稱</label>
+        <input id="admCourseDisplay" placeholder="Example: Sunrise Golf & Country Club">
+      </div>
+      <div>
+        <label>中文名稱</label>
+        <input id="admCourseDisplayZh" placeholder="例如：揚昇高爾夫鄉村俱樂部">
+      </div>
+      <div>
+        <label>日本語名称</label>
+        <input id="admCourseDisplayJa" placeholder="例：グランディ鳴門ゴルフクラブ36">
+      </div>
+      <div>
+        <label>國家 *</label>
+        <select id="admCourseCountry">
+          <option value="Taiwan" selected>Taiwan</option>
+          <option value="Japan">Japan</option>
+          <option value="China">China</option>
+          <option value="Vietnam">Vietnam</option>
+          <option value="Thailand">Thailand</option>
+          <option value="Singapore">Singapore</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+      <div>
+        <label>球場分組（選填）</label>
+        <input id="admCourseGroup" placeholder="例如：TPE、TM、TSN">
+      </div>
+      <div>
+        <label>洞數</label>
+        <select id="admCourseHoleCount">
+          <option value="9">9 洞</option>
+          <option value="18" selected>18 洞</option>
+          <option value="27">27 洞</option>
+          <option value="36">36 洞</option>
+        </select>
+      </div>
+      <div>
+        <label>&nbsp;</label>
+        <button onclick="adminAddCourse()">建立球場並繼續</button>
+      </div>
+    </div>
+    <p class="small" style="margin-top:10px">這一步只建立球場基本資料。建立後會自動選取新球場，下一步再加入整張計分卡的洞資料。</p>
+  </div>
+  <div class="card"><h2>Add / Update Matchup Handicap</h2><div class="grid"><div><label>Giver</label><input id="admGiver" placeholder="Paul"></div><div><label>Receiver</label><input id="admReceiver" placeholder="Davie"></div><div><label>Holes Given</label><input id="admHoles" type="number" value="0"></div><div><label>&nbsp;</label><button onclick="adminSaveMatchup()">Save Matchup</button></div></div></div>
+  <div class="card">
+    <h2>🌏 Course Language Manager</h2>
+    <p class="small">Checks whether English, Chinese, and Japanese names are stored in the correct columns. It can safely separate mixed names such as “德島鄉村俱樂部 | 徳島カントリー倶楽部”. It does not invent translations.</p>
+    <div class="grid">
+      <button class="btn2" onclick="adminScanCourseLanguages()">Scan Language Fields</button>
+      <button class="btn2" onclick="adminExportCourseLanguageBackup()">Download Name Backup</button>
+      <button onclick="adminNormalizeCourseLanguages()">Fix Misplaced Names</button>
+      <button class="btn2" onclick="adminShowMissingCourseLanguages()">Show Missing Names</button>
+    </div>
+    <div id="admLanguageReport" class="small" style="margin-top:12px">Press Scan Language Fields to review the database.</div>
+  </div>
+  <div class="card">
+    <h2>⛳ Course Manager</h2>
+    <div class="grid">
+      <div>
+        <label>Search course</label>
+        <input id="admCourseSearch" placeholder="Code or course name" oninput="adminFilterCourseManager()">
+      </div>
+      <div>
+        <label>Select course</label>
+        <select id="admManageCourse" onchange="sessionStorage.removeItem('fortisNewCourseHoleCount');adminLoadCourseManager()">${courseOptions}</select>
+      </div>
+    </div>
+    <div id="admCourseManagerBody" style="margin-top:12px"></div>
+  </div>
+  <div class="card"><h2>Current Players</h2><div class="scroll"><table><tr><th>Name</th><th>Active</th></tr>${db.players.map(p=>`<tr><td>${p.name}</td><td>${p.active}</td></tr>`).join('')}</table></div></div><div class="card"><h2>Current Matchups</h2><div class="scroll"><table><tr><th>Giver</th><th>Receiver</th><th>Holes</th></tr>${db.matchups.map(m=>`<tr><td>${m.giver}</td><td>${m.receiver}</td><td>${m.holes_given}</td></tr>`).join('')}</table></div></div>`;
+  loadAdminUsers();
+  adminLoadCourseManager();
+}
+async function loadAdminUsers(){
+  const box=document.getElementById('adminUsers');
+  if(!box)return;
+  try{
+    let r=await fetch('/api/users');
+    let users=await r.json();
+    if(!r.ok) throw new Error(JSON.stringify(users));
+    let html='<div class="scroll"><table><tr><th>Email</th><th>Name</th><th>Role</th><th>Active</th><th>Actions</th></tr>';
+    users.forEach(u=>{
+      html+=`<tr>
+        <td>${u.email||''}</td>
+        <td>${u.display_name||''}</td>
+        <td><select id="role_${u.id}"><option ${u.role==='admin'?'selected':''}>admin</option><option ${u.role==='player'?'selected':''}>player</option><option ${u.role==='guest'?'selected':''}>guest</option></select></td>
+        <td><select id="active_${u.id}"><option value="true" ${u.active!==false?'selected':''}>true</option><option value="false" ${u.active===false?'selected':''}>false</option></select></td>
+        <td><button class="btn2" onclick="adminUpdateUser('${u.id}')">Save</button></td>
+      </tr>`;
+    });
+    html+='</table></div>';
+    box.innerHTML=html;
+  }catch(e){
+    box.innerHTML='<span class="bad">Could not load users: '+e.message+'</span>';
+  }
+}
+async function adminUpdateUser(id){
+  try{
+    const role=document.getElementById('role_'+id).value;
+    const active=document.getElementById('active_'+id).value==='true';
+    let r=await fetch('/api/update-user',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id,role,active})});
+    let data=await r.json();
+    if(!r.ok) throw new Error(JSON.stringify(data));
+    alert('User updated');
+    await loadAdminUsers();
+  }catch(e){alert('Update user failed: '+e.message);}
+}
+
+function adminLogin(){renderAdmin();}
+async function adminAddPlayer(){try{let name=document.getElementById('admPlayer').value.trim(); if(!name) return alert('Enter player name'); await sb('players',{method:'POST',body:JSON.stringify({name,active:true})}); alert('Player added'); document.getElementById('admPlayer').value=''; await loadAll(); renderAdmin();}catch(e){alert('Add player failed: '+e.message)}}
+async function adminAddCourse(){
+  try{
+    const course_name=document.getElementById('admCourse').value.trim().toUpperCase();
+    const display_name=document.getElementById('admCourseDisplay').value.trim();
+    const display_name_zh=document.getElementById('admCourseDisplayZh').value.trim()||null;
+    const display_name_ja=document.getElementById('admCourseDisplayJa').value.trim()||null;
+    const country=document.getElementById('admCourseCountry').value;
+    const course_group=document.getElementById('admCourseGroup').value.trim().toUpperCase() || null;
+    const holeCount=+(document.getElementById('admCourseHoleCount').value || 18);
+
+    if(!course_name || !(display_name||display_name_zh||display_name_ja)){
+      return alert('請輸入球場代碼，以及至少一種語言的球場名稱');
+    }
+
+    if(db.courses.some(c=>(c.course_name||'').toUpperCase()===course_name)){
+      return alert('球場代碼已存在：'+course_name);
+    }
+
+    const created=await sb('courses',{
+      method:'POST',
+      body:JSON.stringify({course_name,display_name:display_name||display_name_zh||display_name_ja,display_name_zh,display_name_ja,country,course_group})
+    });
+
+    sessionStorage.setItem('fortisNewCourseHoleCount',String(holeCount));
+    sessionStorage.setItem('fortisNewCourseId',String(created?.[0]?.id||''));
+
+    await loadAll();
+    setupCourseSelect();
+    renderAdmin();
+
+    const manageSelect=document.getElementById('admManageCourse');
+    if(manageSelect && created?.[0]?.id){
+      manageSelect.value=String(created[0].id);
+      adminLoadCourseManager();
+    }
+
+    alert(`球場已建立：${display_name_zh||display_name_ja||display_name}（${course_name}）\n請在 Course Manager 填入 ${holeCount} 洞資料後按 Save Course & All Holes。`);
+  }catch(e){
+    alert('新增球場失敗：'+e.message);
+  }
+}
+async function adminSaveMatchup(){try{let giver=document.getElementById('admGiver').value.trim(), receiver=document.getElementById('admReceiver').value.trim(), holes_given=+(document.getElementById('admHoles').value||0); if(!giver||!receiver) return alert('Enter giver and receiver'); let existing=db.matchups.find(m=>pairKey(m.giver,m.receiver)===pairKey(giver,receiver)); if(existing) await sb(`matchups?id=eq.${existing.id}`,{method:'PATCH',body:JSON.stringify({giver,receiver,holes_given,updated_at:new Date().toISOString()})}); else await sb('matchups',{method:'POST',body:JSON.stringify({giver,receiver,holes_given})}); alert('Matchup saved'); await loadAll(); renderAdmin();}catch(e){alert('Save matchup failed: '+e.message)}}
+function adminEscapeHtml(value){
+  return String(value??'')
+    .replaceAll('&','&amp;')
+    .replaceAll('<','&lt;')
+    .replaceAll('>','&gt;')
+    .replaceAll('"','&quot;')
+    .replaceAll("'",'&#039;');
+}
+
+function adminHasHan(text){
+  return /[\u3400-\u4dbf\u4e00-\u9fff]/u.test(String(text||''));
+}
+function adminHasKana(text){
+  return /[\u3040-\u30ff\u31f0-\u31ff]/u.test(String(text||''));
+}
+function adminHasLatin(text){
+  return /[A-Za-z]/.test(String(text||''));
+}
+function adminSplitLanguageParts(text){
+  return String(text||'').split(/\s*[|｜／]\s*/).map(x=>x.trim()).filter(Boolean);
+}
+function adminClassifyCourseName(text){
+  const value=String(text||'').trim();
+  if(!value) return 'empty';
+  if(adminHasKana(value)) return 'ja';
+  if(adminHasHan(value) && !adminHasLatin(value)) return 'zh';
+  if(adminHasLatin(value) && !adminHasHan(value) && !adminHasKana(value)) return 'en';
+  return 'mixed';
+}
+function adminLanguageProposal(course){
+  const original={
+    en:String(course.display_name||'').trim(),
+    zh:String(course.display_name_zh||'').trim(),
+    ja:String(course.display_name_ja||'').trim()
+  };
+  const result={...original};
+  const pool=[];
+  Object.values(original).forEach(v=>adminSplitLanguageParts(v).forEach(part=>pool.push(part)));
+  const unique=[...new Set(pool)];
+  const first={en:'',zh:'',ja:''};
+  unique.forEach(part=>{
+    const kind=adminClassifyCourseName(part);
+    if(kind==='en'&&!first.en) first.en=part;
+    if(kind==='zh'&&!first.zh) first.zh=part;
+    if(kind==='ja'&&!first.ja) first.ja=part;
+  });
+  if(first.en) result.en=first.en;
+  else if(adminClassifyCourseName(result.en)!=='en') result.en='';
+  if(first.zh) result.zh=first.zh;
+  else if(result.zh&&adminClassifyCourseName(result.zh)!=='zh') result.zh='';
+  if(first.ja) result.ja=first.ja;
+  else if(result.ja&&adminClassifyCourseName(result.ja)!=='ja') result.ja='';
+  const changed=result.en!==original.en||result.zh!==original.zh||result.ja!==original.ja;
+  const missing=['en','zh','ja'].filter(k=>!result[k]);
+  return {original,result,changed,missing};
+}
+function adminLanguageIssueRows(){
+  return db.courses.map(course=>({course,proposal:adminLanguageProposal(course)}));
+}
+function adminScanCourseLanguages(){
+  const box=document.getElementById('admLanguageReport');
+  if(!box) return;
+  const rows=adminLanguageIssueRows();
+  const misplaced=rows.filter(x=>x.proposal.changed);
+  const missingEn=rows.filter(x=>!x.proposal.result.en).length;
+  const missingZh=rows.filter(x=>!x.proposal.result.zh).length;
+  const missingJa=rows.filter(x=>!x.proposal.result.ja).length;
+  let html=`<b>${db.courses.length} courses scanned.</b><br>Misplaced or mixed names: ${misplaced.length}<br>Missing English: ${missingEn} · Missing Chinese: ${missingZh} · Missing Japanese: ${missingJa}`;
+  if(misplaced.length){
+    html+='<div class="scroll" style="margin-top:10px"><table><tr><th>Code</th><th>Current English</th><th>Proposed English</th><th>Proposed Chinese</th><th>Proposed Japanese</th></tr>';
+    misplaced.slice(0,30).forEach(({course,proposal})=>{
+      html+=`<tr><td>${adminEscapeHtml(course.course_name)}</td><td>${adminEscapeHtml(proposal.original.en||'—')}</td><td>${adminEscapeHtml(proposal.result.en||'—')}</td><td>${adminEscapeHtml(proposal.result.zh||'—')}</td><td>${adminEscapeHtml(proposal.result.ja||'—')}</td></tr>`;
+    });
+    html+='</table></div>';
+    if(misplaced.length>30) html+=`<div style="margin-top:6px">Showing first 30 of ${misplaced.length} issues.</div>`;
+  }
+  box.innerHTML=html;
+}
+function adminShowMissingCourseLanguages(){
+  const box=document.getElementById('admLanguageReport');
+  if(!box) return;
+  const rows=adminLanguageIssueRows().filter(x=>x.proposal.missing.length);
+  let html=`<b>${rows.length} courses have at least one missing language.</b>`;
+  html+='<div class="scroll" style="margin-top:10px"><table><tr><th>Code</th><th>Country</th><th>Missing</th><th>Available name</th></tr>';
+  rows.slice(0,100).forEach(({course,proposal})=>{
+    const available=proposal.result.zh||proposal.result.ja||proposal.result.en||course.course_name;
+    html+=`<tr><td>${adminEscapeHtml(course.course_name)}</td><td>${adminEscapeHtml(course.country||'')}</td><td>${proposal.missing.map(x=>x.toUpperCase()).join(', ')}</td><td>${adminEscapeHtml(available)}</td></tr>`;
+  });
+  html+='</table></div>';
+  if(rows.length>100) html+=`<div style="margin-top:6px">Showing first 100 of ${rows.length} courses.</div>`;
+  box.innerHTML=html;
+}
+function adminExportCourseLanguageBackup(){
+  const data=db.courses.map(c=>({id:c.id,course_name:c.course_name,display_name:c.display_name||null,display_name_zh:c.display_name_zh||null,display_name_ja:c.display_name_ja||null,country:c.country||null}));
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;
+  a.download=`fortis-course-names-backup-${new Date().toISOString().slice(0,10)}.json`;
+  document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);
+}
+async function adminNormalizeCourseLanguages(){
+  const rows=adminLanguageIssueRows().filter(x=>x.proposal.changed);
+  if(!rows.length){adminScanCourseLanguages();return alert('No misplaced language fields found.');}
+  if(!confirm(`Fix language placement for ${rows.length} courses?\n\nThis separates mixed Chinese/Japanese names and clears non-English text from the English field. Download a backup first if desired.`)) return;
+  const box=document.getElementById('admLanguageReport');
+  try{
+    for(let i=0;i<rows.length;i++){
+      const {course,proposal}=rows[i];
+      if(box) box.innerHTML=`Fixing ${i+1} of ${rows.length}: ${adminEscapeHtml(course.course_name)}…`;
+      await sb(`courses?id=eq.${course.id}`,{method:'PATCH',body:JSON.stringify({
+        display_name:proposal.result.en||null,
+        display_name_zh:proposal.result.zh||null,
+        display_name_ja:proposal.result.ja||null
+      })});
+    }
+    await loadAll();
+    renderAdmin();
+    adminScanCourseLanguages();
+    alert(`Language fields fixed for ${rows.length} courses. Missing translations were left blank for manual entry.`);
+  }catch(e){
+    alert('Language cleanup failed: '+e.message);
+  }
+}
+
+function adminFilterCourseManager(){
+  const select=document.getElementById('admManageCourse');
+  if(!select) return;
+  const q=(document.getElementById('admCourseSearch')?.value||'').trim().toLowerCase();
+  const previous=select.value;
+  select.innerHTML=db.courses
+    .filter(c=>!q || `${c.course_name||''} ${c.display_name||''} ${c.display_name_zh||''} ${c.display_name_ja||''} ${c.country||''}`.toLowerCase().includes(q))
+    .sort((a,b)=>(a.country||'').localeCompare(b.country||'') || courseAdminName(a).localeCompare(courseAdminName(b)))
+    .map(c=>`<option value="${c.id}">${adminEscapeHtml(c.country||'')} · ${adminEscapeHtml(courseAdminName(c))} (${adminEscapeHtml(c.course_name)})</option>`)
+    .join('');
+  if([...select.options].some(o=>o.value===previous)) select.value=previous;
+  adminLoadCourseManager();
+}
+function adminLoadCourseManager(){
+  const select=document.getElementById('admManageCourse');
+  const body=document.getElementById('admCourseManagerBody');
+  if(!select||!body) return;
+  const course=db.courses.find(c=>String(c.id)===String(select.value));
+  if(!course){
+    body.innerHTML='<p class="small">No course selected.</p>';
+    return;
+  }
+  const holes=db.holes.filter(h=>+h.course_id===+course.id).sort((a,b)=>+a.hole_number-+b.hole_number);
+  const byNo=new Map(holes.map(h=>[+h.hole_number,h]));
+  const override=+(sessionStorage.getItem('fortisNewCourseHoleCount')||0);
+  const intended=Math.max(9,Math.min(36,override||holes.length||18));
+  const rows=[];
+  for(let n=1;n<=intended;n++){
+    const h=byNo.get(n)||{};
+    const par=+h.par||4;
+    const hcp=+h.handicap_index||n;
+    const eligible=h.stroke_eligible!==undefined ? h.stroke_eligible!==false : par!==3;
+    rows.push(`<tr>
+      <td><b>${n}</b></td>
+      <td><select id="admGridPar${n}" onchange="adminCourseManagerDirty();adminSyncStroke(${n})"><option value="3" ${par===3?'selected':''}>3</option><option value="4" ${par===4?'selected':''}>4</option><option value="5" ${par===5?'selected':''}>5</option><option value="6" ${par===6?'selected':''}>6</option></select></td>
+      <td><input id="admGridHcp${n}" type="number" min="1" max="${intended}" value="${hcp}" oninput="adminCourseManagerDirty()"></td>
+      <td><label class="toggle" style="justify-content:center;margin:0"><input id="admGridStroke${n}" type="checkbox" ${eligible?'checked':''} onchange="adminCourseManagerDirty()"></label></td>
+    </tr>`);
+  }
+  body.innerHTML=`
+    <div class="grid">
+      <div><label>Course code</label><input id="admEditCode" value="${adminEscapeHtml(course.course_name||'')}" oninput="adminCourseManagerDirty()"></div>
+      <div><label>English name</label><input id="admEditDisplay" value="${adminEscapeHtml(course.display_name||'')}" oninput="adminCourseManagerDirty()"></div>
+      <div><label>中文名稱</label><input id="admEditDisplayZh" value="${adminEscapeHtml(course.display_name_zh||'')}" oninput="adminCourseManagerDirty()"></div>
+      <div><label>日本語名称</label><input id="admEditDisplayJa" value="${adminEscapeHtml(course.display_name_ja||'')}" oninput="adminCourseManagerDirty()"></div>
+      <div><label>Country</label><input id="admEditCountry" value="${adminEscapeHtml(course.country||'Taiwan')}" oninput="adminCourseManagerDirty()"></div>
+      <div><label>Course group</label><input id="admEditGroup" value="${adminEscapeHtml(course.course_group||'')}" oninput="adminCourseManagerDirty()"></div>
+      <div><label>Number of holes</label><select id="admEditHoleCount" onchange="adminChangeHoleCount()"><option value="9" ${intended===9?'selected':''}>9</option><option value="18" ${intended===18?'selected':''}>18</option><option value="27" ${intended===27?'selected':''}>27</option><option value="36" ${intended===36?'selected':''}>36</option></select></div>
+      <div><label>Status</label><input id="admCourseDirty" disabled value="Ready"></div>
+    </div>
+    <div class="scroll" style="margin-top:12px"><table><tr><th>Hole</th><th>Par</th><th>Handicap</th><th>Stroke eligible</th></tr>${rows.join('')}</table></div>
+    <div class="grid" style="margin-top:12px">
+      <button onclick="adminSaveCourseManager()">Save Course & All Holes</button>
+      <button class="btn2" onclick="adminLoadCourseManager()">Discard Changes</button>
+    </div>
+    <p class="small">Saving replaces this course's complete hole list. Par 3 stroke eligibility can be changed manually.</p>`;
+}
+function adminCourseManagerDirty(){
+  const el=document.getElementById('admCourseDirty');
+  if(el) el.value='Unsaved changes';
+}
+function adminSyncStroke(n){
+  const par=+document.getElementById('admGridPar'+n)?.value;
+  const stroke=document.getElementById('admGridStroke'+n);
+  if(stroke&&par===3) stroke.checked=false;
+}
+function adminChangeHoleCount(){
+  const count=+(document.getElementById('admEditHoleCount')?.value||18);
+  sessionStorage.setItem('fortisNewCourseHoleCount',String(count));
+  adminCourseManagerDirty();
+  adminLoadCourseManager();
+  const el=document.getElementById('admCourseDirty');
+  if(el) el.value='Hole count changed';
+}
+async function adminSaveCourseManager(){
+  const select=document.getElementById('admManageCourse');
+  const course=db.courses.find(c=>String(c.id)===String(select?.value));
+  if(!course) return alert('Select a course first.');
+  const course_name=(document.getElementById('admEditCode')?.value||'').trim().toUpperCase();
+  const display_name=(document.getElementById('admEditDisplay')?.value||'').trim();
+  const display_name_zh=(document.getElementById('admEditDisplayZh')?.value||'').trim()||null;
+  const display_name_ja=(document.getElementById('admEditDisplayJa')?.value||'').trim()||null;
+  const country=(document.getElementById('admEditCountry')?.value||'Taiwan').trim();
+  const course_group=(document.getElementById('admEditGroup')?.value||'').trim().toUpperCase()||null;
+  const holeCount=+(document.getElementById('admEditHoleCount')?.value||18);
+  if(!course_name||!(display_name||display_name_zh||display_name_ja)||!country) return alert('Course code, country, and at least one course name are required.');
+  if(db.courses.some(c=>+c.id!==+course.id&&(c.course_name||'').toUpperCase()===course_name)) return alert('Course code already exists: '+course_name);
+  const holes=[];
+  const seenHcp=new Set();
+  for(let n=1;n<=holeCount;n++){
+    const par=+(document.getElementById('admGridPar'+n)?.value||0);
+    const handicap_index=+(document.getElementById('admGridHcp'+n)?.value||0);
+    const stroke_eligible=document.getElementById('admGridStroke'+n)?.checked===true;
+    if(![3,4,5,6].includes(par)) return alert(`Hole ${n}: invalid par.`);
+    if(handicap_index<1||handicap_index>holeCount) return alert(`Hole ${n}: handicap must be 1-${holeCount}.`);
+    if(seenHcp.has(handicap_index)) return alert(`Duplicate handicap index: ${handicap_index}.`);
+    seenHcp.add(handicap_index);
+    holes.push({course_id:+course.id,hole_number:n,par,handicap_index,stroke_eligible});
+  }
+  const saveName=display_name_zh||display_name_ja||display_name;
+  if(!confirm(`Save ${saveName} and replace all ${holeCount} hole records?`)) return;
+  try{
+    await sb(`courses?id=eq.${course.id}`,{method:'PATCH',body:JSON.stringify({course_name,display_name:display_name||display_name_zh||display_name_ja,display_name_zh,display_name_ja,country,course_group})});
+    await sb(`holes?course_id=eq.${course.id}`,{method:'DELETE'});
+    await sb('holes',{method:'POST',body:JSON.stringify(holes)});
+    sessionStorage.removeItem('fortisNewCourseHoleCount');
+    sessionStorage.removeItem('fortisNewCourseId');
+    await loadAll();
+    renderAdmin();
+    const newSelect=document.getElementById('admManageCourse');
+    if(newSelect){newSelect.value=String(course.id);adminLoadCourseManager();}
+    alert(`Saved ${saveName}: ${holeCount} holes.`);
+  }catch(e){
+    alert('Save course failed: '+e.message);
+  }
+}
+async function adminResetStats(){
+  if(!confirm('Reset all round stats? This deletes hole_scores and fortis_rounds only. Matchups stay.')) return;
+
+  try{
+    await sb('hole_scores?id=gte.0',{method:'DELETE'});
+    await sb('fortis_rounds?id=gte.0',{method:'DELETE'});
+    await loadAll();
+    renderAdmin();
+    alert('Stats reset complete. Matchups were not erased.');
+  }catch(e){
+    alert('Reset failed: '+e.message);
+  }
+}
+
+async function adminStartNewSeason(){
+  if(!confirm('Close current season and start a new one?')) return;
+
+  try{
+    await loadAll();
+
+    let activeSeason=db.seasons.find(s=>s.active===true || s.active==='true' || s.active==='TRUE');
+
+if(!activeSeason && db.seasons.length){
+  activeSeason=db.seasons[db.seasons.length-1];
+}
+
+    await sb(`seasons?id=eq.${activeSeason.id}`,{
+      method:'PATCH',
+      body:JSON.stringify({
+        active:false,
+        ended_at:new Date().toISOString()
+      })
+    });
+
+    const nextSeasonNumber=db.seasons.length+1;
+
+    await sb('seasons',{
+      method:'POST',
+      body:JSON.stringify({
+        season_name:`Season ${nextSeasonNumber}`,
+        active:true,
+        started_at:new Date().toISOString()
+      })
+    });
+
+    await loadAll();
+    renderAdmin();
+    alert(`Season ${nextSeasonNumber} started`);
+  }catch(e){
+    alert('Start season failed: '+e.message);
+  }
+}
+function showPage(id){
+  currentPage=id;
+
+  document.querySelectorAll('.page').forEach(p=>p.classList.add('hidden'));
+  document.getElementById(id).classList.remove('hidden');
+
+  document.querySelectorAll('.nav button').forEach(b=>b.classList.remove('active'));
+
+  let nb=document.getElementById('nav'+id[0].toUpperCase()+id.slice(1)); 
+  if(nb) nb.classList.add('active'); 
+
+  if(id==='summary') renderSummary();
+  if(id==='admin') renderAdmin();
+  if(id==='setup') renderRecentCourses();
+}
+function changeTheme(){
+  const mode=document.getElementById('themeSelector')?.value||'dark';
+  document.body.classList.remove('light-theme','high-contrast');
+
+  if(mode==='light') document.body.classList.add('light-theme');
+  if(mode==='contrast') document.body.classList.add('high-contrast');
+
+  localStorage.setItem('fortisTheme',mode);
+}
+
+const savedTheme=localStorage.getItem('fortisTheme');
+if(savedTheme==='light') document.body.classList.add('light-theme');
+if(savedTheme==='contrast') document.body.classList.add('high-contrast');
+
+init();
+
+let replayScores = [];
+let replayHoles = [];
+let replayIndex = 0;
+let replayRoundObj = null;
+let replayCalc = null;
+
+async function replayRound(roundId) {
+  const roundRec = db.rounds.find(r => Number(r.id) === Number(roundId));
+
+  const { data, error } = await authClient
+    .from('hole_scores')
+    .select('*')
+    .eq('round_id', Number(roundId))
+    .order('hole_number');
+
+  if (error) {
+    alert("Replay error: " + error.message);
+    return;
+  }
+
+  if (!data || !data.length) {
+    alert("No scores found.");
+    return;
+  }
+
+  const players = roundRec?.players || [...new Set(data.map(s => s.player_name))];
+  let course = roundRec?.course_data || [];
+
+if (!course || !course.length) {
+  course = [];
+
+  for (let h = 1; h <= 18; h++) {
+    const one = data.find(s => Number(s.hole_number) === h);
+
+    course.push({
+      roundHole: h,
+      display: one?.course_hole || 'Hole ' + h,
+      par: Number(one?.par || 4),
+      hcp: Number(one?.handicap_index || h),
+      strokeEligible: Number(one?.par || 4) !== 3
+    });
+  }
+}
+
+  replayRoundObj = {
+    players,
+    initialRanks: roundRec?.initial_ranks || players.map((_,i)=>i+1),
+    startHoleIndex: roundRec?.start_hole_index || 0,
+    course,
+    scores: Array.from({length:18},()=>Array(players.length).fill(''))
+  };
+
+  data.forEach(s => {
+    const h = Number(s.hole_number) - 1;
+    const i = players.indexOf(s.player_name);
+    if (h >= 0 && i >= 0) {
+      replayRoundObj.scores[h][i] = s.gross_score;
+    }
+  });
+
+  replayScores = data;
+  replayHoles = [...new Set(data.map(x => Number(x.hole_number)))].sort((a,b)=>a-b);
+  replayIndex = 0;
+  replayCalc = calcFortis(replayRoundObj);
+  
+
+  showReplayPanel();
+}
+
+function showReplayPanel() {
+  let box = document.getElementById('replayPanel');
+
+  if (!box) {
+    box = document.createElement('div');
+    box.id = 'replayPanel';
+    box.className = 'card';
+    box.style.marginTop = '16px';
+
+    const target =
+      document.getElementById('summaryContent') ||
+      document.getElementById('summary') ||
+      document.body;
+
+    target.appendChild(box);
+  }
+
+  const holeNo = replayHoles[replayIndex];
+  const h = holeNo - 1;
+  const holeData = replayScores.filter(x => Number(x.hole_number) === holeNo);
+  const row = replayCalc.rows[h];
+
+  const isTwoPlayerReplay = replayRoundObj.players.length === 2;
+
+  let pairingText = '';
+
+  if (isTwoPlayerReplay) {
+    pairingText = `${replayRoundObj.players[0]} vs ${replayRoundObj.players[1]}`;
+  } else {
+    pairingText = `Team 1: ${row.team1.map(i=>replayRoundObj.players[i]).join(' + ')}
+      vs Team 2: ${row.team2.map(i=>replayRoundObj.players[i]).join(' + ')}${row.team2.length===1?' x2':''}`;
+  }
+
+  let html = `
+    <h2>賽事回播</h2>
+    <h3>第 ${holeNo} 洞</h3>
+    <div class="small">配對: <b>${pairingText}</b></div>
+
+    <div class="scroll">
+      <table>
+        <tr>
+          <th>球員</th>
+          <th>桿數</th>
+          <th>地獄倒霉鬼分</th>
+          <th>配對</th>
+        </tr>
+  `;
+
+  replayRoundObj.players.forEach((p,i)=>{
+    const s = holeData.find(x =>
+      String(x.player_name || '').trim().toLowerCase() ===
+      String(p || '').trim().toLowerCase()
+    ) || holeData[i];
+
+    const strokes = s?.gross_score ?? '';
+
+    const pts = isTwoPlayerReplay
+      ? ''
+      : (strokes === '' ? '' : playerPoint(Number(strokes), replayRoundObj.course[h].par));
+
+    const pairing = isTwoPlayerReplay
+      ? 'Individual'
+      : (row.team1.includes(i) ? 'Team 1' : 'Team 2');
+
+    html += `
+      <tr>
+        <td>${p}</td>
+        <td>${strokes}</td>
+        <td>${pts}</td>
+        <td>${pairing}</td>
+      </tr>
+    `;
+  });
+
+  html += `
+      </table>
+    </div>
+
+    ${isTwoPlayerReplay ? '' : `
+      <p class="small">
+        Team 1 Points: ${row.t1} · Team 2 Points: ${row.t2}
+      </p>
+    `}
+
+    <button class="btn2" onclick="prevReplayHole()">◀ Previous</button>
+    <button class="btn2" onclick="nextReplayHole()">Next ▶</button>
+    <button class="btn2" onclick="closeReplay()">Close</button>
+  `;
+
+  box.innerHTML = html;
+  box.scrollIntoView({ behavior:'smooth' });
+}
+
+function nextReplayHole() {
+  if (replayIndex < replayHoles.length - 1) {
+    replayIndex++;
+    showReplayPanel();
+  }
+}
+
+function prevReplayHole() {
+  if (replayIndex > 0) {
+    replayIndex--;
+    showReplayPanel();
+  }
+}
+
+function closeReplay() {
+  const box = document.getElementById('replayPanel');
+  if (box) box.remove();
+}
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){
+    closePowerPopup();
+  }
+});
+</script></body></html>
