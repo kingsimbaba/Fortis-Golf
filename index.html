@@ -1,4 +1,10 @@
 
+  if(String(parentCode||'').trim()==='TM'){
+    const key=normalizeComboCode(comboValue).replace(/\+/g,'').toUpperCase();
+    const tmSegments={NO:['TM-N','TM-O'],OT:['TM-O','TM-TM'],TN:['TM-TM','TM-N']}[key];
+    if(tmSegments) return tmSegments.slice();
+  }
+
 <!doctype html><html lang="en"><head>
 <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
