@@ -1,9 +1,1882 @@
+
+<!doctype html><html lang="en"><head>
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#09111f">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>地獄倒楣鬼</title><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+<script type="module">import * as pdfjsLib from "https://cdn.jsdelivr.net/npm/pdfjs-dist@4.4.168/build/pdf.min.mjs"; window.pdfjsLib=pdfjsLib; pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdn.jsdelivr.net/npm/pdfjs-dist@4.4.168/build/pdf.worker.min.mjs";</script>
+<style>
+:root{
+  --bg:#09111f;--panel:#121c2e;--line:#26364f;--text:#f7fafc;--muted:#a7b1c2;--green:#38a169;--red:#fc8181;
+  --cardShadow:0 8px 24px rgba(0,0,0,.22);
+}
+.light-theme{--bg:#f7fafc;--panel:#ffffff;--line:#cbd5e0;--text:#1a202c;--muted:#4a5568;--green:#2f855a;--red:#e53e3e}
+.high-contrast{--bg:#000000;--panel:#111111;--line:#ffffff;--text:#ffffff;--muted:#e2e8f0;--green:#00ff66;--red:#ff4444}
+
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,Segoe UI,Arial,sans-serif;padding-bottom:86px;line-height:1.35}
+header{position:sticky;top:0;background:rgba(9,17,31,.96);border-bottom:1px solid var(--line);padding:14px 16px;z-index:2;backdrop-filter:blur(8px)}
+h1{font-size:22px;margin:0;font-weight:900}
+h2{font-size:18px;margin:0 0 12px;font-weight:900}
+.sub,.small{color:var(--muted);font-size:12px}
+.wrap{max-width:980px;margin:0 auto;padding:14px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:16px;margin:12px 0;box-shadow:var(--cardShadow)}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+label{display:block;font-size:12px;color:var(--muted);margin:8px 0 5px}
+input,select,button{width:100%;border-radius:14px;border:1px solid #33445f;background:#0f1a2b;color:var(--text);padding:13px;font-size:16px}
+button{background:linear-gradient(135deg,#2f855a,#38a169);border:0;font-weight:900;cursor:pointer;min-height:46px}
+.btn2{background:#1f2f48;border:1px solid #33445f}
+.btn-red{background:#742a2a}
+.hidden{display:none!important}
+.match,.team{background:#0e1728;border:1px solid var(--line);border-radius:16px;padding:12px;margin:10px 0}
+.toggle{display:flex;align-items:center;gap:8px}
+.toggle input{width:auto}
+.leader-row{display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:center;background:#0e1728;border:1px solid var(--line);padding:12px;border-radius:15px;margin:8px 0}
+.score{font-size:24px;font-weight:900;color:#68d391}
+.scroll{overflow:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{border-bottom:1px solid var(--line);padding:9px;text-align:center}
+th{color:var(--muted)}
+.nav{position:fixed;bottom:0;left:0;right:0;background:rgba(9,17,31,.96);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(5,1fr);gap:6px;padding:8px;z-index:5}
+.nav button{font-size:12px;padding:10px 5px;background:#18243a;min-height:44px}
+.nav button.active{background:#2f855a}
+.ok{color:#68d391}
+.bad{color:var(--red)}
+.trend{display:flex;align-items:end;gap:8px;height:130px;border-bottom:1px solid var(--line);padding:10px 4px;margin-top:10px}
+.bar{flex:1;background:var(--green);border-radius:8px 8px 0 0;min-width:14px;position:relative}
+.bar span{position:absolute;top:-22px;left:50%;transform:translateX(-50%);font-size:11px;color:var(--text)}
+.trend-labels{display:flex;gap:8px;font-size:10px;color:var(--muted)}
+.trend-labels div{flex:1;text-align:center}
+
+/* Compact Summary dashboard — presentation only; scoring logic is unchanged. */
+#summaryContent{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:10px;
+}
+#summaryContent .card{
+  min-width:0;
+  margin:0;
+  padding:12px;
+  border-radius:14px;
+  box-shadow:0 4px 14px rgba(0,0,0,.16);
+}
+#summaryContent .card h2{
+  margin-bottom:8px;
+  font-size:15px;
+  line-height:1.2;
+}
+#summaryContent .card label{
+  margin:5px 0 3px;
+  font-size:11px;
+}
+#summaryContent .card input,
+#summaryContent .card select,
+#summaryContent .card button{
+  min-height:36px;
+  padding:8px 10px;
+  border-radius:10px;
+  font-size:13px;
+}
+#summaryContent .match,
+#summaryContent .team,
+#summaryContent .leader-row{
+  margin:5px 0;
+  padding:8px;
+  border-radius:10px;
+}
+#summaryContent .leader-row{gap:6px}
+#summaryContent .score{font-size:20px}
+#summaryContent table{font-size:11px}
+#summaryContent th,
+#summaryContent td{
+  padding:6px 5px;
+  white-space:nowrap;
+}
+#summaryContent .small,
+#summaryContent .sub{font-size:10px}
+#summaryContent .summary-more{
+  width:100%;
+  min-height:34px;
+  margin-top:8px;
+  padding:7px 10px;
+  background:#18243a;
+  color:#c6f6d5;
+  border:1px solid #2f855a;
+}
+#summaryContent .summary-hidden,#summaryContent .summary-filter-hidden{display:none}
+#summaryContent .summary-toolbar{grid-column:1/-1}
+#summaryContent .summary-card-title{display:flex;align-items:center;gap:8px}
+#summaryContent .summary-card-title h2{flex:1;margin:0}
+#summaryContent .summary-collapse{width:auto!important;min-width:38px;padding:5px 9px!important;background:#18243a!important}
+#summaryContent .summary-card-body.collapsed{display:none}
+#summaryContent .summary-highlight{grid-column:1/-1;border-color:#2f855a;background:linear-gradient(135deg,var(--panel),rgba(47,133,90,.18))}
+#summaryContent .summary-highlight-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+#summaryContent .summary-stat{padding:9px;border-radius:10px;background:#0e1728;text-align:center}
+#summaryContent .summary-stat b{display:block;font-size:17px;color:#68d391}
+#summaryContent .swipe-hint{display:none;text-align:right;margin:3px 0 0}
+.loading-box{padding:18px;text-align:center;color:var(--muted)}
+.loading-box::before{content:'⛳';display:block;font-size:28px;animation:pulse 1s ease-in-out infinite}
+@keyframes pulse{50%{transform:scale(1.15);opacity:.55}}
+#summaryContent .trend{
+  height:140px;
+  margin-top:10px;
+  padding:22px 3px 7px;
+}
+
+@media(max-width:760px){
+  #summaryContent{grid-template-columns:1fr;gap:8px}
+  #summaryContent .card{padding:10px;border-radius:12px}
+  #summaryContent .card h2{font-size:14px;margin-bottom:6px}
+  #summaryContent table{font-size:10px}
+  #summaryContent th,#summaryContent td{padding:5px 4px}
+  #summaryContent .summary-highlight-grid{grid-template-columns:repeat(2,1fr)}
+  #summaryContent .scroll{position:relative}
+  #summaryContent .scroll th:first-child,#summaryContent .scroll td:first-child{position:sticky;left:0;z-index:1;background:var(--panel);box-shadow:2px 0 0 var(--line)}
+  #summaryContent .swipe-hint{display:block}
+}
+
+@media(max-width:760px){
+  .grid,.grid4{grid-template-columns:1fr}
+  .wrap{padding:10px}
+  header{padding:12px 14px}
+  h1{font-size:20px}
+  h2{font-size:17px}
+  .card{border-radius:16px;padding:14px;margin:10px 0}
+  input,select,button{font-size:16px;padding:14px;min-height:48px}
+  .leader-row{grid-template-columns:1fr auto;gap:8px}
+  .leader-row .small{grid-column:2}
+  .score{font-size:28px}
+  .team{padding:14px;border-radius:16px}
+  .team h2{font-size:20px}
+  table{font-size:12px}
+  th,td{padding:8px 6px}
+  .nav{padding:7px;gap:5px}
+  .nav button{font-size:12px;padding:9px 3px}
+}@media(max-width:760px){
+  #scorePage .card:first-child button{
+    font-weight:900;
+  }
+
+  #scorePage .score{
+    text-shadow:0 1px 2px rgba(0,0,0,.35);
+  }
+
+  #scorePage .team{
+    border-width:2px;
+  }
+
+  .high-contrast #scorePage button{
+    border:2px solid #ffffff;
+  }
+
+  .high-contrast #scorePage .score{
+    color:#00ff66;
+  }
+}
+  .score-animation{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.72);
+  z-index:9999;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  padding:24px;
+}
+
+.score-animation-box{
+  background:var(--panel);
+  border:2px solid var(--line);
+  border-radius:24px;
+  padding:28px;
+  max-width:360px;
+  width:100%;
+  box-shadow:0 20px 60px rgba(0,0,0,.45);
+  animation:popIn .25s ease-out;
+}
+
+.score-animal{
+  font-size:72px;
+  line-height:1;
+  margin-bottom:12px;
+  animation:bounceAnimal .9s ease-in-out infinite;
+}
+
+.score-title{
+  font-size:28px;
+  font-weight:900;
+  margin-bottom:8px;
+}
+
+.score-player{
+  font-size:18px;
+  color:var(--muted);
+}
+
+@keyframes popIn{
+  from{transform:scale(.85);opacity:0}
+  to{transform:scale(1);opacity:1}
+}
+
+@keyframes bounceAnimal{
+  0%,100%{transform:translateY(0) rotate(0)}
+  50%{transform:translateY(-12px) rotate(-4deg)}
+}
+.birdie-scene{
+  position:relative;
+  height:180px;
+  overflow:hidden;
+}
+
+.birdie-tree{
+  position:absolute;
+  left:55%;
+  bottom:20px;
+  width:42px;
+  height:130px;
+  background:#7a4a25;
+  border-radius:18px;
+}
+
+.birdie-woodpecker{
+  position:absolute;
+  left:28%;
+  top:54px;
+  font-size:70px;
+  transform:scaleX(-1);
+  animation:peckBird .22s infinite;
+}
+
+.birdie-chips{
+  position:absolute;
+  left:58%;
+  top:74px;
+  font-size:28px;
+  animation:woodChips .45s infinite;
+}
+
+@keyframes peckBird{
+  0%,100%{
+    transform:scaleX(-1) translateX(0) rotate(0deg);
+  }
+  50%{
+    transform:scaleX(-1) translateX(-18px) rotate(-8deg);
+  }
+}
+
+@keyframes woodChips{
+  0%{opacity:0;transform:scale(.5) translateX(0)}
+  50%{opacity:1;transform:scale(1.2) translateX(15px)}
+  100%{opacity:0;transform:scale(.5) translateX(30px)}
+}
+.eagle-scene{
+  position:relative;
+  height:180px;
+  overflow:hidden;
+}
+
+.eagle-sky{
+  position:absolute;
+  inset:0;
+  background:linear-gradient(#4aa3ff,#cdefff);
+  border-radius:18px;
+}
+
+.eagle-bird{
+  position:absolute;
+  left:-80px;
+  top:22px;
+  font-size:76px;
+  animation:eagleDive 1.4s ease-in-out infinite;
+}
+
+@keyframes eagleDive{
+  0%{
+    transform:translate(420px,-35px) scale(.8) rotate(-3deg);
+  }
+
+  35%{
+    transform:translate(220px,-55px) scale(1.05) rotate(3deg);
+  }
+
+  70%{
+    transform:translate(20px,-20px) scale(1.15) rotate(-2deg);
+  }
+
+  100%{
+    transform:translate(-180px,-60px) scale(.9) rotate(2deg);
+  }
+}
+.albatross-scene{
+  position:relative;
+  height:180px;
+  overflow:hidden;
+  border-radius:18px;
+  background:linear-gradient(#55b7ff,#dff5ff);
+}
+
+.albatross-bird{
+  position:absolute;
+  left:50%;
+  top:56px;
+  transform:translateX(-50%);
+  font-size:92px;
+  animation:albatrossSpread 1.8s ease-in-out infinite;
+}
+
+.albatross-cloud{
+  position:absolute;
+  font-size:42px;
+  opacity:.8;
+  animation:cloudDrift 3s linear infinite;
+}
+
+.albatross-cloud.one{left:20px;top:22px}
+.albatross-cloud.two{right:26px;top:42px;animation-delay:.8s}
+
+@keyframes albatrossSpread{
+  0%,100%{
+    transform:translateX(-50%) scaleX(1) scaleY(1);
+  }
+  50%{
+    transform:translateX(-50%) scaleX(1.65) scaleY(.92);
+  }
+}
+
+@keyframes cloudDrift{
+  0%{transform:translateX(0)}
+  100%{transform:translateX(-35px)}
+}
+.par-scene{
+  position:relative;
+  height:180px;
+  overflow:hidden;
+  border-radius:18px;
+  background:linear-gradient(#65c466 0%,#3f9f45 100%);
+}
+
+.par-green{
+  position:absolute;
+  left:0;
+  right:0;
+  bottom:0;
+  height:70px;
+  background:#267a32;
+}
+
+.par-cup{
+  position:absolute;
+  right:48px;
+  bottom:54px;
+  width:42px;
+  height:16px;
+  background:#111;
+  border-radius:50%;
+}
+
+.par-flag{
+  position:absolute;
+  right:64px;
+  bottom:66px;
+  width:4px;
+  height:70px;
+  background:#ffffff;
+}
+
+.par-flag:after{
+  content:'';
+  position:absolute;
+  top:0;
+  left:4px;
+  border-top:11px solid transparent;
+  border-bottom:11px solid transparent;
+  border-left:30px solid #ff4444;
+}
+
+.par-ball{
+  position:absolute;
+  left:18px;
+  bottom:64px;
+  width:22px;
+  height:22px;
+  background:#ffffff;
+  border-radius:50%;
+  box-shadow:inset -3px -3px 0 rgba(0,0,0,.12);
+  animation:ballDrop 1.7s ease-in-out infinite;
+}
+
+@keyframes ballDrop{
+  0%{transform:translate(0,0) scale(1);opacity:1}
+  65%{transform:translate(220px,0) scale(1);opacity:1}
+  78%{transform:translate(228px,9px) scale(.65);opacity:1}
+  79%,100%{transform:translate(228px,13px) scale(.1);opacity:0}
+}
+.bogey-scene{
+  position:relative;
+  height:180px;
+  overflow:hidden;
+  border-radius:18px;
+  background:linear-gradient(#8fd3ff,#dff5ff);
+}
+
+.bogey-ground{
+  position:absolute;
+  left:0;
+  right:0;
+  bottom:0;
+  height:55px;
+  background:#4f9b45;
+}
+
+.bogey-golfer{
+  position:absolute;
+  left:50%;
+  bottom:42px;
+  font-size:76px;
+  transform:translateX(-50%);
+  animation:bogeyRage .9s ease-in-out infinite;
+}
+
+.bogey-club{
+  position:absolute;
+  left:57%;
+  top:67px;
+  font-size:48px;
+  animation:clubBreak .9s ease-in-out infinite;
+}
+
+@keyframes bogeyRage{
+  0%,100%{transform:translateX(-50%) rotate(0)}
+  40%{transform:translateX(-50%) rotate(-10deg)}
+  65%{transform:translateX(-50%) rotate(8deg)}
+}
+
+@keyframes clubBreak{
+  0%,45%{transform:rotate(-25deg) scale(1)}
+  55%{transform:rotate(25deg) scale(1)}
+  65%,100%{transform:rotate(55deg) scale(.7);opacity:.35}
+}
+.score-video{
+  width:100%;
+  height:220px;
+  object-fit:cover;
+  border-radius:18px;
+  display:block;
+}
+
+.scan-actions{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.scan-actions button{min-height:74px;font-size:15px}
+.scan-preview{border:1px dashed var(--line);border-radius:16px;padding:14px;margin-top:12px;text-align:center}
+.scan-preview img{max-width:100%;max-height:320px;border-radius:12px}
+.admin-feature-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.pdf-player-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.pdf-player-grid label{background:#0e1728;border:1px solid var(--line);padding:10px;border-radius:12px;margin:0;display:flex;align-items:center;gap:8px}
+.pdf-player-grid input{width:auto}
+.round-library{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.round-library-card{background:#0e1728;border:1px solid var(--line);border-radius:14px;padding:13px;min-width:0}
+.round-library-title{font-size:17px;font-weight:900;overflow-wrap:anywhere}
+.round-library-date{margin-top:4px;color:var(--muted);font-size:11px}
+.round-library-actions{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:11px}
+.round-library-actions button{min-height:38px;padding:8px 6px;font-size:12px;border-radius:10px}
+@media(max-width:700px){.round-library{grid-template-columns:1fr}}
+@media(max-width:700px){.scan-actions,.admin-feature-grid{grid-template-columns:1fr}.pdf-player-grid{grid-template-columns:repeat(2,1fr)}}
+
+.gps-status{margin-top:8px;padding:10px;border:1px solid var(--line);border-radius:12px;background:#0e1728}
+.scan-progress{height:10px;background:#18243a;border-radius:999px;overflow:hidden;margin:10px 0}
+.scan-progress-bar{height:100%;width:0;background:var(--green);transition:width .2s ease}
+.premium-badge{display:inline-flex;align-items:center;gap:5px;padding:4px 8px;border-radius:999px;background:rgba(56,161,105,.14);border:1px solid #2f855a;font-size:11px;color:#c6f6d5}
+.round-library-toolbar{display:grid;grid-template-columns:1fr auto;gap:8px;margin-bottom:10px}
+@media(max-width:700px){.round-library-toolbar{grid-template-columns:1fr}}
+
+/* 球員資料 + 回合成就 */
+.profile-hero{background:linear-gradient(135deg,rgba(47,133,90,.28),rgba(18,28,46,.96));border:1px solid #38a169;border-radius:16px;padding:16px;margin-top:12px}
+.profile-name{font-size:28px;font-weight:900;margin-bottom:4px}
+.profile-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:12px}
+.profile-kpi{background:#0e1728;border:1px solid var(--line);border-radius:12px;padding:10px;text-align:center}
+.profile-kpi b{display:block;font-size:21px;color:#68d391}.profile-kpi span{font-size:10px;color:var(--muted)}
+.profile-two{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:10px}
+.recent-form{display:flex;gap:8px;overflow:auto;padding:3px 0}.recent-score{min-width:72px;background:#0e1728;border:1px solid var(--line);border-radius:12px;padding:10px;text-align:center}.recent-score b{font-size:22px;color:#68d391}
+.achievement-overlay{position:fixed;inset:0;background:rgba(0,0,0,.78);z-index:10000;display:flex;align-items:center;justify-content:center;padding:18px}
+.achievement-panel{width:min(560px,100%);max-height:90vh;overflow:auto;background:var(--panel);border:2px solid #38a169;border-radius:24px;padding:20px;box-shadow:0 24px 80px rgba(0,0,0,.55)}
+.achievement-panel h2{text-align:center;font-size:25px}.achievement-list{display:grid;gap:9px;margin:14px 0}.achievement-item{display:grid;grid-template-columns:42px 1fr auto;gap:10px;align-items:center;background:#0e1728;border:1px solid var(--line);border-radius:14px;padding:11px}.achievement-icon{font-size:27px}.achievement-value{font-weight:900;color:#68d391;text-align:right}.personal-best{border-color:#d69e2e;background:rgba(214,158,46,.12)}
+.achievement-actions{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+@media(max-width:700px){.profile-kpis{grid-template-columns:repeat(2,1fr)}.profile-two{grid-template-columns:1fr}.achievement-item{grid-template-columns:36px 1fr}.achievement-value{grid-column:2;text-align:left}}
+
+/* 首頁儀表板 */
+.home-hero{background:linear-gradient(135deg,rgba(47,133,90,.42),rgba(18,28,46,.98));border:1px solid #38a169;border-radius:22px;padding:20px;margin:12px 0;box-shadow:var(--cardShadow)}
+.home-greeting{font-size:13px;color:#c6f6d5;font-weight:800}.home-name{font-size:30px;font-weight:900;margin-top:3px}.home-date{color:var(--muted);font-size:12px;margin-top:4px}
+.home-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:16px}.home-action{min-height:76px;font-size:15px;display:flex;align-items:center;justify-content:center;gap:7px}.home-action.primary{background:linear-gradient(135deg,#2f855a,#48bb78)}
+.home-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.home-card{margin:0}.home-card.full{grid-column:1/-1}
+.home-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}.home-kpi{background:#0e1728;border:1px solid var(--line);border-radius:14px;padding:12px;text-align:center}.home-kpi b{display:block;color:#68d391;font-size:23px}.home-kpi span{font-size:10px;color:var(--muted)}
+.home-rank{display:grid;grid-template-columns:36px 1fr auto;gap:8px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}.home-rank:last-child{border-bottom:0}.home-medal{font-size:22px}.home-points{font-weight:900;color:#68d391}
+.home-form{display:flex;gap:8px;overflow:auto;padding-bottom:2px}.home-form-item{min-width:74px;background:#0e1728;border:1px solid var(--line);border-radius:13px;padding:10px;text-align:center}.home-form-item b{display:block;font-size:22px;color:#68d391}
+@media(max-width:760px){.home-actions{grid-template-columns:1fr}.home-grid{grid-template-columns:1fr}.home-card.full{grid-column:auto}.home-kpis{grid-template-columns:repeat(2,1fr)}.nav{grid-template-columns:repeat(5,1fr)}.nav button{font-size:11px;padding:8px 2px}}
+</style></head><body>
+<header><h1>地獄倒楣鬼</h1><div class="sub">雲端版 · 歷史紀錄 · 排行榜 · 管理員 · 多人使用</div><div id="userBar" class="small"></div></header><div class="wrap">
+<section id="auth" class="page"><div class="card"><h2>登入</h2><p class="small">請輸入電子郵件再按登入即可.</p><div class="grid"><div><label>電子郵件</label><input id="auth電子郵件" type="email" placeholder="you@example.com"></div><div><label>密碼</label><input id="auth密碼" type="password" placeholder="密碼"></div><button onclick="signInUser()">登入</button><button class="btn2" onclick="signUpUser()">建立帳號</button></div><div id="authMsg" class="small" style="margin-top:10px"></div></div></section>
+<section id="home" class="page hidden"><div id="homeContent"></div></section><section id="setup" class="page hidden"><div class="card" style="display:flex;align-items:center;gap:10px"><button class="btn2" style="width:auto;padding:9px 13px;min-height:38px" onclick="showPage('home')">← 返回首頁</button><div><b>建立新回合</b><div class="small">完成設定後即可開始計分</div></div></div><div class="card"><h2>資料庫狀態</h2><div id="dbStatus" class="small">連線中…</div></div><div class="card"><div class="card"><h2>顯示設定</h2><label>主題</label><select id="themeSelector" onchange="changeTheme()"><option value="dark">深色</option><option value="light">淺色</option><option value="contrast">高對比</option></select></div><h2>新回合</h2><div class="grid"><div><label>國家</label>
+<select id="country" onchange="setupCourseSelect()"></select>
+
+<label>最近打過的球場</label>
+<div id="recentCourses" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px"></div>
+
+<label>搜尋球場</label>
+<input id="courseSearch" placeholder="輸入球場名稱..." oninput="setupCourseSelect()">
+
+<label>球場</label>
+<select id="course"></select>
+<button class="btn2" style="margin-top:10px" onclick="detectNearbyCourse()">📍 偵測附近球場</button>
+<div id="gpsCourseStatus" class="gps-status small">尚未使用 GPS 偵測。</div></div><div id="comboBox" class="hidden"><label id="comboLabel">組合</label><select id="combo"></select></div><div><label>備註</label><input id="roundNote" placeholder="週日球局"></div></div><p class="small">球場有超過18個洞，請選擇擊球的兩個場地.</p></div>
+<div class="card"><label>球員人數</label>
+<select id="playerCount" onchange="makePlayers(); renderMatchups();">
+  <option value="4" selected>4 位球員</option>
+  <option value="3">3 位球員</option>
+  <option value="2">2 位球員</option>
+</select><h2>球員 + 第一洞開球距離</h2><div class="grid4" id="playerInputs"></div><div class="grid" style="margin-top:12px"><button class="btn2" onclick="loadLastGroup()">載入上一場</button><button class="btn2" onclick="renderMatchups()">載入個人對戰</button><button onclick="startRound()">開始回合</button></div><p class="small">地獄倒楣鬼永遠開啟,不需要個人對戰可關閉.</p></div>
+<div class="card"><h2>個人對戰</h2><label class="toggle">
+  <input type="checkbox" id="useIndividualMatchups" checked onchange="toggleIndividualMatchups(this.checked)">
+  使用個人對戰
+  <br>
+
+<label class="toggle">
+  <input type="checkbox" id="countPar3Strokes">
+  立偉模式
+</label>
+</label><div id="matchupSetup" class="small">請先輸入球員，然後點選載入個人對戰。</div></div></section>
+<section id="scorePage" class="page hidden"><div id="scoreContent"></div></section><section id="liveViewer" class="page hidden">
+  <div id="liveViewerContent"></div>
+</section><section id="summary" class="page hidden"><div id="summaryContent"></div></section><section id="data" class="page hidden"><div class="card"><h2>資料庫</h2><button class="btn2" onclick="forceFullSync(this)">重新同步資料</button><div id="dataView" class="small" style="margin-top:10px"></div></div></section><section id="admin" class="page hidden"><div id="adminContent"></div></section></div>
+<div class="nav hidden">
+  <button id="navHome" class="active" onclick="showPage('home')">🏠<br>首頁</button>
+  <button id="navScorePage" onclick="showPage('scorePage')">⛳<br>計分</button>
+  <button id="navSummary" onclick="showPage('summary')">📊<br>統計</button>
+  <button id="navData" onclick="showPage('data')">🗄️<br>資料</button>
+  <button id="navAdmin" class="hidden" onclick="showPage('admin')">🔧<br>管理</button>
+</div>
+<script>
+let profilePlayer='';
+let scoreAnimationPlaying=false;
+let currentPage='home';
+let useIndividualMatchups=true;
+let lastForegroundSync=0;
+let SB={url:'',key:''}, authClient=null, currentSession=null, currentUser=null, currentProfile=null, db={courses:[],holes:[],course_combos:[],matchups:[],players:[],rounds:[],scores:[],history:[],seasons:[]}, round=null, roundHole=0, localRounds=[];
+const courseIdName={1:'DH',2:'SR',3:'TPE-A',4:'TPE-B',5:'TPE-C',6:'TPE-D',8:'TC-E',9:'TC-C',10:'TC-W'};
+function courseLocalizedName(c){
+  if(!c) return '';
+  if(c.country==='Japan') return c.display_name_ja||c.display_name_zh||c.display_name||c.course_name;
+  if(['Taiwan','China'].includes(c.country)) return c.display_name_zh||c.display_name||c.display_name_ja||c.course_name;
+  return c.display_name||c.display_name_zh||c.display_name_ja||c.course_name;
+}
+function courseAdminName(c){
+  if(!c) return '';
+  return [c.display_name_zh,c.display_name_ja,c.display_name].filter(Boolean).filter((v,i,a)=>a.indexOf(v)===i).join(' / ')||c.course_name;
+}
+async function init(){
+  makePlayers();
+  if('serviceWorker' in navigator){
+    navigator.serviceWorker.register('/sw.js').then(reg=>reg.update()).catch(()=>{});
+  }
+  await loadConfig();
+  await initAuth();
+}
+async function initAuth(){
+  if(!SB.url||!SB.key||!window.supabase){showAuth('Missing Supabase config or Supabase library.');return;}
+  authClient=window.supabase.createClient(SB.url,SB.key);
+  const liveId = new URLSearchParams(window.location.search).get('live');
+
+const {data}=await authClient.auth.getSession();
+
+if(liveId){
+  currentSession = data?.session || null;
+  await loadLiveRound(liveId);
+}else if(data&&data.session){
+  await handleLoggedIn(data.session);
+}else{
+  showAuth('請先登入。');
+}
+  authClient.auth.onAuthStateChange(async (event, session)=>{ if(session) await handleLoggedIn(session); else showAuth('已登出。'); });
+}
+function showAuth(msg=''){
+  currentSession=null;currentUser=null;currentProfile=null;
+  document.querySelector('.nav').classList.add('hidden');
+  document.querySelectorAll('.page').forEach(p=>p.classList.add('hidden'));
+  document.getElementById('auth').classList.remove('hidden');
+  document.getElementById('userBar').innerHTML='尚未登入';
+  document.getElementById('authMsg').innerHTML=msg;
+}
+async function handleLoggedIn(session){
+  const liveId = new URLSearchParams(window.location.search).get('live');
+
+  if(liveId){
+    await loadLiveRound(liveId);
+    return;
+  }
+
+  currentSession=session; currentUser=session.user;
+  await loadProfile();
+  document.querySelector('.nav').classList.remove('hidden');
+  document.getElementById('navAdmin').classList.toggle('hidden', !(currentProfile&&currentProfile.role==='admin'));
+  document.getElementById('userBar').innerHTML=`${adminEscapeHtml(currentProfile?.display_name||currentUser.email)} · ${currentProfile?.role==='admin'?'管理員':'球員'} · <button class="btn2" style="width:auto;padding:6px 10px;font-size:12px" onclick="signOutUser()">登出</button>`;
+  await loadAll(); 
+  renderSummary(); 
+
+  if(loadActiveRound()){
+    renderScore();
+    showPage('scorePage');
+}else{
+  showPage('home');
+}
+}
+async function loadProfile(){
+  let rows=[];
+  try{rows=await sb(`profiles?id=eq.${currentUser.id}&select=*`);}catch(e){rows=[];}
+
+  const email=String(currentUser?.email||'').trim().toLowerCase();
+  const ownerAccount=email==='mailhsingchen@gmail.com';
+
+  if(rows&&rows.length){
+    currentProfile=rows[0];
+
+    // Permanent owner mapping: this login is 陳信翰 and remains the administrator.
+    if(ownerAccount && (currentProfile.display_name!=='陳信翰' || currentProfile.role!=='admin' || currentProfile.active===false)){
+      const ownerUpdate={display_name:'陳信翰',role:'admin',active:true};
+      try{
+        await sb(`profiles?id=eq.${currentUser.id}`,{method:'PATCH',body:JSON.stringify(ownerUpdate)});
+      }catch(e){
+        console.warn('Unable to persist administrator player mapping:',e.message);
+      }
+      currentProfile={...currentProfile,...ownerUpdate};
+    }
+    return;
+  }
+
+  const name=ownerAccount?'陳信翰':((currentUser.email||'').split('@')[0]||'Player');
+  const role=ownerAccount?'admin':'player';
+  try{
+    let created=await sb('profiles',{method:'POST',body:JSON.stringify({id:currentUser.id,email:currentUser.email,display_name:name,role,active:true})});
+    currentProfile=created[0];
+  }catch(e){
+    currentProfile={id:currentUser.id,email:currentUser.email,display_name:name,role,active:true};
+  }
+}
+async function signInUser(){
+  const email=document.getElementById('auth電子郵件').value.trim(), password=document.getElementById('auth密碼').value;
+  const {error}=await authClient.auth.signInWithPassword({email,password});
+  document.getElementById('authMsg').innerHTML=error?`<span class="bad">${error.message}</span>`:'登入中…';
+}
+async function signUpUser(){
+  const email=document.getElementById('auth電子郵件').value.trim(), password=document.getElementById('auth密碼').value;
+  const {error}=await authClient.auth.signUp({email,password});
+  document.getElementById('authMsg').innerHTML=error?`<span class="bad">${error.message}</span>`:'帳號已建立。若已啟用電子郵件驗證，請先確認信箱後再登入。';
+}
+async function signOutUser(){await authClient.auth.signOut();}
+
+async function loadConfig(){try{let r=await fetch('/api/config',{cache:'no-store'}); let j=await r.json(); SB.url=j.supabaseUrl; SB.key=j.supabaseAnonKey; document.getElementById('dbStatus').innerHTML=SB.url&&SB.key?'<span class="ok">Connected to Vercel config.</span>':'<span class="bad">Missing env vars.</span>';}catch(e){document.getElementById('dbStatus').innerHTML='<span class="bad">Could not load /api/config.</span>';}}
+async function sb(path,opts={}){if(!SB.url||!SB.key) throw new Error('Missing Supabase config'); let r=await fetch(`${SB.url}/rest/v1/${path}`,{cache:'no-store',...opts,headers:{apikey:SB.key,Authorization:`Bearer ${currentSession?.access_token||SB.key}`,'Content-Type':'application/json','Cache-Control':'no-cache',Pragma:'no-cache',Prefer:'return=representation',...(opts.headers||{})}}); if(!r.ok){let t=await r.text(); throw new Error(t)} return await r.json();}
+
+async function forceFullSync(button){
+  if(button){button.disabled=true;button.textContent='同步中…';}
+  try{
+    if('caches' in window){
+      const names=await caches.keys();
+      await Promise.all(names.map(name=>caches.delete(name)));
+    }
+    if('serviceWorker' in navigator){
+      const reg=await navigator.serviceWorker.getRegistration();
+      if(reg) await reg.update();
+    }
+    await loadAll();
+    renderSummary();
+    if(currentPage==='admin') renderAdmin();
+    lastForegroundSync=Date.now();
+  }catch(e){
+    alert('重新同步失敗：'+e.message);
+  }finally{
+    if(button){button.disabled=false;button.textContent='重新同步資料';}
+  }
+}
+
+async function refreshAfterForeground(){
+  if(document.visibilityState!=='visible'||!currentSession||Date.now()-lastForegroundSync<15000) return;
+  lastForegroundSync=Date.now();
+  await loadAll();
+  renderSummary();
+}
+document.addEventListener('visibilitychange',()=>{refreshAfterForeground().catch(console.error);});
+window.addEventListener('pageshow',()=>{refreshAfterForeground().catch(console.error);});
+async function loadPaged(path){
+  let all = [];
+  let from = 0;
+  const size = 1000;
+
+  while(true){
+    const rows = await sb(`${path}&limit=${size}&offset=${from}`);
+    all.push(...rows);
+
+    if(rows.length < size) break;
+
+    from += size;
+  }
+
+  return all;
+}
+async function loadAll(){
+document.getElementById('dbStatus').innerHTML='<span class="small">正在載入雲端資料…</span>';
+if(document.getElementById('summaryContent'))document.getElementById('summaryContent').innerHTML='<div class="card loading-box">正在載入統計資料…</div>';
+try{db.courses=await sb('courses?select=*&order=id'); db.holes = await loadPaged('holes?select=*&order=course_id,hole_number');db.course_combos=await sb('course_combos?select=*&order=id'); db.matchups=await sb('matchups?select=*&order=id'); db.players=await sb('players?select=*&order=name').catch(()=>[]); db.rounds=await sb('fortis_rounds?select=*&order=id.desc&limit=30').catch(()=>[]); roundLibraryTotal=await fetchRoundLibraryTotal().catch(()=>db.rounds.length); db.scores=await sb('hole_scores?select=*&order=round_id.desc,hole_number&limit=1000').catch(()=>[]); db.history=await sb('matchup_history?select=*&order=id.desc&limit=200').catch(()=>[]);
+
+try{
+  db.seasons=await sb('seasons?select=*&order=id');
+}catch(e){
+  alert('Seasons load error: '+e.message);
+  db.seasons=[];
+}
+
+setupCourseSelect(); if(currentPage==='home')renderHome(); document.getElementById('dbStatus').innerHTML=`<span class="ok">Supabase 已連線。</span> Courses: ${db.courses.length}, holes: ${db.holes.length}, matchups: ${db.matchups.length}, rounds: ${db.rounds.length}`; document.getElementById('dataView').innerHTML=`Courses ${db.courses.length}<br>Holes ${db.holes.length}<br>Matchups ${db.matchups.length}<br>Players ${db.players.length}<br>Rounds ${db.rounds.length}<br>History ${db.history.length}<br>Seasons ${db.seasons.length}`;}catch(e){let retry=`<button class="btn2" onclick="loadAll()">重試載入</button>`;document.getElementById('dbStatus').innerHTML='<span class="bad">Supabase error: '+e.message+'</span> '+retry;if(document.getElementById('summaryContent'))document.getElementById('summaryContent').innerHTML=`<div class="card"><h2>資料載入失敗</h2><p class="bad">${e.message}</p>${retry}</div>`;}}
+function makePlayers(){
+  let n=+(document.getElementById('playerCount')?.value || 4);
+  let names=['','','',''];
+  let box=document.getElementById('playerInputs');
+  box.innerHTML='';
+
+  for(let i=0;i<n;i++){
+    box.insertAdjacentHTML('beforeend',`
+      <div>
+        <label>球員 ${i+1}</label>
+        <input id="p${i}" value="${names[i]||''}">
+        <label>第一洞開球距離</label>
+        <select id="r${i}">
+          ${[1,2,3,4].slice(0,n).map(x=>`<option>${x}</option>`).join('')}
+        </select>
+      </div>
+    `);
+  }
+}
+function getRecentCourses(){
+  try{
+    return JSON.parse(localStorage.getItem('recentCourses') || '[]');
+  }catch(e){
+    return [];
+  }
+}
+
+function saveRecentCourse(courseName, comboName){
+  let item = {
+    courseName,
+    comboName: comboName || '',
+    savedAt: Date.now()
+  };
+
+  let list = getRecentCourses()
+    .filter(x => !(x.courseName === item.courseName && x.comboName === item.comboName));
+
+  list.unshift(item);
+  list = list.slice(0,5);
+
+  localStorage.setItem('recentCourses', JSON.stringify(list));
+}
+
+function renderRecentCourses(){
+  let box = document.getElementById('recentCourses');
+  if(!box) return;
+
+  let list = getRecentCourses();
+  box.innerHTML = '';
+
+  if(!list.length){
+    box.innerHTML = '<div class="small">尚無最近球場</div>';
+    return;
+  }
+
+  list.forEach(item=>{
+    let btn=document.createElement('button');
+    btn.className='btn2';
+    btn.style.width='auto';
+    btn.style.padding='8px 12px';
+    btn.style.fontSize='13px';
+    btn.innerText = item.comboName ? item.courseName + ' ' + item.comboName : item.courseName;
+    btn.onclick=()=>{
+      document.getElementById('courseSearch').value = '';
+      setupCourseSelect();
+      
+      document.getElementById('course').value = item.courseName;
+      document.getElementById('course').onchange();
+
+      if(item.comboName && document.getElementById('combo')){
+        document.getElementById('combo').value = item.comboName;
+      }
+    };
+    box.appendChild(btn);
+  });
+}
+  function setupCourseSelect(){
+  let sel=document.getElementById('course');
+  sel.innerHTML='';
+  let countrySel=document.getElementById('country');
+
+let previousCountry = countrySel?.value || 'Taiwan';
+
+if(countrySel){
+  countrySel.innerHTML = '';
+
+  [...new Set(db.courses.map(c => c.country || 'Taiwan'))]
+    .sort()
+    .forEach(c => countrySel.add(new Option(c, c)));
+
+  if([...countrySel.options].some(option => option.value === previousCountry)){
+    countrySel.value = previousCountry;
+  }else if([...countrySel.options].some(option => option.value === 'Taiwan')){
+    countrySel.value = 'Taiwan';
+  }
+}
+
+let selectedCountry = countrySel ? countrySel.value : 'Taiwan';
+let searchText = (document.getElementById('courseSearch')?.value || '').toLowerCase().trim();
+
+const normalCourses = db.courses
+  .filter(c => (c.country || 'Taiwan') === selectedCountry)
+  .filter(c => !c.course_group)
+  .map(c => ({
+    label: courseLocalizedName(c),
+    value: c.course_name
+  }));
+
+let comboParents = (db.course_combos || [])
+  .filter(c => (c.country || 'Taiwan') === selectedCountry)
+  .filter(c => c.active !== false)
+  .map(c => ({
+    label: c.parent_course_name,
+    value: c.parent_course_code
+  }));
+
+if(selectedCountry === 'Vietnam'){
+  comboParents.push({
+    label: '新山',
+    value: 'TSN'
+  });
+}
+
+if(selectedCountry === 'China'){
+  comboParents.push({
+    label: '天馬',
+    value: 'TM'
+  });
+}
+
+[...new Map([...normalCourses, ...comboParents].map(x => [x.value, x])).values()]
+  .filter(x =>
+    !searchText ||
+    x.label.toLowerCase().includes(searchText) ||
+    x.value.toLowerCase().includes(searchText)
+  )
+  .sort((a,b)=>a.label.localeCompare(b.label))
+  .forEach(x=>sel.add(new Option(x.label, x.value)));
+  sel.onchange=()=>{
+    const comboBox=document.getElementById('comboBox');
+    const combo=document.getElementById('combo');
+
+    combo.innerHTML='';
+
+  let combos = (db.course_combos || [])
+  .filter(x => x.parent_course_code === sel.value)
+  .filter(x => x.active !== false);
+
+// Normalize and de-duplicate combo rows. The database may contain older
+// English display rows alongside the current Chinese rows for the same code.
+if(sel.value === 'TM'){
+  const fallbackCombos = [
+    {combo_code:'N+O', playable_display_name:'天馬新 + 天馬舊'},
+    {combo_code:'O+T', playable_display_name:'天馬舊 + 天馬'},
+    {combo_code:'T+N', playable_display_name:'天馬 + 天馬新'}
+  ];
+  // Treat legacy codes such as NO and N+O as the same logical combination.
+  const tmLogicalKey=value=>normalizeComboCode(value).replace(/\+/g,'').toUpperCase();
+  const existingCodes=new Set(combos.map(x=>tmLogicalKey(x.combo_code)));
+  fallbackCombos.forEach(x=>{
+    if(!existingCodes.has(tmLogicalKey(x.combo_code))) combos.push(x);
+  });
+}
+
+// Keep one option per logical combination and prefer a Chinese display name.
+const comboByCode=new Map();
+combos.forEach(x=>{
+  const key=sel.value==='TM'
+    ? normalizeComboCode(x.combo_code).replace(/\+/g,'').toUpperCase()
+    : normalizeComboCode(x.combo_code);
+  const label=String(x.playable_display_name||x.combo_display_name||x.combo_code||'');
+  const current=comboByCode.get(key);
+  const hasChinese=/[\u3400-\u9fff]/.test(label);
+  const currentHasChinese=current && /[\u3400-\u9fff]/.test(String(current.playable_display_name||current.combo_display_name||''));
+  if(!current || (hasChinese && !currentHasChinese)) comboByCode.set(key,x);
+});
+combos=[...comboByCode.values()];
+
+if(combos.length){
+  combos.forEach(x=>{
+    let label=x.playable_display_name || x.combo_display_name || x.combo_code;
+    if(sel.value==='TM'){
+      const code=normalizeComboCode(x.combo_code);
+      const tmLabels={
+        'N+O':'天馬新 + 天馬舊',
+        'NO':'天馬新 + 天馬舊',
+        'O+T':'天馬舊 + 天馬',
+        'OT':'天馬舊 + 天馬',
+        'T+N':'天馬 + 天馬新',
+        'TN':'天馬 + 天馬新'
+      };
+      label=tmLabels[code]||label;
+    }
+    combo.add(new Option(label,x.combo_code));
+  });
+
+  comboBox.classList.remove('hidden');
+  comboBox.querySelector('label').innerText = '組合';
+}else{
+  comboBox.classList.add('hidden');
+}
+  };
+
+  sel.onchange();
+}
+
+  renderRecentCourses();
+
+function courseCoordinates(c){
+  const lat=Number(c?.latitude ?? c?.lat ?? c?.gps_latitude);
+  const lng=Number(c?.longitude ?? c?.lng ?? c?.gps_longitude);
+  return Number.isFinite(lat)&&Number.isFinite(lng)?{lat,lng}:null;
+}
+function distanceKm(aLat,aLng,bLat,bLng){
+  const R=6371,toRad=v=>v*Math.PI/180;
+  const dLat=toRad(bLat-aLat),dLng=toRad(bLng-aLng);
+  const x=Math.sin(dLat/2)**2+Math.cos(toRad(aLat))*Math.cos(toRad(bLat))*Math.sin(dLng/2)**2;
+  return 2*R*Math.asin(Math.sqrt(x));
+}
+function detectNearbyCourse(){
+  const status=document.getElementById('gpsCourseStatus');
+  if(!navigator.geolocation){if(status)status.innerHTML='<span class="bad">此裝置不支援 GPS。</span>';return;}
+  const located=db.courses.filter(c=>courseCoordinates(c));
+  if(!located.length){if(status)status.innerHTML='<span class="bad">球場尚未儲存 GPS 座標。請由管理員在 Course Manager 補上。</span>';return;}
+  if(status)status.textContent='正在取得位置並尋找最近球場…';
+  navigator.geolocation.getCurrentPosition(pos=>{
+    const lat=pos.coords.latitude,lng=pos.coords.longitude;
+    const ranked=located.map(c=>({c,d:distanceKm(lat,lng,courseCoordinates(c).lat,courseCoordinates(c).lng)})).sort((a,b)=>a.d-b.d);
+    const best=ranked[0];
+    if(!best||best.d>25){if(status)status.innerHTML=`<span class="bad">25 公里內找不到已登錄球場。最近距離 ${best?best.d.toFixed(1):'?'} 公里。</span>`;return;}
+    const country=document.getElementById('country');
+    if(country){country.value=best.c.country||'Taiwan';setupCourseSelect();}
+    const course=document.getElementById('course');
+    if(course&&[...course.options].some(o=>o.value===best.c.course_name)){course.value=best.c.course_name;course.onchange();}
+    if(status)status.innerHTML=`<span class="ok">已偵測：${adminEscapeHtml(courseLocalizedName(best.c))} · 約 ${best.d.toFixed(1)} 公里</span>`;
+  },err=>{if(status)status.innerHTML=`<span class="bad">無法取得位置：${adminEscapeHtml(err.message||'請允許定位權限')}</span>`;},{enableHighAccuracy:true,timeout:12000,maximumAge:300000});
+}
+
+function currentPlayers(){
+  let n=+(document.getElementById('playerCount')?.value || 4);
+
+  return [0,1,2,3]
+    .slice(0,n)
+    .map(i =>
+      document.getElementById('p'+i).value.trim() || `球員 ${i+1}`
+    );
+}
+function loadLastGroup(){let rid=db.rounds?.[0]?.id; if(!rid)return alert('找不到上一場回合。'); let names=[...new Set(db.scores.filter(s=>s.round_id===rid).map(s=>s.player_name))].slice(0,4); if(names.length<4)return alert('無法從上一場找到 4 位球員。'); names.forEach((n,i)=>document.getElementById('p'+i).value=n); renderMatchups(); alert('已載入上一組球員：'+names.join(', '));}
+function pairKey(a,b){return [a,b].sort().join('___')}
+function findMatchup(a,b){let rec=db.matchups.find(m=>pairKey(m.giver,m.receiver)===pairKey(a,b)); if(rec) return {id:rec.id,a,b,active:true,giver:rec.giver,receiver:rec.receiver,strokes:+rec.holes_given||0}; return {id:null,a,b,active:true,giver:a,receiver:b,strokes:0};}
+function renderMatchups(){if(!useIndividualMatchups){
+  document.getElementById('matchupSetup').innerHTML =
+    '<p class="small">Individual matchups are OFF for this round.</p>';
+  return;
+}
+                          
+  let p=currentPlayers(), pairs=[]; for(let i=0;i<p.length;i++) for(let j=i+1;j<p.length;j++) pairs.push(findMatchup(p[i],p[j])); let html=''; pairs.forEach((m,idx)=>{html+=`<div class="match"><label class="toggle"><input type="checkbox" id="mAct${idx}" checked> ${m.a} vs ${m.b}</label><div class="grid"><div><label>Giver</label><select id="mG${idx}"><option ${m.giver===m.a?'selected':''}>${m.a}</option><option ${m.giver===m.b?'selected':''}>${m.b}</option></select></div><div><label>Receiver</label><select id="mR${idx}"><option ${m.receiver===m.a?'selected':''}>${m.a}</option><option ${m.receiver===m.b?'selected':''}>${m.b}</option></select></div><div><label>Current holes given</label><input type="number" id="mS${idx}" value="${m.strokes}"></div><div><label>Saved</label><input disabled value="${m.strokes?m.giver+' gives '+m.receiver+' '+m.strokes:'Scratch / new matchup'}"></div></div></div>`}); document.getElementById('matchupSetup').innerHTML=html;}
+function toggleIndividualMatchups(on){
+  useIndividualMatchups=on;
+
+  document.querySelectorAll('[id^="mAct"]').forEach(x=>{
+    x.checked=on;
+  });
+
+  renderMatchups();
+}  
+function readMatchups(){if(!useIndividualMatchups){
+  return [];
+}let p=currentPlayers(), pairs=[]; for(let i=0;i<p.length;i++) for(let j=i+1;j<p.length;j++) pairs.push(findMatchup(p[i],p[j])); return pairs.map((m,idx)=>({...m,active:document.getElementById('mAct'+idx)?.checked!==false,giver:document.getElementById('mG'+idx)?.value||m.giver,receiver:document.getElementById('mR'+idx)?.value||m.receiver,strokes:+(document.getElementById('mS'+idx)?.value||0)}));}
+function normalizeComboCode(value){
+  return String(value||'')
+    .trim()
+    .replace(/\s+/g,'')
+    .replace(/→|\/|,/g,'+')
+    .replace(/\+{2,}/g,'+');
+}
+
+function groupedCourseMembers(parentCode){
+  const parent=String(parentCode||'').trim();
+  return (db.courses||[]).filter(c=>
+    String(c.course_group||'').trim()===parent ||
+    String(c.course_name||'').startsWith(parent+'-')
+  );
+}
+
+function resolveCourseSegment(parentCode, rawSegment){
+  const parent=String(parentCode||'').trim();
+  let segment=String(rawSegment||'').trim();
+  const members=groupedCourseMembers(parent);
+
+  if(!segment) return null;
+
+  // A combo may already store the complete database course code.
+  let direct=(db.courses||[]).find(c=>String(c.course_name||'').trim()===segment);
+  if(direct) return direct;
+
+  if(segment.startsWith(parent+'-')) segment=segment.slice(parent.length+1);
+  const upper=segment.toUpperCase();
+
+  // First use exact database suffix matching (A/B/C, N/O, E/C/W, etc.).
+  let match=members.find(c=>{
+    const code=String(c.course_name||'').trim();
+    const suffix=code.startsWith(parent+'-') ? code.slice(parent.length+1) : code;
+    return suffix.toUpperCase()===upper;
+  });
+  if(match) return match;
+
+  // Some legacy combo rows use one-letter labels while the database suffix is
+  // the full parent code, e.g. Tianma T -> TM-TM. Resolve this from the group
+  // instead of spreading special cases through the course builder.
+  match=members.find(c=>{
+    const code=String(c.course_name||'').trim();
+    const suffix=code.startsWith(parent+'-') ? code.slice(parent.length+1) : code;
+    return upper.length===1 && (
+      suffix.toUpperCase().startsWith(upper) ||
+      String(c.display_name||'').trim().toUpperCase().startsWith(upper) ||
+      String(c.display_name_zh||'').trim().toUpperCase().startsWith(upper) ||
+      String(c.display_name_ja||'').trim().toUpperCase().startsWith(upper)
+    );
+  });
+  if(match) return match;
+
+  // Tianma's database code is TM-TM while historical combo rows use T.
+  // Keep this single compatibility alias at the resolver boundary.
+  if(parent==='TM' && upper==='T'){
+    match=members.find(c=>String(c.course_name||'').trim()==='TM-TM');
+    if(match) return match;
+  }
+
+  return null;
+}
+
 function selectedCourseSegments(parentCode, comboValue){
-  if(String(parentCode||'').trim()==='TM'){
-    const key=normalizeComboCode(comboValue).replace(/\+/g,'').toUpperCase();
-    const tmSegments={NO:['TM-N','TM-O'],OT:['TM-O','TM-TM'],TN:['TM-TM','TM-N']}[key];
-    if(tmSegments) return tmSegments.slice();
-  }      <span class="score" style="font-size:22px">${finalText}</span>
+  const parent=String(parentCode||'').trim();
+  const normalized=normalizeComboCode(comboValue);
+  if(!normalized) return [parent];
+
+  let parts;
+  if(normalized.includes('+')){
+    parts=normalized.split('+');
+  }else{
+    // Legacy combo rows may store two nines as BA, AB, EC, etc.
+    // Split those two-letter codes so TSN/TPE/TC reverse combinations work.
+    const members=groupedCourseMembers(parent);
+    const oneLetterSuffixes=new Set(members.map(c=>{
+      const code=String(c.course_name||'').trim();
+      return code.startsWith(parent+'-') ? code.slice(parent.length+1).toUpperCase() : '';
+    }).filter(x=>x.length===1));
+    const upper=normalized.toUpperCase();
+    if(upper.length===2 && oneLetterSuffixes.has(upper[0]) && oneLetterSuffixes.has(upper[1])){
+      parts=[upper[0],upper[1]];
+    }else{
+      parts=[normalized];
+    }
+  }
+  return parts.map(part=>part.trim()).filter(Boolean);
+}
+
+function buildCourse(){
+  const parentCode=document.getElementById('course').value;
+  const comboBox=document.getElementById('comboBox');
+  const combo=document.getElementById('combo');
+  const hasCombo=!comboBox.classList.contains('hidden') && combo.value;
+  const segments=hasCombo ? selectedCourseSegments(parentCode,combo.value) : [parentCode];
+  const selectedCourses=[];
+
+  for(const segment of segments){
+    const course=hasCombo
+      ? resolveCourseSegment(parentCode,segment)
+      : (db.courses||[]).find(c=>String(c.course_name||'').trim()===String(parentCode).trim());
+
+    if(!course){
+      alert(`找不到球場區段：${segment}\n球場：${parentCode}\n請確認 courses 與 course_combos 的代碼一致。`);
+      return [];
+    }
+    selectedCourses.push(course);
+  }
+
+  const holes=[];
+  for(const course of selectedCourses){
+    const arr=(db.holes||[])
+      .filter(h=>+h.course_id===+course.id)
+      .sort((a,b)=>+a.hole_number-+b.hole_number);
+
+    if(arr.length!==9 && selectedCourses.length>1){
+      alert(`${courseLocalizedName(course)||course.course_name} 找到 ${arr.length} 洞，組合球場每個區段應為 9 洞。`);
+      return [];
+    }
+
+    arr.forEach(h=>holes.push({
+      display:`${course.course_name} #${h.hole_number}`,
+      par:+h.par,
+      hcp:+h.handicap_index,
+      strokeEligible:h.stroke_eligible,
+      sourceCourseId:course.id,
+      sourceCourseCode:course.course_name,
+      roundHole:holes.length+1
+    }));
+  }
+
+  if(holes.length!==18){
+    alert(`所選球場或組合共找到 ${holes.length} 洞，不是 18 洞。\n${selectedCourses.map(c=>c.course_name).join(' + ')}`);
+    return [];
+  }
+
+  return holes;
+}
+
+function saveActiveRound(){
+  if(round){
+    localStorage.setItem('fortisActiveRound', JSON.stringify({round, roundHole}));
+  }
+}
+
+  async function syncLiveRound(){
+  if(!round) return;
+
+  try{
+    await sb('live_rounds',{
+      method:'POST',
+      headers:{
+        Prefer:'resolution=merge-duplicates'
+      },
+      body:JSON.stringify({
+        id:round.id,
+        round_data:round,
+        round_hole:roundHole,
+        updated_at:new Date().toISOString(),
+        active:true
+      })
+    });
+  }catch(e){
+    console.log('Live sync failed:', e.message);
+  }
+}
+
+async function loadLiveRound(roundId){
+  try{
+    const rows = await sb(`live_rounds?id=eq.${roundId}&select=*`);
+
+    if(!rows || !rows.length){
+      document.getElementById('liveViewerContent').innerHTML =
+        '<div class="card"><h2>找不到此即時回合</h2></div>';
+      showPage('liveViewer');
+      return;
+    }
+
+    const live = rows[0];
+
+    let r = live.round_data;
+let h = live.round_hole || 0;
+let c = calcFortis(r);
+
+let gross = r.players.map((p,i)=>{
+  let total = 0;
+  for(let x=0;x<18;x++){
+    if(r.scores[x][i] !== ''){
+      total += +r.scores[x][i];
+    }
+  }
+  return {name:p,total};
+});
+
+document.getElementById('liveViewerContent').innerHTML = `
+  <div class="card">
+    <h2>🏌️ 即時戰況</h2>
+    <div class="small">${r.courseName}${r.combo ? ' ' + r.combo : ''} · 第 ${h+1} 洞</div>
+    <div class="small">最後更新：${new Date(live.updated_at).toLocaleTimeString()}</div>
+  </div>
+
+  <div class="card">
+    <h2>目前總桿</h2>
+    ${gross.map(g=>`
+      <div class="leader-row">
+        <div><b>${g.name}</b></div>
+        <div class="score">${g.total}</div>
+      </div>
+    `).join('')}
+  </div>
+
+  <div class="card">
+    <h2>即時排行榜</h2>
+    ${r.players.map((p,i)=>({name:p,points:c.totals[i]}))
+      .sort((a,b)=>b.points-a.points)
+      .map((p,i)=>`
+        <div class="leader-row">
+          <div>${i+1}. <b>${p.name}</b></div>
+          <div class="score">${p.points}</div>
+        </div>
+      `).join('')}
+  </div>
+`;
+
+    showPage('liveViewer');
+
+    setTimeout(()=>loadLiveRound(roundId),5000);
+
+  }catch(e){
+    document.getElementById('liveViewerContent').innerHTML =
+      '<div class="card"><h2>無法載入即時回合</h2></div>';
+    showPage('liveViewer');
+  }
+}
+async function copyLiveLink(){
+  if(!round) return;
+
+  await syncLiveRound();
+
+  const link =
+  'https://fortis-golf.vercel.app/?live=' +
+  round.id;
+
+  try{
+    await navigator.clipboard.writeText(link);
+    alert('即時分享連結已複製');
+  }catch(e){
+    prompt('複製此即時分享連結：', link);
+  }
+}
+function loadActiveRound(){
+  try{
+    let saved=localStorage.getItem('fortisActiveRound');
+    if(!saved) return false;
+    let data=JSON.parse(saved);
+    if(!data.round) return false;
+    round=data.round;
+    roundHole=data.roundHole||0;
+    return true;
+  }catch(e){
+    return false;
+  }
+}
+
+function clearActiveRound(){
+  localStorage.removeItem('fortisActiveRound');
+}
+function startRound(){
+  if(!document.getElementById('matchupSetup').querySelector('.match')) renderMatchups();
+
+ let n=currentPlayers().length;
+let ranks=[...Array(n).keys()].map(i=>+document.getElementById('r'+i).value);
+
+if(new Set(ranks).size!==n){
+  alert('第一洞開球順序不可重複。');
+  return;
+}
+
+  let course=buildCourse();
+  if(course.length!==18){
+    alert('所選球場或組合不是 18 洞。');
+    return;
+  }
+
+  let selectedCourseType=document.getElementById('course').value;
+let selected組合=
+  !document.getElementById('comboBox').classList.contains('hidden')
+    ? document.getElementById('combo').value
+    : null;
+
+  round={
+    id:Date.now(),
+    note:document.getElementById('roundNote').value,
+    courseName:selectedCourseType,
+    combo:selected組合,
+    players:currentPlayers(),
+    initialRanks:currentPlayers().map((_,i)=>+document.getElementById('r'+i).value),
+    matchups:readMatchups(),
+    course,
+    scores:Array.from({length:18},()=>Array(currentPlayers().length).fill('')),
+    created:new Date().toISOString()
+  };
+
+  let startHole = prompt("從第幾洞開始？（1–18）", "1");
+  let startHoleIndex = Math.max(0, Math.min(17, (+startHole || 1) - 1));
+
+round.startHoleIndex = startHoleIndex;
+roundHole = startHoleIndex;
+
+  saveRecentCourse(selectedCourseType, selected組合);
+  saveActiveRound();
+  syncLiveRound();
+  renderScore();
+  showPage('scorePage');
+}
+
+
+function playerPoint(score,par){let d=score-par; if(d<=-2)return 16; if(d===-1)return 8; if(d===0)return 4; if(d===1)return 2; if(d===2)return 1; return 0;}
+function calcFortis(r){
+  let n=r.players.length;
+  if(n===2){
+    return {totals:[0,0], rows:[]};
+  }
+
+  let totals=Array(n).fill(0), rows=[];
+
+  let startIndex = r.startHoleIndex ?? 0;
+  let playOrder = Array.from({length:18}, (_,i)=>(startIndex+i)%18);
+  let prevRanks = r.initialRanks.map((rank,i)=>({i,rank}));
+
+  for(let orderIndex=0; orderIndex<18; orderIndex++){
+    let h = playOrder[orderIndex];
+
+    let arr=r.players.map((p,i)=>{
+      let scoreForPairing;
+
+      if(orderIndex===0){
+        scoreForPairing = r.initialRanks[i];
+      }else{
+        let prevHole = playOrder[orderIndex-1];
+        scoreForPairing = r.scores[prevHole][i]==='' ? 999 : +r.scores[prevHole][i];
+      }
+
+      return {
+        i,
+        score: scoreForPairing,
+        rank: prevRanks.find(x=>x.i===i).rank
+      };
+    });
+
+    arr.sort((a,b)=>a.score-b.score || a.rank-b.rank);
+    prevRanks = arr.map((x,idx)=>({
+  i:x.i,
+  rank:idx+1
+}));
+
+    if(n===3){
+      let best=arr[0].i, mid=arr[1].i, worst=arr[2].i;
+
+      let bestPts = r.scores[h][best]==='' ? 0 : playerPoint(+r.scores[h][best], r.course[h].par);
+      let worstPts = r.scores[h][worst]==='' ? 0 : playerPoint(+r.scores[h][worst], r.course[h].par);
+      let midPts = r.scores[h][mid]==='' ? 0 : playerPoint(+r.scores[h][mid], r.course[h].par);
+
+      let teamBW = bestPts + worstPts;
+      let middle = midPts * 2;
+      let diff = teamBW - middle;
+
+      totals[best] += diff;
+      totals[worst] += diff;
+      totals[mid] -= diff * 2;
+
+      rows[h]={h,team1:[best,worst],team2:[mid],t1:teamBW,t2:middle};
+    }
+
+    if(n===4){
+      let team1=[arr[0].i,arr[3].i];
+      let team2=[arr[1].i,arr[2].i];
+
+      let t1 = team1.reduce((a,i)=>
+  a + (r.scores[h][i]==='' ? 0 : playerPoint(+r.scores[h][i], r.course[h].par)), 0
+);
+
+      let t2 = team2.reduce((a,i)=>
+  a + (r.scores[h][i]==='' ? 0 : playerPoint(+r.scores[h][i], r.course[h].par)), 0
+);
+
+      let diff = t1 - t2;
+
+      team1.forEach(i=>totals[i]+=diff);
+      team2.forEach(i=>totals[i]-=diff);
+
+      rows[h]={h,team1,team2,t1,t2};
+    }
+  }
+
+  return {totals,rows};
+}
+function eligibleStrokeHoles(course,n,startHoleIndex=0){
+  const countPar3 = document.getElementById('countPar3Strokes')?.checked === true;
+  const total = Math.max(0, Math.min(18, Number(n) || 0));
+  if(!total) return [];
+
+  // Odd-numbered handicaps give the extra stroke to the nine that is played first.
+  // Example: 7 strokes = 4 on the starting nine and 3 on the other nine.
+  const startsOnBackNine = Number(startHoleIndex) >= 9;
+  const firstNineCount = Math.ceil(total / 2);
+  const secondNineCount = Math.floor(total / 2);
+
+  const frontNine = course.filter(h => Number(h.roundHole) <= 9);
+  const backNine = course.filter(h => Number(h.roundHole) >= 10);
+  const firstNine = startsOnBackNine ? backNine : frontNine;
+  const secondNine = startsOnBackNine ? frontNine : backNine;
+
+  const eligible = holes => holes
+    .filter(h => countPar3 || h.strokeEligible)
+    .sort((a,b) => Number(a.hcp) - Number(b.hcp));
+
+  const firstEligible = eligible(firstNine);
+  const secondEligible = eligible(secondNine);
+  let selected = [
+    ...firstEligible.slice(0, firstNineCount),
+    ...secondEligible.slice(0, secondNineCount)
+  ];
+
+  // If one nine has too few eligible holes, fill the remainder from the other nine.
+  if(selected.length < total){
+    const chosen = new Set(selected.map(h => h.roundHole));
+    const remaining = [...firstEligible, ...secondEligible]
+      .filter(h => !chosen.has(h.roundHole))
+      .sort((a,b) => Number(a.hcp) - Number(b.hcp));
+    selected = selected.concat(remaining.slice(0, total - selected.length));
+  }
+
+  return selected.map(h => h.roundHole);
+}
+function bonusForScore(score,par){
+  let diff=score-par;
+  if(par===3 && score===1) return 10;
+  if(diff<=-3) return 10;
+  if(diff===-2) return 5;
+  if(diff===-1) return 1;
+  return 0;
+}
+
+function calcIndividual(r){
+  return r.matchups.map(m=>{
+    if(!m.active)return{...m,skipped:true};
+
+    let ai=r.players.indexOf(m.a),
+        bi=r.players.indexOf(m.b),
+        strokeHoles=eligibleStrokeHoles(r.course,+m.strokes||0,r.startHoleIndex||0),
+        match=0,
+        bonusA=0,
+        bonusB=0,
+        totalResult=0;
+    startResult = (m.receiver === m.a ? m.strokes : -m.strokes);
+
+    for(let h=0;h<18;h++){
+      let sa=r.scores[h][ai],
+          sb=r.scores[h][bi],
+          hole=r.course[h];
+
+      if(sa==="" || sb==="") continue;
+
+      let aStroke=strokeHoles.includes(h+1)&&m.receiver===m.a?1:0;
+      let bStroke=strokeHoles.includes(h+1)&&m.receiver===m.b?1:0;
+
+      let na=+sa-aStroke;
+      let nb=+sb-bStroke;
+
+      if(na<nb)match++;
+      else if(nb<na)match--;
+
+      let isLarryMode = document.getElementById('countPar3Strokes')?.checked === true;
+
+if(!isLarryMode){
+  bonusA+=bonusForScore(+sa,hole.par);
+  bonusB+=bonusForScore(+sb,hole.par);
+}
+    }
+
+    totalResult=startResult+match+bonusA-bonusB;
+
+    return {
+  ...m,
+  strokeHoles,
+  match,
+  bonusA,
+  bonusB,
+  startResult,
+  totalResult,
+  winner: totalResult>0 ? m.a : totalResult<0 ? m.b : 'Tie'
+};
+  });
+}
+  function nextGive(m){
+  let result=+(m.totalResult ?? m.match) || 0;
+  let steps=Math.floor(Math.abs(result)/3);
+
+  if(!steps){
+    return {giver:m.giver,receiver:m.receiver,strokes:+m.strokes||0};
+  }
+
+  let strokes=+m.strokes||0,
+      giver=m.giver,
+      receiver=m.receiver;
+
+  if(m.winner===m.giver){
+    strokes+=steps;
+  }else if(m.winner===m.receiver){
+    strokes-=steps;
+    if(strokes<0){
+      [giver,receiver]=[receiver,giver];
+      strokes=Math.abs(strokes);
+    }
+  }
+
+  return {giver,receiver,strokes};
+}
+function playScoreAnimation(result){
+  let par = round.course[roundHole].par;
+  let diff = result.diff;
+
+  let scene =
+    par === 3 && result.score === 1 ? {
+      icon:'hio', title:'一桿進洞！', text:'鳥群衝進洞口，引發大爆炸！'
+    } :
+    diff <= -3 ? {
+      icon:'albatross', title:'信天翁！', text:'信天翁在藍天優雅展翅。'
+    } :
+    diff === -2 ? {
+      icon:'eagle', title:'老鷹！', text:'白頭鷹展翅滑翔！'
+    } :
+    diff === -1 ? {
+      icon:'birdie', title:'博蒂！', text:'啄木鳥瘋狂啄木頭！'
+    } :
+    diff === 0 ? {
+      icon:'par', title:'標準桿', text:'高爾夫球冷靜進洞。'
+    } :
+    diff === 1 ? {
+      icon:'bogey', title:'柏忌', text:'球員氣到折斷一支球桿。'
+    } :
+    diff === 2 ? {
+      icon:'double-bogey', title:'雙柏忌', text:'球員連續折斷三支球桿。'
+    } : {
+      icon:'triple-bogey', title:'三柏忌以上', text:'球員把整個高爾夫球袋連球桿一起丟進水裡！'
+    };
+
+  let overlay=document.createElement('div');
+  overlay.className='score-animation';
+  overlay.innerHTML=`
+    <div class="score-animation-box">
+      ${scene.icon==='birdie'
+  ? `<video class="score-video" autoplay muted playsinline preload="auto">
+    <source src="animations/birdie.mp4" type="video/mp4">
+  </video>`
+  : scene.icon==='eagle'
+  ? `<video class="score-video" autoplay muted playsinline preload="auto">
+    <source src="animations/eagle.mp4" type="video/mp4">
+  </video>`
+  : scene.icon==='albatross'
+  ? `<video class="score-video" autoplay muted playsinline preload="auto">
+    <source src="animations/albatross.mp4" type="video/mp4">
+  </video>`
+  : scene.icon==='par'
+  ? `<video class="score-video" autoplay muted playsinline preload="auto">
+    <source src="animations/par.mp4?v=20260713-2" type="video/mp4">
+  </video>`
+  : scene.icon==='bogey'
+? `<video class="score-video" autoplay muted playsinline preload="auto">
+    <source src="animations/bogey.mp4" type="video/mp4">
+  </video>`
+: scene.icon==='double-bogey'
+? `<video class="score-video" autoplay muted playsinline preload="auto">
+    <source src="animations/double-bogey.mp4" type="video/mp4">
+  </video>`
+: scene.icon==='hio'
+? `<video class="score-video" autoplay muted playsinline preload="auto">
+    <source src="animations/hio.mp4" type="video/mp4">
+  </video>`
+: scene.icon==='triple-bogey'
+? `<video class="score-video" autoplay muted playsinline preload="auto">
+    <source src="animations/triple-bogey.mp4" type="video/mp4">
+  </video>`
+: `<div class="score-animal">${scene.icon}</div>`
+}
+      ${['birdie','eagle','albatross','par','bogey','double-bogey','hio','triple-bogey'].includes(scene.icon) ? '' : `
+      <div class="score-title">${scene.title}</div>
+      <div class="score-player">${result.player} · ${result.score} 桿</div>
+      <div class="small" style="margin-top:8px">${scene.text}</div>
+`}
+    </div>
+  `;
+
+  document.body.appendChild(overlay);
+
+  setTimeout(()=>{
+    overlay.remove();
+  },6000);
+}
+  function changeScore(h,i,delta){
+  let current=round.scores[h][i];
+  let par=round.course[h].par;
+  let next=current==='' ? par+delta : +current+delta;
+
+  if(next<1) next=1;
+  round.scores[h][i]=next;
+  saveActiveRound();
+  syncLiveRound();  
+  renderScore();
+}
+
+function confirmHoleScores(){
+    if(scoreAnimationPlaying) return;
+      scoreAnimationPlaying=true;
+
+  for(let i=0;i<round.players.length;i++){
+    if(round.scores[roundHole][i] === ''){
+      round.scores[roundHole][i] = round.course[roundHole].par;
+    }
+  }
+
+  let par = round.course[roundHole].par;
+
+  let results = round.players.map((player,i)=>({
+    player,
+    score: +round.scores[roundHole][i],
+    diff: +round.scores[roundHole][i] - par
+  }));
+
+  let goodScores = results.filter(r=>r.diff < 0);
+
+  let animationResult;
+
+  if(goodScores.length){
+    animationResult = goodScores.sort((a,b)=>a.score-b.score)[0];
+  }else{
+    animationResult = results.sort((a,b)=>b.score-a.score)[0];
+  }
+
+  playScoreAnimation(animationResult);
+
+saveActiveRound();
+syncLiveRound();
+
+setTimeout(()=>{
+  roundHole = (roundHole + 1) % 18;
+  saveActiveRound();
+  syncLiveRound();
+  scoreAnimationPlaying=false;
+  renderScore();
+},2200);
+}
+  
+function renderScore(){
+  let c=calcFortis(round), h=round.course[roundHole];
+
+  let holeNav='<div class="card"><h2>選擇球洞</h2><div style="display:grid;grid-template-columns:repeat(6,1fr);gap:6px">';
+
+for(let i=0;i<18;i++){
+  let played = round.scores[i].some(x=>x !== '');
+  holeNav += `
+    <button
+      style="
+        min-width:0;
+        padding:10px 4px;
+        ${i===roundHole ? 'background:#38a169;font-size:18px;' : ''}
+        ${played && i!==roundHole ? 'background:#1f2f48;' : ''}
+      "
+      onclick="roundHole=${i};renderScore()">
+      ${i+1}
+    </button>`;
+}
+
+holeNav += '</div></div>';
+
+  let courseRec = db.courses.find(c => c.course_name === round.courseName);
+
+let comboRec = db.course_combos.find(c =>
+  c.parent_course_code === round.courseName &&
+  c.combo_code === round.combo
+);
+
+let courseTitle =
+  courseLocalizedName(courseRec) ||
+  comboRec?.parent_course_name ||
+  round.courseName;
+
+let comboTitle =
+  comboRec?.playable_display_name ||
+  comboRec?.combo_display_name ||
+  round.combo ||
+  '';
+
+let html=holeNav+`<div class="card">
+  <div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start">
+    <div>
+      <h2 style="font-size:24px;margin-bottom:4px">第 ${roundHole+1} 洞</h2>
+      <div class="small">${courseTitle}${comboTitle ? ' ' + comboTitle : ''}</div>
+      <div class="small">${h.display} · 標準桿 ${h.par} · 難度 ${h.hcp}</div>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end">
+    <button class="btn2" style="width:auto;min-width:88px;padding:10px 12px;font-size:13px" onclick="copyLiveLink()">分享</button>
+    <button class="btn2" style="width:auto;min-width:88px;padding:10px 12px;font-size:13px" onclick="saveRound()">儲存</button>
+</div>
+  </div>
+</div>`;
+
+  html+=`<div class="card">
+  <div class="grid" style="gap:10px">
+    <div>
+      <h2>目前總桿</h2>`;
+
+round.players.forEach((p,i)=>{
+  let grossTotal=0;
+
+  for(let h=0;h<18;h++){
+    if(round.scores[h][i] !== ''){
+      grossTotal += +round.scores[h][i];
+    }
+  }
+
+  html+=`
+    <div class="leader-row" style="padding:8px 10px;margin:5px 0">
+      <div><b>${p}</b></div>
+      <div class="score" style="font-size:22px">${grossTotal}</div>
+    </div>`;
+});
+
+html+=`
+    </div>
+    <div>
+      <h2>即時排行榜</h2>`;
+
+round.players.map((_,i)=>i)
+  .sort((a,b)=>c.totals[b]-c.totals[a])
+  .forEach((i,k)=>{
+    html+=`
+      <div class="leader-row" style="padding:8px 10px;margin:5px 0">
+        <div>${k+1}. <b>${round.players[i]}</b></div>
+        <div class="score" style="font-size:22px">${c.totals[i]}</div>
+      </div>`;
+  });
+
+html+=`
+    </div>
+  </div>
+</div>`;
+
+  html+=`<div class="card"><h2>輸入桿數</h2>`;
+
+for(let i=0;i<round.players.length;i++){
+  let val=round.scores[roundHole][i];
+  let showVal=val==='' ? h.par : val;
+  let diff=showVal-h.par;
+
+  let scoreName =
+    diff===-3?'信天翁':
+    diff===-2?'老鷹':
+    diff===-1?'博蒂':
+    diff===0?'標準桿':
+    diff===1?'柏忌':
+    diff===2?'雙柏忌':
+    diff===3?'三柏忌':
+    '+'+diff;
+
+  html+=`
+    <div class="team" style="display:grid;grid-template-columns:1fr 58px 76px 58px;gap:8px;align-items:center">
+      <div>
+        <h2 style="margin:0">${round.players[i]}</h2>
+        <div class="small">Par ${h.par} · ${scoreName}</div>
+      </div>
+
+      <button class="btn2" style="font-size:24px;padding:12px" onclick="changeScore(${roundHole},${i},-1)">−</button>
+
+      <div style="text-align:center;font-size:34px;font-weight:900">
+        ${showVal}
+      </div>
+
+      <button style="font-size:24px;padding:12px" onclick="changeScore(${roundHole},${i},1)">+</button>
+    </div>`;
+}
+  html+=`
+  <button onclick="confirmHoleScores()" style="font-size:18px;padding:16px">
+    儲存並前往下一洞 →
+  </button>`;
+
+let row = c.rows[roundHole];
+
+html+=`
+  </div>
+  <div class="grid" style="margin-top:10px">
+    <button class="btn2" onclick="roundHole=Math.max(0,roundHole-1);renderScore()">← 上一洞</button>
+    <button class="btn2" onclick="roundHole=Math.min(17,roundHole+1);renderScore()">下一洞 →</button>
+  </div>`;
+
+if(round.players.length > 2 && row){
+  let team2Name = row.team2.length===1
+    ? row.team2.map(i=>round.players[i]).join(' + ') + ' x2'
+    : row.team2.map(i=>round.players[i]).join(' + ');
+
+  html+=`<div class="card"><h2>目前配對</h2>
+    <div class="grid">
+      <div class="team" style="text-align:center">
+        <div class="small">第一組</div>
+        <h2>${row.team1.map(i=>round.players[i]).join(' + ')}</h2>
+        <div class="score">${row.t1}</div>
+      </div>
+
+      <div class="team" style="text-align:center">
+        <div class="small">第二組</div>
+        <h2>${team2Name}</h2>
+        <div class="score">${row.t2}</div>
+      </div>
+    </div>
+  </div>`;
+}else{
+  html+=`
+    <div class="card">
+      <h2>雙人對戰</h2>
+      <p class="small">雙人模式不使用 8421 配對計分，僅計算個人對戰與獎勵。</p>
+    </div>`;
+}
+
+  html+=individualHtml();
+  document.getElementById('scoreContent').innerHTML=html;
+}
+function individualHtml(){
+  let res=calcIndividual(round);
+  let html='<div class="card"><h2>個人對戰即時戰況</h2>';
+
+  res.forEach(r=>{
+    if(r.skipped){
+      html+=`<div class="team">${r.a} vs ${r.b}: 已關閉</div>`;
+    }else{
+      let handicapText =
+  r.startResult > 0 ? `${r.a} +${r.startResult}` :
+  r.startResult < 0 ? `${r.b} +${Math.abs(r.startResult)}` :
+  '平手';
+
+let matchText =
+  r.match > 0 ? `${r.a} +${r.match}` :
+  r.match < 0 ? `${r.b} +${Math.abs(r.match)}` :
+  '平手';
+
+let isLarryMode = r.larryMode === true || r.mode === 'larry';
+
+let bonusText =
+  r.bonusA-r.bonusB > 0 ? `${r.a} +${r.bonusA-r.bonusB}` :
+  r.bonusA-r.bonusB < 0 ? `${r.b} +${Math.abs(r.bonusA-r.bonusB)}` :
+  '無';
+
+let displayResult = r.match + (isLarryMode ? 0 : (r.bonusA - r.bonusB));
+
+let finalText =
+  displayResult > 0 ? `${r.a} +${displayResult}` :
+  displayResult < 0 ? `${r.b} +${Math.abs(displayResult)}` :
+  "平手";
+
+html+=`
+  <div class="team">
+    <div style="display:flex;justify-content:space-between;gap:10px;align-items:center">
+      <b>${r.a} vs ${r.b}</b>
+      <span class="score" style="font-size:22px">${finalText}</span>
     </div>
 
     <div class="grid4" style="margin-top:8px">
@@ -1954,3 +3827,4 @@ document.addEventListener('keydown',e=>{
   }
 });
 </script></body></html>
+
