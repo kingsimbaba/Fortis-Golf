@@ -1077,6 +1077,11 @@ function resolveCourseSegment(parentCode, rawSegment){
 }
 
 function selectedCourseSegments(parentCode, comboValue){
+  if(String(parentCode||'').trim()==='TM'){
+    const key=normalizeComboCode(comboValue).replace(/\+/g,'').toUpperCase();
+    const tmSegments={NO:['TM-N','TM-O'],OT:['TM-O','TM-TM'],TN:['TM-TM','TM-N']}[key];
+    if(tmSegments) return tmSegments.slice();
+  }
   const parent=String(parentCode||'').trim();
   const normalized=normalizeComboCode(comboValue);
   if(!normalized) return [parent];
@@ -3827,4 +3832,5 @@ document.addEventListener('keydown',e=>{
   }
 });
 </script></body></html>
+
 
