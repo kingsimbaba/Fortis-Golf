@@ -1129,9 +1129,16 @@ function buildCourse(){
 
   const holes=[];
   for(const course of selectedCourses){
-    const arr=(db.holes||[])
+    let arr=(db.holes||[])
       .filter(h=>+h.course_id===+course.id)
       .sort((a,b)=>+a.hole_number-+b.hole_number);
+
+    // Tian Ma is three nine-hole segments (course IDs 24, 25, and 26).
+    // Ignore stale/default rows 10-18 when one of those segments is used
+    // inside a combination.
+    if(parentCode==='TM' && [24,25,26].includes(+course.id)){
+      arr=arr.filter(h=>+h.hole_number>=1 && +h.hole_number<=9).slice(0,9);
+    }
 
     if(arr.length!==9 && selectedCourses.length>1){
       alert(`${courseLocalizedName(course)||course.course_name} 找到 ${arr.length} 洞，組合球場每個區段應為 9 洞。`);
@@ -3832,5 +3839,6 @@ document.addEventListener('keydown',e=>{
   }
 });
 </script></body></html>
+
 
 
