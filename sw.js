@@ -1,4 +1,4 @@
-const CACHE = 'fortis-golf-2026-08-04-03';
+const CACHE = 'fortis-golf-2026-08-04-04';
 
 const ASSETS = [
   '/index.html',
@@ -15,22 +15,23 @@ self.addEventListener('install', event => {
     for (const asset of ASSETS) {
       try {
         const response = await fetch(asset, { cache: 'reload' });
+
         if (response.ok) {
           await cache.put(asset, response.clone());
         }
-      } catch (e) {
+      } catch (err) {
         console.log('Precache failed:', asset);
       }
     }
 
-    await self.skipWaiting();
+    self.skipWaiting();
   })());
 });
 
 self.addEventListener('activate', event => {
   event.waitUntil((async () => {
 
-    // Delete every previous cache
+    // Delete ALL previous caches
     const keys = await caches.keys();
 
     await Promise.all(
@@ -41,7 +42,6 @@ self.addEventListener('activate', event => {
 
     await self.clients.claim();
 
-    // Force every open Fortis Golf window to reload
     const clients = await self.clients.matchAll({
       includeUncontrolled: true,
       type: 'window'
@@ -67,7 +67,6 @@ self.addEventListener('message', event => {
 self.addEventListener('fetch', event => {
 
   const request = event.request;
-
   const url = new URL(request.url);
 
   if (request.method !== 'GET')
@@ -76,7 +75,7 @@ self.addEventListener('fetch', event => {
   if (url.pathname.startsWith('/api/'))
     return;
 
-  // Never cache MP4 videos
+  // Never cache videos
   if (
     url.pathname.endsWith('.mp4') ||
     request.headers.has('range')
@@ -89,7 +88,7 @@ self.addEventListener('fetch', event => {
     return;
   }
 
-  // ALWAYS load latest HTML
+  // ALWAYS get newest HTML
   if (
     request.mode === 'navigate' ||
     url.pathname === '/' ||
@@ -114,7 +113,7 @@ self.addEventListener('fetch', event => {
 
         return response;
 
-      } catch {
+      } catch (err) {
 
         return (
           await caches.match('/index.html')
@@ -128,12 +127,12 @@ self.addEventListener('fetch', event => {
 
   }
 
-  // Static assets
+  // Static assets: stale while revalidate
   event.respondWith((async () => {
 
     const cached = await caches.match(request);
 
-    const networkFetch = fetch(request, {
+    const network = fetch(request, {
       cache: 'no-cache'
     }).then(async response => {
 
@@ -151,13 +150,13 @@ self.addEventListener('fetch', event => {
 
     if (cached) {
 
-      event.waitUntil(networkFetch);
+      event.waitUntil(network);
 
       return cached;
 
     }
 
-    return (await networkFetch) || Response.error();
+    return (await network) || Response.error();
 
   })());
 
