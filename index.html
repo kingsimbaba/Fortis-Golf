@@ -1526,6 +1526,9 @@ function loadActiveRound(){
     let data=JSON.parse(saved);
     if(!data.round) return false;
     round=data.round;
+    round.larryMode=round.larryMode===true;
+    const larryToggle=document.getElementById('countPar3Strokes');
+    if(larryToggle) larryToggle.checked=round.larryMode;
     roundHole=data.roundHole||0;
     return true;
   }catch(e){
@@ -1567,6 +1570,7 @@ let selected組合=
     players:currentPlayers(),
     initialRanks:currentPlayers().map((_,i)=>+document.getElementById('r'+i).value),
     matchups:readMatchups(),
+    larryMode:document.getElementById('countPar3Strokes')?.checked===true,
     course,
     scores:Array.from({length:18},()=>Array(currentPlayers().length).fill('')),
     created:new Date().toISOString()
@@ -1666,8 +1670,8 @@ function calcFortis(r){
 
   return {totals,rows};
 }
-function eligibleStrokeHoles(course,n,startHoleIndex=0){
-  const countPar3 = document.getElementById('countPar3Strokes')?.checked === true;
+function eligibleStrokeHoles(course,n,startHoleIndex=0,larryMode=false){
+  const countPar3 = larryMode === true;
   const total = Math.max(0, Math.min(18, Number(n) || 0));
   if(!total) return [];
 
@@ -1719,7 +1723,7 @@ function calcIndividual(r){
 
     let ai=r.players.indexOf(m.a),
         bi=r.players.indexOf(m.b),
-        strokeHoles=eligibleStrokeHoles(r.course,+m.strokes||0,r.startHoleIndex||0),
+        strokeHoles=eligibleStrokeHoles(r.course,+m.strokes||0,r.startHoleIndex||0,r.larryMode===true),
         match=0,
         bonusA=0,
         bonusB=0,
@@ -1742,7 +1746,7 @@ function calcIndividual(r){
       if(na<nb)match++;
       else if(nb<na)match--;
 
-      let isLarryMode = document.getElementById('countPar3Strokes')?.checked === true;
+      let isLarryMode = r.larryMode === true;
 
 if(!isLarryMode){
   bonusA+=bonusForScore(+sa,hole.par);
@@ -1760,6 +1764,7 @@ if(!isLarryMode){
   bonusB,
   startResult,
   totalResult,
+  larryMode:r.larryMode===true,
   winner: totalResult>0 ? m.a : totalResult<0 ? m.b : 'Tie'
 };
   });
@@ -2198,7 +2203,8 @@ let lastPlayedHole=-1;for(let h=0;h<18;h++)if(round.scores[h].some(x=>x!==''))la
 if(lastPlayedHole<0){alert('No scores entered yet.');return;}
 const completedRound=JSON.parse(JSON.stringify(round));
 const priorScores=[...db.scores];
-let rr=await sb('fortis_rounds',{method:'POST',body:JSON.stringify({round_name:round.note,course_name:round.courseName,course_combo:round.combo,played_at:new Date().toISOString(),season_id:activeSeason?.id||null,players:round.players,initial_ranks:round.initialRanks,matchups:round.matchups,course_data:round.course,start_hole_index:round.startHoleIndex||0})});
+let persistedCourseData=round.course.map(h=>({...h,larryMode:round.larryMode===true}));
+let rr=await sb('fortis_rounds',{method:'POST',body:JSON.stringify({round_name:round.note,course_name:round.courseName,course_combo:round.combo,played_at:new Date().toISOString(),season_id:activeSeason?.id||null,players:round.players,initial_ranks:round.initialRanks,matchups:round.matchups,course_data:persistedCourseData,start_hole_index:round.startHoleIndex||0})});
 let round_id=rr[0].id,scores=[];
 for(let h=0;h<=lastPlayedHole;h++)for(let i=0;i<round.players.length;i++){
  const hole=round.course[h];let gross=round.scores[h][i]===''?hole.par:+round.scores[h][i],diff=gross-hole.par,scoreType='';
@@ -2326,6 +2332,7 @@ function buildSavedRoundForDashboard(rec){
     players,
     initialRanks:Array.isArray(rec.initial_ranks)?rec.initial_ranks:players.map((_,i)=>i+1),
     startHoleIndex:+rec.start_hole_index||0,
+    larryMode:course[0]?.larryMode===true,
     course,
     scores:Array.from({length:18},()=>Array(players.length).fill(''))
   };
@@ -3565,7 +3572,7 @@ function historicalRoundData(roundId){
   }
   const scores=Array.from({length:18},()=>Array(players.length).fill(''));
   scoreRows.forEach(x=>{const h=(+x.hole_number||1)-1,i=players.indexOf(x.player_name);if(h>=0&&h<18&&i>=0)scores[h][i]=+x.gross_score;});
-  const reconstructed={players,initialRanks:rec.initial_ranks||players.map((_,i)=>i+1),startHoleIndex:rec.start_hole_index||0,course,scores};
+  const reconstructed={players,initialRanks:rec.initial_ranks||players.map((_,i)=>i+1),startHoleIndex:rec.start_hole_index||0,larryMode:course[0]?.larryMode===true,course,scores};
   const fortis=calcFortis(reconstructed).totals;
   const courseRec=db.courses.find(c=>c.course_name===rec.course_name);
   const comboRec=db.course_combos.find(c=>c.parent_course_code===rec.course_name&&c.combo_code===rec.course_combo);
