@@ -13,3 +13,8 @@ test('+4 or worse uses the quadruple-bogey animation',()=>{
   assert.match(source,/\} : \{\s*icon:'quadruple-bogey'/);
   assert.match(source,/scene\.icon==='quadruple-bogey'[\s\S]*?animations\/quadruple-bogey\.mp4/);
 });
+
+test('only quadruple bogey or worse displays for nine seconds',()=>{
+  assert.match(source,/animationDuration=scene\.icon==='quadruple-bogey' \? 9000 : 6000/);
+  assert.match(source,/setTimeout\(\(\)=>\{\s*overlay\.remove\(\);\s*\},animationDuration\)/);
+});

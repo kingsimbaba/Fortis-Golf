@@ -1877,9 +1877,10 @@ function playScoreAnimation(result){
 
   document.body.appendChild(overlay);
 
+  const animationDuration=scene.icon==='quadruple-bogey' ? 9000 : 6000;
   setTimeout(()=>{
     overlay.remove();
-  },6000);
+  },animationDuration);
 }
   function changeScore(h,i,delta){
   let current=round.scores[h][i];
