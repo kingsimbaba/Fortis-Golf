@@ -557,7 +557,19 @@ th{color:var(--muted)}
 @media(max-width:760px){.admin-dashboard{grid-template-columns:repeat(2,1fr)}.admin-shortcuts{grid-template-columns:repeat(2,1fr)}.admin-health{align-items:flex-start;flex-wrap:wrap}.admin-health-actions{width:100%}.admin-health-actions button{flex:1}.admin-issue{grid-template-columns:30px 1fr}.admin-issue button{grid-column:2}}
 </style></head><body>
 <header><h1>地獄倒楣鬼</h1><div class="sub">雲端版 · 歷史紀錄 · 排行榜 · 管理員 · 多人使用</div><div id="userBar" class="small"></div></header><div class="wrap">
-<section id="auth" class="page"><div class="card"><h2>登入</h2><p class="small">請輸入電子郵件再按登入即可.</p><div class="grid"><div><label>電子郵件</label><input id="auth電子郵件" type="email" placeholder="you@example.com"></div><div><label>密碼</label><input id="auth密碼" type="password" placeholder="密碼"></div><button onclick="signInUser()">登入</button><button class="btn2" onclick="signUpUser()">建立帳號</button></div><div id="authMsg" class="small" style="margin-top:10px"></div></div></section>
+<section id="auth" class="page"><div class="card"><h2>登入</h2><p class="small">請輸入電子郵件再按登入即可.</p><div class="grid"><div><label>電子郵件</label><input id="auth電子郵件" type="email" placeholder="you@example.com"></div><div><label>密碼</label><input id="auth密碼" type="password" placeholder="密碼"></div><button onclick="signInUser()">登入</button><button class="btn2" onclick="signUpUser()">建立帳號</button><button id="forgotPassword" type="button" class="btn2" onclick="requestPasswordReset()">忘記密碼</button></div><div id="authMsg" class="small" style="margin-top:10px"></div></div></section>
+<section id="passwordReset" class="page hidden"><div class="card">
+<h2>重設密碼</h2><p class="small">請設定新密碼，完成後再登入。</p>
+<form onsubmit="submitPasswordReset(event)">
+<div id="resetFields" class="grid">
+<div><label for="resetPassword">新密碼</label><input id="resetPassword" type="password" autocomplete="new-password" minlength="8" required></div>
+<div><label for="resetConfirm">確認新密碼</label><input id="resetConfirm" type="password" autocomplete="new-password" minlength="8" required></div>
+<button id="resetSubmit" type="submit">儲存新密碼</button>
+</div></form>
+<p id="resetMsg" class="small" role="status" aria-live="polite"></p>
+<button type="button" class="btn2" onclick="leavePasswordReset()">返回登入</button>
+</div></section>
+
 <section id="home" class="page hidden"><div id="homeContent"></div></section><section id="setup" class="page hidden"><div class="card" style="display:flex;align-items:center;gap:10px"><button class="btn2" style="width:auto;padding:9px 13px;min-height:38px" onclick="showPage('home')">← 返回首頁</button><div><b>建立新回合</b><div class="small">完成設定後即可開始計分</div></div></div><div class="card"><h2>資料庫狀態</h2><div id="dbStatus" class="small">連線中…</div></div><div class="card"><div class="card"><h2>顯示設定</h2><label>主題</label><select id="themeSelector" onchange="changeTheme()"><option value="dark">深色</option><option value="light">淺色</option><option value="contrast">高對比</option></select></div><h2>新回合</h2><div class="grid"><div><label>國家</label>
 <select id="country" onchange="setupCourseSelect()"></select>
 
@@ -801,22 +813,127 @@ async function init(){
   setInterval(checkForFortisUpdate,5*60*1000);
 }
 
+// Keep recovery mode across SDK URL cleanup and page reloads.
+let passwordRecoveryMode = new URLSearchParams(location.hash.slice(1)).get('type')==='recovery'
+  || new URLSearchParams(location.search).get('reset')==='1';
+
+function showPasswordReset(session){
+  passwordRecoveryMode=true;
+  currentSession=session;
+  currentUser=session?.user||null;
+  const url=new URL(location.href);
+  url.searchParams.set('reset','1');
+  url.hash='';
+  history.replaceState(null,'',url.pathname+url.search);
+  document.querySelector('.nav').classList.add('hidden');
+  document.querySelectorAll('.page').forEach(p=>p.classList.add('hidden'));
+  document.getElementById('passwordReset').classList.remove('hidden');
+  document.getElementById('userBar').textContent=currentUser?.email||'重設密碼';
+  document.getElementById('resetSubmit').disabled=!session;
+  document.getElementById('resetMsg').textContent=session?'請輸入並確認新密碼。':'重設連結已失效，請返回登入並重新寄送。';
+}
+
 async function initAuth(){
   if(!SB.url||!SB.key||!window.supabase){showAuth('Missing Supabase config or Supabase library.');return;}
+  const recoveryError=new URLSearchParams(location.hash.slice(1)).get('error_description');
   authClient=window.supabase.createClient(SB.url,SB.key);
-  const liveId = new URLSearchParams(window.location.search).get('live');
-
-const {data}=await authClient.auth.getSession();
-
-if(liveId){
-  currentSession = data?.session || null;
-  await loadLiveRound(liveId);
-}else if(data&&data.session){
-  await handleLoggedIn(data.session);
-}else{
-  showAuth('請先登入。');
+  // Subscribe before getSession so the recovery event cannot be missed.
+  authClient.auth.onAuthStateChange((event,session)=>{
+    if(event==='PASSWORD_RECOVERY'){
+      showPasswordReset(session);
+      return;
+    }
+    if(event==='INITIAL_SESSION') return;
+    if(passwordRecoveryMode){
+      if(event==='SIGNED_OUT') showPasswordReset(null);
+      return;
+    }
+    // Run app loading after the auth callback releases its lock.
+    setTimeout(()=>{
+      if(passwordRecoveryMode) return;
+      if(session) handleLoggedIn(session).catch(()=>showAuth('載入失敗，請重新整理後再試。'));
+      else showAuth('已登出。');
+    },0);
+  });
+  const {data,error}=await authClient.auth.getSession();
+  if(passwordRecoveryMode){
+    showPasswordReset(recoveryError||error?null:data?.session);
+    return;
+  }
+  if(recoveryError){
+    showAuth('登入連結已失效，請重新寄送。');
+    return;
+  }
+  const liveId=new URLSearchParams(window.location.search).get('live');
+  if(liveId){
+    currentSession=data?.session||null;
+    await loadLiveRound(liveId);
+  }else if(data?.session){
+    await handleLoggedIn(data.session);
+  }else{
+    showAuth('請先登入。');
+  }
 }
-  authClient.auth.onAuthStateChange(async (event, session)=>{ if(session) await handleLoggedIn(session); else showAuth('已登出。'); });
+
+async function requestPasswordReset(){
+  const email=document.getElementById('auth電子郵件').value.trim();
+  const msg=document.getElementById('authMsg');
+  if(!email){msg.textContent='請先輸入電子郵件。';return;}
+  if(!authClient){msg.textContent='登入服務尚未就緒，請重新整理後再試。';return;}
+  const button=document.getElementById('forgotPassword');
+  button.disabled=true;
+  msg.textContent='寄送中…';
+  try{
+    const {error}=await authClient.auth.resetPasswordForEmail(email,{
+      redirectTo:location.origin+'/?reset=1'
+    });
+    if(error) throw error;
+    msg.textContent='若此信箱已註冊，您將收到重設密碼郵件。請查看收件匣及垃圾郵件。';
+  }catch(error){msg.textContent=error.message||'寄送失敗，請稍後再試。';}
+  finally{button.disabled=false;}
+}
+
+async function submitPasswordReset(event){
+  event.preventDefault();
+  const msg=document.getElementById('resetMsg');
+  const password=document.getElementById('resetPassword').value;
+  const confirm=document.getElementById('resetConfirm').value;
+  if(!passwordRecoveryMode||!currentSession){msg.textContent='重設連結已失效，請重新寄送。';return;}
+  if(password.length<8){msg.textContent='新密碼至少需要 8 個字元。';return;}
+  if(password!==confirm){msg.textContent='兩次輸入的密碼不同。';return;}
+  const button=document.getElementById('resetSubmit');
+  button.disabled=true;
+  msg.textContent='儲存中…';
+  try{
+    const {error}=await authClient.auth.updateUser({password});
+    if(error) throw error;
+    document.getElementById('resetPassword').value='';
+    document.getElementById('resetConfirm').value='';
+    msg.textContent='密碼已更新。請按下方按鈕返回登入。';
+    document.getElementById('resetFields').classList.add('hidden');
+  }catch(error){
+    msg.textContent=error.message||'密碼更新失敗，請稍後再試。';
+    button.disabled=false;
+  }
+}
+
+async function leavePasswordReset(){
+  const msg=document.getElementById('resetMsg');
+  try{
+    if(authClient){
+      const {error}=await authClient.auth.signOut({scope:'local'});
+      if(error) throw error;
+    }
+    passwordRecoveryMode=false;
+    const url=new URL(location.href);
+    url.searchParams.delete('reset');
+    url.hash='';
+    history.replaceState(null,'',url.pathname+url.search);
+    document.getElementById('resetPassword').value='';
+    document.getElementById('resetConfirm').value='';
+    document.getElementById('resetFields').classList.remove('hidden');
+    showAuth('請使用您的密碼登入。');
+  }catch(error){msg.textContent=error.message||'請重新整理後再試。';}
 }
 function showAuth(msg=''){
   currentSession=null;currentUser=null;currentProfile=null;
