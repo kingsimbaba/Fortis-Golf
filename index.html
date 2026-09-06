@@ -571,7 +571,17 @@ th{color:var(--muted)}
 </div></section>
 
 <section id="home" class="page hidden"><div id="homeContent"></div></section><section id="setup" class="page hidden"><div class="card" style="display:flex;align-items:center;gap:10px"><button class="btn2" style="width:auto;padding:9px 13px;min-height:38px" onclick="showPage('home')">← 返回首頁</button><div><b>建立新回合</b><div class="small">完成設定後即可開始計分</div></div></div><div class="card"><h2>資料庫狀態</h2><div id="dbStatus" class="small">連線中…</div></div><div class="card"><div class="card"><h2>顯示設定</h2><label>主題</label><select id="themeSelector" onchange="changeTheme()"><option value="dark">深色</option><option value="light">淺色</option><option value="contrast">高對比</option></select></div><h2>新回合</h2><div class="grid"><div><label>國家</label>
-<select id="country" onchange="setupCourseSelect()"></select>
+<select id="country" onchange="updateCourseFilters()"></select>
+
+<label>地區</label>
+<select id="courseRegion" onchange="updatePrefectureFilter()">
+  <option value="">全部地區</option>
+</select>
+
+<label>縣市 / Prefecture</label>
+<select id="coursePrefecture" onchange="setupCourseSelect()">
+  <option value="">全部縣市</option>
+</select>
 
 <label>最近打過的球場</label>
 <div id="recentCourses" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px"></div>
