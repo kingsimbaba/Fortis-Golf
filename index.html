@@ -657,20 +657,65 @@ function showFortisUpdateBanner(serverVersion){
   document.body.appendChild(banner);
 }
 
-async function checkForFortisUpdate(){
-  if(!('serviceWorker' in navigator)) return;
+let fortisCurrentHtmlSignature = null;
 
-  try{
-    const registration=await navigator.serviceWorker.getRegistration();
-    if(!registration) return;
+async function getFortisHtmlSignature() {
+  try {
+    const response = await fetch('/index.html?fortis_check=' + Date.now(), {
+      cache: 'no-store',
+      headers: {
+        'Cache-Control': 'no-cache'
+      }
+    });
 
-    await registration.update();
+    if (!response.ok) return null;
 
-    if(registration.waiting){
+    const html = await response.text();
+
+    let hash = 0;
+
+    for (let i = 0; i < html.length; i++) {
+      hash = ((hash << 5) - hash) + html.charCodeAt(i);
+      hash |= 0;
+    }
+
+    return `${html.length}-${hash}`;
+  } catch (e) {
+    console.warn('Fortis version check failed:', e);
+    return null;
+  }
+}
+
+async function checkForFortisUpdate() {
+  try {
+    if ('serviceWorker' in navigator) {
+      const registration = await navigator.serviceWorker.getRegistration();
+
+      if (registration) {
+        await registration.update();
+
+        if (registration.waiting) {
+          showFortisUpdateBanner('最新版本');
+          return;
+        }
+      }
+    }
+
+    const latestSignature = await getFortisHtmlSignature();
+
+    if (!latestSignature) return;
+
+    if (!fortisCurrentHtmlSignature) {
+      fortisCurrentHtmlSignature = latestSignature;
+      return;
+    }
+
+    if (latestSignature !== fortisCurrentHtmlSignature) {
       showFortisUpdateBanner('最新版本');
     }
-  }catch(e){
-    console.warn('Update check failed:',e);
+
+  } catch (e) {
+    console.warn('Update check failed:', e);
   }
 }
 
@@ -819,8 +864,10 @@ async function init(){
   await loadConfig();
   await initAuth();
 
-  checkForFortisUpdate();
-  setInterval(checkForFortisUpdate,5*60*1000);
+  fortisCurrentHtmlSignature = await getFortisHtmlSignature();
+
+checkForFortisUpdate();
+setInterval(checkForFortisUpdate,5*60*1000);
 }
 
 // Keep recovery mode across SDK URL cleanup and page reloads.
