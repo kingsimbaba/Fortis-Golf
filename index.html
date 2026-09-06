@@ -1186,134 +1186,386 @@ function renderRecentCourses(){
     box.appendChild(btn);
   });
 }
-  function setupCourseSelect(){
-  let sel=document.getElementById('course');
-  sel.innerHTML='';
-  let countrySel=document.getElementById('country');
+  function updateCourseFilters(){
+  const countrySel = document.getElementById('country');
+  const regionSel = document.getElementById('courseRegion');
+  const prefectureSel = document.getElementById('coursePrefecture');
 
-let previousCountry = countrySel?.value || 'Taiwan';
+  const selectedCountry = countrySel?.value || '';
 
-if(countrySel){
-  countrySel.innerHTML = '';
+  if(regionSel){
+    const previousRegion = regionSel.value;
+    regionSel.innerHTML = '';
+    regionSel.add(new Option('全部地區', ''));
 
-  [...new Set(db.courses.map(c => c.country || 'Taiwan'))]
-    .sort()
-    .forEach(c => countrySel.add(new Option(c, c)));
+    const regions = [...new Set(
+      db.courses
+        .filter(c => !selectedCountry || (c.country || 'Taiwan') === selectedCountry)
+        .map(c => c.region)
+        .filter(Boolean)
+    )].sort();
 
-  if([...countrySel.options].some(option => option.value === previousCountry)){
-    countrySel.value = previousCountry;
-  }else if([...countrySel.options].some(option => option.value === 'Taiwan')){
-    countrySel.value = 'Taiwan';
-  }
-}
+    regions.forEach(r => regionSel.add(new Option(r, r)));
 
-let selectedCountry = countrySel ? countrySel.value : 'Taiwan';
-let searchText = (document.getElementById('courseSearch')?.value || '').toLowerCase().trim();
-
-const normalCourses = db.courses
-  .filter(c => (c.country || 'Taiwan') === selectedCountry)
-  .filter(c => !c.course_group)
-  .map(c => ({
-    label: courseLocalizedName(c),
-    value: c.course_name
-  }));
-
-let comboParents = (db.course_combos || [])
-  .filter(c => (c.country || 'Taiwan') === selectedCountry)
-  .filter(c => c.active !== false)
-  .map(c => ({
-    label: c.parent_course_name,
-    value: c.parent_course_code
-  }));
-
-if(selectedCountry === 'Vietnam'){
-  comboParents.push({
-    label: '新山',
-    value: 'TSN'
-  });
-}
-
-if(selectedCountry === 'China'){
-  comboParents.push({
-    label: '天馬',
-    value: 'TM'
-  });
-}
-
-[...new Map([...normalCourses, ...comboParents].map(x => [x.value, x])).values()]
-  .filter(x =>
-    !searchText ||
-    x.label.toLowerCase().includes(searchText) ||
-    x.value.toLowerCase().includes(searchText)
-  )
-  .sort((a,b)=>a.label.localeCompare(b.label))
-  .forEach(x=>sel.add(new Option(x.label, x.value)));
-  sel.onchange=()=>{
-    const comboBox=document.getElementById('comboBox');
-    const combo=document.getElementById('combo');
-
-    combo.innerHTML='';
-
-  let combos = (db.course_combos || [])
-  .filter(x => x.parent_course_code === sel.value)
-  .filter(x => x.active !== false);
-
-// Normalize and de-duplicate combo rows. The database may contain older
-// English display rows alongside the current Chinese rows for the same code.
-if(sel.value === 'TM'){
-  const fallbackCombos = [
-    {combo_code:'N+O', playable_display_name:'天馬新 + 天馬舊'},
-    {combo_code:'O+T', playable_display_name:'天馬舊 + 天馬'},
-    {combo_code:'T+N', playable_display_name:'天馬 + 天馬新'}
-  ];
-  // Treat legacy codes such as NO and N+O as the same logical combination.
-  const tmLogicalKey=value=>normalizeComboCode(value).replace(/\+/g,'').toUpperCase();
-  const existingCodes=new Set(combos.map(x=>tmLogicalKey(x.combo_code)));
-  fallbackCombos.forEach(x=>{
-    if(!existingCodes.has(tmLogicalKey(x.combo_code))) combos.push(x);
-  });
-}
-
-// Keep one option per logical combination and prefer a Chinese display name.
-const comboByCode=new Map();
-combos.forEach(x=>{
-  const key=sel.value==='TM'
-    ? normalizeComboCode(x.combo_code).replace(/\+/g,'').toUpperCase()
-    : normalizeComboCode(x.combo_code);
-  const label=String(x.playable_display_name||x.combo_display_name||x.combo_code||'');
-  const current=comboByCode.get(key);
-  const hasChinese=/[\u3400-\u9fff]/.test(label);
-  const currentHasChinese=current && /[\u3400-\u9fff]/.test(String(current.playable_display_name||current.combo_display_name||''));
-  if(!current || (hasChinese && !currentHasChinese)) comboByCode.set(key,x);
-});
-combos=[...comboByCode.values()];
-
-if(combos.length){
-  combos.forEach(x=>{
-    let label=x.playable_display_name || x.combo_display_name || x.combo_code;
-    if(sel.value==='TM'){
-      const code=normalizeComboCode(x.combo_code);
-      const tmLabels={
-        'N+O':'天馬新 + 天馬舊',
-        'NO':'天馬新 + 天馬舊',
-        'O+T':'天馬舊 + 天馬',
-        'OT':'天馬舊 + 天馬',
-        'T+N':'天馬 + 天馬新',
-        'TN':'天馬 + 天馬新'
-      };
-      label=tmLabels[code]||label;
+    if([...regionSel.options].some(o => o.value === previousRegion)){
+      regionSel.value = previousRegion;
     }
-    combo.add(new Option(label,x.combo_code));
-  });
+  }
 
-  comboBox.classList.remove('hidden');
-  comboBox.querySelector('label').innerText = '組合';
-}else{
-  comboBox.classList.add('hidden');
+  if(prefectureSel){
+    prefectureSel.value = '';
+  }
+
+  updatePrefectureFilter();
 }
+
+
+function updatePrefectureFilter(){
+  const countrySel = document.getElementById('country');
+  const regionSel = document.getElementById('courseRegion');
+  const prefectureSel = document.getElementById('coursePrefecture');
+
+  const selectedCountry = countrySel?.value || '';
+  const selectedRegion = regionSel?.value || '';
+  const previousPrefecture = prefectureSel?.value || '';
+
+  if(prefectureSel){
+    prefectureSel.innerHTML = '';
+    prefectureSel.add(new Option('全部縣市 / Prefecture', ''));
+
+    const prefectures = [...new Set(
+      db.courses
+        .filter(c =>
+          (!selectedCountry || (c.country || 'Taiwan') === selectedCountry) &&
+          (!selectedRegion || c.region === selectedRegion)
+        )
+        .map(c => c.prefecture)
+        .filter(Boolean)
+    )].sort();
+
+    prefectures.forEach(p => prefectureSel.add(new Option(p, p)));
+
+    if([...prefectureSel.options].some(o => o.value === previousPrefecture)){
+      prefectureSel.value = previousPrefecture;
+    }
+  }
+
+  setupCourseSelect();
+}
+
+
+function setupCourseSelect(){
+  let sel = document.getElementById('course');
+  if(!sel) return;
+
+  sel.innerHTML = '';
+
+  let countrySel = document.getElementById('country');
+  let regionSel = document.getElementById('courseRegion');
+  let prefectureSel = document.getElementById('coursePrefecture');
+
+  let previousCountry = countrySel?.value ?? 'Taiwan';
+
+  /*
+    Rebuild country list.
+    Blank = search/browse every country.
+  */
+  if(countrySel){
+    countrySel.innerHTML = '';
+    countrySel.add(new Option('全部國家', ''));
+
+    [...new Set(db.courses.map(c => c.country || 'Taiwan'))]
+      .sort()
+      .forEach(c => countrySel.add(new Option(c, c)));
+
+    if([...countrySel.options].some(option => option.value === previousCountry)){
+      countrySel.value = previousCountry;
+    }else{
+      countrySel.value = '';
+    }
+  }
+
+  const selectedCountry = countrySel?.value || '';
+  const selectedRegion = regionSel?.value || '';
+  const selectedPrefecture = prefectureSel?.value || '';
+
+  const searchText =
+    (document.getElementById('courseSearch')?.value || '')
+      .toLowerCase()
+      .trim();
+
+  /*
+    One common filter used everywhere.
+  */
+  const matchesLocation = c =>
+    (!selectedCountry || (c.country || 'Taiwan') === selectedCountry) &&
+    (!selectedRegion || c.region === selectedRegion) &&
+    (!selectedPrefecture || c.prefecture === selectedPrefecture);
+
+  /*
+    Regular courses.
+  */
+  const normalCourses = db.courses
+    .filter(matchesLocation)
+    .filter(c => !c.course_group)
+    .map(c => ({
+      label: courseLocalizedName(c),
+      value: c.course_name
+    }));
+
+  /*
+    Course-combo parent clubs.
+
+    A combo parent is shown when one of its component course rows
+    matches the selected Country / Region / Prefecture.
+  */
+  let comboParents = (db.course_combos || [])
+    .filter(c => c.active !== false)
+    .filter(combo => {
+
+      const parentCode = combo.parent_course_code;
+
+      const matchingChild = db.courses.some(course => {
+        const courseCode = String(course.course_name || '');
+
+        const belongsToParent =
+          course.course_group === parentCode ||
+          courseCode === parentCode ||
+          courseCode.startsWith(parentCode + '-');
+
+        return belongsToParent && matchesLocation(course);
+      });
+
+      /*
+        Fallback for old combo rows whose child relationship
+        isn't explicitly stored.
+      */
+      const comboCountryMatches =
+        !selectedCountry ||
+        (combo.country || 'Taiwan') === selectedCountry;
+
+      if(!selectedRegion && !selectedPrefecture){
+        return matchingChild || comboCountryMatches;
+      }
+
+      return matchingChild;
+    })
+    .map(c => ({
+      label: c.parent_course_name,
+      value: c.parent_course_code
+    }));
+
+
+  /*
+    Existing special Vietnam parent.
+  */
+  const tsnMatches = db.courses.some(c =>
+    String(c.course_name || '').startsWith('TSN-') &&
+    matchesLocation(c)
+  );
+
+  if(tsnMatches){
+    comboParents.push({
+      label: '新山',
+      value: 'TSN'
+    });
+  }
+
+
+  /*
+    Existing special China parent.
+  */
+  const tmMatches = db.courses.some(c =>
+    String(c.course_name || '').startsWith('TM-') &&
+    matchesLocation(c)
+  );
+
+  if(tmMatches){
+    comboParents.push({
+      label: '天馬',
+      value: 'TM'
+    });
+  }
+
+
+  /*
+    Combine regular courses + combo parents,
+    remove duplicates, then apply text search.
+  */
+  [...new Map(
+    [...normalCourses, ...comboParents]
+      .map(x => [x.value, x])
+  ).values()]
+    .filter(x =>
+      !searchText ||
+      String(x.label || '').toLowerCase().includes(searchText) ||
+      String(x.value || '').toLowerCase().includes(searchText)
+    )
+    .sort((a,b) =>
+      String(a.label || '').localeCompare(String(b.label || ''))
+    )
+    .forEach(x =>
+      sel.add(new Option(x.label, x.value))
+    );
+
+
+  /*
+    Existing combo selector logic.
+  */
+  sel.onchange = () => {
+
+    const comboBox = document.getElementById('comboBox');
+    const combo = document.getElementById('combo');
+
+    if(!comboBox || !combo) return;
+
+    combo.innerHTML = '';
+
+    let combos = (db.course_combos || [])
+      .filter(x => x.parent_course_code === sel.value)
+      .filter(x => x.active !== false);
+
+
+    /*
+      Existing Tianma fallback combinations.
+    */
+    if(sel.value === 'TM'){
+
+      const fallbackCombos = [
+        {
+          combo_code:'N+O',
+          playable_display_name:'天馬新 + 天馬舊'
+        },
+        {
+          combo_code:'O+T',
+          playable_display_name:'天馬舊 + 天馬'
+        },
+        {
+          combo_code:'T+N',
+          playable_display_name:'天馬 + 天馬新'
+        }
+      ];
+
+      const tmLogicalKey = value =>
+        normalizeComboCode(value)
+          .replace(/\+/g,'')
+          .toUpperCase();
+
+      const existingCodes = new Set(
+        combos.map(x => tmLogicalKey(x.combo_code))
+      );
+
+      fallbackCombos.forEach(x => {
+        if(!existingCodes.has(tmLogicalKey(x.combo_code))){
+          combos.push(x);
+        }
+      });
+    }
+
+
+    /*
+      De-duplicate combo rows.
+    */
+    const comboByCode = new Map();
+
+    combos.forEach(x => {
+
+      const key = sel.value === 'TM'
+        ? normalizeComboCode(x.combo_code)
+            .replace(/\+/g,'')
+            .toUpperCase()
+        : normalizeComboCode(x.combo_code);
+
+      const label = String(
+        x.playable_display_name ||
+        x.combo_display_name ||
+        x.combo_code ||
+        ''
+      );
+
+      const current = comboByCode.get(key);
+
+      const hasChinese =
+        /[\u3400-\u9fff]/.test(label);
+
+      const currentHasChinese =
+        current &&
+        /[\u3400-\u9fff]/.test(
+          String(
+            current.playable_display_name ||
+            current.combo_display_name ||
+            ''
+          )
+        );
+
+      if(!current || (hasChinese && !currentHasChinese)){
+        comboByCode.set(key,x);
+      }
+    });
+
+    combos = [...comboByCode.values()];
+
+
+    if(combos.length){
+
+      combos.forEach(x => {
+
+        let label =
+          x.playable_display_name ||
+          x.combo_display_name ||
+          x.combo_code;
+
+        if(sel.value === 'TM'){
+
+          const code = normalizeComboCode(x.combo_code);
+
+          const tmLabels = {
+            'N+O':'天馬新 + 天馬舊',
+            'NO':'天馬新 + 天馬舊',
+            'O+T':'天馬舊 + 天馬',
+            'OT':'天馬舊 + 天馬',
+            'T+N':'天馬 + 天馬新',
+            'TN':'天馬 + 天馬新'
+          };
+
+          label = tmLabels[code] || label;
+        }
+
+        combo.add(
+          new Option(label,x.combo_code)
+        );
+      });
+
+      comboBox.classList.remove('hidden');
+
+      const comboLabel =
+        comboBox.querySelector('label');
+
+      if(comboLabel){
+        comboLabel.innerText = '組合';
+      }
+
+    }else{
+      comboBox.classList.add('hidden');
+    }
   };
 
-  sel.onchange();
+
+  /*
+    Don't call onchange when search/filter produced no courses.
+  */
+  if(sel.options.length){
+    sel.onchange();
+  }else{
+    const comboBox = document.getElementById('comboBox');
+    if(comboBox){
+      comboBox.classList.add('hidden');
+    }
+
+    sel.add(
+      new Option('找不到符合條件的球場','')
+    );
+  }
 }
 
   renderRecentCourses();
