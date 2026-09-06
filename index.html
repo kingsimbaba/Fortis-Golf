@@ -657,7 +657,7 @@ function showFortisUpdateBanner(serverVersion){
   document.body.appendChild(banner);
 }
 
-let fortisCurrentHtmlSignature = null;
+const FORTIS_HTML_SIGNATURE_KEY = 'fortisInstalledHtmlSignature';
 
 async function getFortisHtmlSignature() {
   try {
@@ -671,7 +671,6 @@ async function getFortisHtmlSignature() {
     if (!response.ok) return null;
 
     const html = await response.text();
-
     let hash = 0;
 
     for (let i = 0; i < html.length; i++) {
@@ -702,15 +701,22 @@ async function checkForFortisUpdate() {
     }
 
     const latestSignature = await getFortisHtmlSignature();
-
     if (!latestSignature) return;
 
-    if (!fortisCurrentHtmlSignature) {
-      fortisCurrentHtmlSignature = latestSignature;
+    const installedSignature =
+      localStorage.getItem(FORTIS_HTML_SIGNATURE_KEY);
+
+    // First run with the new updater: remember the currently deployed version.
+    if (!installedSignature) {
+      localStorage.setItem(
+        FORTIS_HTML_SIGNATURE_KEY,
+        latestSignature
+      );
       return;
     }
 
-    if (latestSignature !== fortisCurrentHtmlSignature) {
+    // Vercel now has different HTML from the version previously installed.
+    if (latestSignature !== installedSignature) {
       showFortisUpdateBanner('最新版本');
     }
 
@@ -721,7 +727,13 @@ async function checkForFortisUpdate() {
 
 async function installFortisUpdate(){
   if(fortisUpdateReloading) return;
-  fortisUpdateReloading=true;
+  fortisUpdateReloading=true;const latestSignature = await getFortisHtmlSignature();
+if (latestSignature) {
+  localStorage.setItem(
+    FORTIS_HTML_SIGNATURE_KEY,
+    latestSignature
+  );
+}
 
   const banner=document.getElementById('fortisUpdateBanner');
   if(banner) banner.innerHTML='<b style="width:100%;text-align:center">正在更新 Fortis Golf…</b>';
@@ -864,7 +876,7 @@ async function init(){
   await loadConfig();
   await initAuth();
 
-  fortisCurrentHtmlSignature = await getFortisHtmlSignature();
+
 
 checkForFortisUpdate();
 setInterval(checkForFortisUpdate,5*60*1000);
