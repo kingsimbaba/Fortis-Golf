@@ -556,7 +556,7 @@ th{color:var(--muted)}
 .admin-shortcuts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:12px}.admin-shortcuts button{min-height:58px;font-size:13px}
 @media(max-width:760px){.admin-dashboard{grid-template-columns:repeat(2,1fr)}.admin-shortcuts{grid-template-columns:repeat(2,1fr)}.admin-health{align-items:flex-start;flex-wrap:wrap}.admin-health-actions{width:100%}.admin-health-actions button{flex:1}.admin-issue{grid-template-columns:30px 1fr}.admin-issue button{grid-column:2}}
 </style>
-<link rel="stylesheet" href="styles/fortis-design.css?v=2026.10.02.07">
+<link rel="stylesheet" href="styles/fortis-design.css?v=2026.10.02.08">
 </head><body>
 <header><div class="fortis-brand"><img class="fortis-logo" src="icon-192.png" width="48" height="48" alt="金龍與69旗幟"><h1>地獄倒霉鬼</h1></div><div id="userBar" class="small"></div></header><div class="wrap">
 <section id="auth" class="page"><div class="card"><h2>登入</h2><p class="small">請輸入電子郵件再按登入即可.</p><div class="grid"><div><label>電子郵件</label><input id="auth電子郵件" type="email" placeholder="you@example.com"></div><div><label>密碼</label><input id="auth密碼" type="password" placeholder="密碼"></div><button onclick="signInUser()">登入</button><button class="btn2" onclick="signUpUser()">建立帳號</button><button id="forgotPassword" type="button" class="btn2" onclick="requestPasswordReset()">忘記密碼</button></div><div id="authMsg" class="small" style="margin-top:10px"></div></div></section>
@@ -613,7 +613,7 @@ th{color:var(--muted)}
 </label><div id="matchupSetup" class="small">請先輸入球員，然後點選載入個人對戰。</div></div></section>
 <section id="scorePage" class="page hidden"><div id="scoreContent"></div></section><section id="liveViewer" class="page hidden">
   <div id="liveViewerContent"></div>
-</section><section id="summary" class="page hidden"><div id="summaryContent"></div></section><section id="data" class="page hidden"><div class="card"><h2>資料庫</h2><button class="btn2" onclick="forceFullSync(this)">重新同步資料</button><div id="dataView" class="small" style="margin-top:10px"></div></div></section><section id="admin" class="page hidden"><div id="coursePhotosAdmin" class="card"></div><div id="adminContent"></div></section></div>
+</section><section id="summary" class="page hidden"><div id="summaryContent"></div></section><section id="data" class="page hidden"><div class="card"><h2>資料庫</h2><button class="btn2" onclick="forceFullSync(this)">重新同步資料</button><div id="dataView" class="small" style="margin-top:10px"></div></div></section><section id="admin" class="page hidden"><div id="adminContent"></div><div id="coursePhotosAdmin" class="card"></div></section></div>
 <input id="fortisRestoreFile" type="file" accept="application/json,.json" class="hidden" onchange="restoreFortisBackup(event)">
 <div class="nav hidden">
   <button id="navHome" class="active" onclick="showPage('home')">🏠<br>首頁</button>
@@ -622,7 +622,7 @@ th{color:var(--muted)}
   <button id="navData" onclick="showPage('data')">🗄️<br>資料</button>
   <button id="navAdmin" class="hidden" onclick="showPage('admin')">🔧<br>管理</button>
 </div>
-<script src="scripts/course-photos.js?v=2026.10.02.07"></script>
+<script src="scripts/course-photos.js?v=2026.10.02.08"></script>
 <script>
 let profilePlayer='';
 let scoreAnimationPlaying=false;
@@ -641,7 +641,7 @@ function courseAdminName(c){
   if(!c) return '';
   return [c.display_name_zh,c.display_name_ja,c.display_name].filter(Boolean).filter((v,i,a)=>a.indexOf(v)===i).join(' / ')||c.course_name;
 }
-const APP_BUILD_VERSION='2026.10.02.07';
+const APP_BUILD_VERSION='2026.10.02.08';
 let fortisUpdateReloading=false;
 
 function showFortisUpdateBanner(serverVersion){
@@ -3823,10 +3823,8 @@ function renderRoundHistory(){
 function renderMatchupHistory(){let html='<div class="card"><h2>近期讓桿紀錄</h2><div class="scroll"><table><tr><th>日期</th><th>對戰</th><th>戰前</th><th>結果</th><th>戰後</th><th>球場</th></tr>'; db.history.slice(0,50).forEach(h=>{let r=+h.result_holes||0, res=r>0?`${h.giver} +${r}`:r<0?`${h.receiver} +${Math.abs(r)}`:'Tie'; html+=`<tr><td>${(h.played_at||'').slice(0,10)}</td><td>${h.giver} vs ${h.receiver}</td><td>${h.before_holes}</td><td>${res}</td><td>${h.after_holes}</td><td>${h.course||''}</td></tr>`}); return html+'</table></div></div>'}
 
 function renderCoursePhotosAdmin(){
-  const rounds=dashboardRoundTotals(getDashboardPlayerName());
-  const played=rounds.map(r=>db.rounds.find(rec=>String(rec.id)===String(r.id))?.course_name).filter(Boolean);
   void window.FortisCoursePhotos?.mount(document.getElementById('coursePhotosAdmin'), {
-    client:authClient,user:currentUser,courses:db.courses,combos:db.course_combos,played,label:courseNameZh
+    client:authClient,user:currentUser,courses:db.courses,combos:db.course_combos,label:courseNameZh
   });
 }
 function renderAdmin(){

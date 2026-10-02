@@ -30,3 +30,7 @@ Implementation follows Supabase's [upload reference](https://supabase.com/docs/r
 ## Layout update — 2026.10.02.06
 
 Photo collection, course picker, upload and camera controls now live under 管理 for every signed-in player. Existing privileged management controls and the infrastructure/backup card remain restricted to admins. Home displays course-photo backgrounds on 最近一場 and 最近五場成績; repeated course codes share one image download per render. Missing/invalid images retain the plain card, and High Contrast suppresses decorative backgrounds. Uploading in 管理 and returning Home fetches the current images. Scoring calculations are unchanged.
+
+## Compact photo controls — 2026.10.02.08
+
+The 球場照片 panel is at the bottom of 管理, after all admin content. The gallery is replaced by a course dropdown, a single selected-course photo, Upload/Camera buttons and Save. Images load only when a course is selected. After saving, the pending preview clears and the current image refreshes. All signed-in players retain upload/replace access; Home photo backgrounds are unchanged.
