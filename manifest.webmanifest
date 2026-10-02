@@ -1,6 +1,6 @@
 {
-  "name": "地獄倒霉鬼計分系統",
-  "short_name": "地獄倒霉鬼計分系統",
+  "name": "地獄倒霉鬼",
+  "short_name": "地獄倒霉鬼",
   "description": "高爾夫計分、排行榜與對戰紀錄。",
   "start_url": "/",
   "display": "standalone",

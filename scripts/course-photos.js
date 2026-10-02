@@ -50,7 +50,7 @@ window.FortisCoursePhotos = (() => {
     if (text) node.textContent = text;
     return node;
   }
-  async function mount(host, {client, user, courses, combos, played, label}) {
+  async function mount(host, {client, user, courses, combos, played, label, featured = null}) {
     const run = ++generation;
     urls.forEach(url => URL.revokeObjectURL(url));
     urls = [];
@@ -71,6 +71,13 @@ window.FortisCoursePhotos = (() => {
     const grid = el('div', 'course-photo-grid');
     host.append(grid);
     const storage = client.storage.from(BUCKET);
+    const featuredCode = featured?.code ? canonicalCourse(featured.code, courses, combos) : null;
+    function updateFeatured(code, url) {
+      if (code !== featuredCode || generation !== run || !featured?.element?.isConnected) return;
+      featured.element.classList.toggle('has-course-photo', !!url);
+      featured.element.style.backgroundImage = url
+        ? `linear-gradient(rgba(9,17,26,.78),rgba(9,17,26,.9)),url(${JSON.stringify(url)})` : '';
+    }
     async function loadImage(code, target) {
       target.replaceChildren(el('span', 'small', '載入照片中…'));
       try {
@@ -81,11 +88,11 @@ window.FortisCoursePhotos = (() => {
         urls.push(url);
         const img = el('img');
         img.alt = `${known.get(code) || code} 球場代表照片`;
-        img.onload = () => { if (generation === run && target.isConnected) target.replaceChildren(img); };
-        img.onerror = () => { if (generation === run && target.isConnected) target.replaceChildren(el('span', 'small', '照片暫時無法顯示')); };
+        img.onload = () => { if (generation === run && target.isConnected) { target.replaceChildren(img); updateFeatured(code, url); } };
+        img.onerror = () => { if (generation === run && target.isConnected) { target.replaceChildren(el('span', 'small', '照片暫時無法顯示')); updateFeatured(code, null); } };
         img.src = url;
       } catch {
-        if (generation === run && target.isConnected) target.replaceChildren(el('span', 'small', '尚無照片或目前無法載入'));
+        if (generation === run && target.isConnected) { target.replaceChildren(el('span', 'small', '尚無照片或目前無法載入')); updateFeatured(code, null); }
       }
     }
     const targets = new Map();

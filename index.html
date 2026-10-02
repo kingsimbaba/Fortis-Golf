@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>地獄倒霉鬼計分系統</title><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>地獄倒霉鬼</title><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
@@ -556,9 +556,9 @@ th{color:var(--muted)}
 .admin-shortcuts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:12px}.admin-shortcuts button{min-height:58px;font-size:13px}
 @media(max-width:760px){.admin-dashboard{grid-template-columns:repeat(2,1fr)}.admin-shortcuts{grid-template-columns:repeat(2,1fr)}.admin-health{align-items:flex-start;flex-wrap:wrap}.admin-health-actions{width:100%}.admin-health-actions button{flex:1}.admin-issue{grid-template-columns:30px 1fr}.admin-issue button{grid-column:2}}
 </style>
-<link rel="stylesheet" href="styles/fortis-design.css?v=2026.10.02.04">
+<link rel="stylesheet" href="styles/fortis-design.css?v=2026.10.02.05">
 </head><body>
-<header><div class="fortis-brand"><img class="fortis-logo" src="icon-192.png" width="48" height="48" alt="金龍與69旗幟"><h1>地獄倒霉鬼計分系統</h1></div><div id="userBar" class="small"></div></header><div class="wrap">
+<header><div class="fortis-brand"><img class="fortis-logo" src="icon-192.png" width="48" height="48" alt="金龍與69旗幟"><h1>地獄倒霉鬼</h1></div><div id="userBar" class="small"></div></header><div class="wrap">
 <section id="auth" class="page"><div class="card"><h2>登入</h2><p class="small">請輸入電子郵件再按登入即可.</p><div class="grid"><div><label>電子郵件</label><input id="auth電子郵件" type="email" placeholder="you@example.com"></div><div><label>密碼</label><input id="auth密碼" type="password" placeholder="密碼"></div><button onclick="signInUser()">登入</button><button class="btn2" onclick="signUpUser()">建立帳號</button><button id="forgotPassword" type="button" class="btn2" onclick="requestPasswordReset()">忘記密碼</button></div><div id="authMsg" class="small" style="margin-top:10px"></div></div></section>
 <section id="passwordReset" class="page hidden"><div class="card">
 <h2>重設密碼</h2><p class="small">請設定新密碼，完成後再登入。</p>
@@ -622,7 +622,7 @@ th{color:var(--muted)}
   <button id="navData" onclick="showPage('data')">🗄️<br>資料</button>
   <button id="navAdmin" class="hidden" onclick="showPage('admin')">🔧<br>管理</button>
 </div>
-<script src="scripts/course-photos.js?v=2026.10.02.04"></script>
+<script src="scripts/course-photos.js?v=2026.10.02.05"></script>
 <script>
 let profilePlayer='';
 let scoreAnimationPlaying=false;
@@ -641,7 +641,7 @@ function courseAdminName(c){
   if(!c) return '';
   return [c.display_name_zh,c.display_name_ja,c.display_name].filter(Boolean).filter((v,i,a)=>a.indexOf(v)===i).join(' / ')||c.course_name;
 }
-const APP_BUILD_VERSION='2026.10.02.04';
+const APP_BUILD_VERSION='2026.10.02.05';
 let fortisUpdateReloading=false;
 
 function showFortisUpdateBanner(serverVersion){
@@ -652,7 +652,7 @@ function showFortisUpdateBanner(serverVersion){
   banner.style.cssText='position:fixed;left:12px;right:12px;top:12px;z-index:20000;background:#1f2f48;color:#fff;border:2px solid #38a169;border-radius:16px;padding:12px;box-shadow:0 12px 36px rgba(0,0,0,.45);display:flex;gap:10px;align-items:center;flex-wrap:wrap';
   banner.innerHTML=`
     <div style="flex:1;min-width:220px">
-      <b>地獄倒霉鬼計分系統 有新版本</b>
+      <b>地獄倒霉鬼 有新版本</b>
       <div style="font-size:12px;color:#cbd5e0;margin-top:3px">版本 ${serverVersion} 已可使用。更新後會自動重新載入。</div>
     </div>
     <button style="width:auto;min-height:40px;padding:8px 14px" onclick="installFortisUpdate()">立即更新</button>
@@ -739,7 +739,7 @@ if (latestSignature) {
 }
 
   const banner=document.getElementById('fortisUpdateBanner');
-  if(banner) banner.innerHTML='<b style="width:100%;text-align:center">正在更新 地獄倒霉鬼計分系統…</b>';
+  if(banner) banner.innerHTML='<b style="width:100%;text-align:center">正在更新 地獄倒霉鬼…</b>';
 
   try{
     if('caches' in window){
@@ -787,7 +787,7 @@ function updateLastSyncStatus(){
 
 async function refreshFortisAppForUser(){
   const ok=confirm(
-    '更新 地獄倒霉鬼計分系統 應用程式？\n\n'+
+    '更新 地獄倒霉鬼 應用程式？\n\n'+
     '這會清除舊的應用程式快取、下載最新版本並重新啟動。\n'+
     '你的帳號、球局和成績都不會被刪除。'
   );
@@ -830,7 +830,7 @@ async function refreshFortisAppForUser(){
 }
 
 async function repairFortisApp(){
-  const ok=confirm('這會清除 地獄倒霉鬼計分系統 的快取並重新載入，不會刪除 Supabase 的球局資料。確定繼續？');
+  const ok=confirm('這會清除 地獄倒霉鬼 的快取並重新載入，不會刪除 Supabase 的球局資料。確定繼續？');
   if(!ok) return;
 
   try{
@@ -2734,7 +2734,7 @@ function showRoundAchievements(data){
 async function shareRoundAchievements(){
   const d=document.getElementById('roundAchievementOverlay')?._achievementData;if(!d)return;
   const text=`🏆 ${d.title}\n${d.course}\n\n`+d.awards.map(a=>`${a.icon} ${a.label}：${a.player} ${a.value}`).join('\n');
-  try{if(navigator.share)await navigator.share({title:'地獄倒霉鬼計分系統 回合獎項',text});else{await navigator.clipboard.writeText(text);alert('獎項內容已複製');}}catch(e){if(e.name!=='AbortError')alert('分享失敗：'+e.message)}
+  try{if(navigator.share)await navigator.share({title:'地獄倒霉鬼 回合獎項',text});else{await navigator.clipboard.writeText(text);alert('獎項內容已複製');}}catch(e){if(e.name!=='AbortError')alert('分享失敗：'+e.message)}
 }
 async function saveRound(){try{
 let activeSeason=db.seasons.find(s=>s.active===true || s.active==='true' || s.active==='TRUE');
@@ -2940,7 +2940,7 @@ function renderHome(){
   box.innerHTML=`<div class="home-hero"><div class="home-welcome"><div><div class="home-greeting">歡迎回來</div><div class="home-name">${adminEscapeHtml(player)}</div><div class="home-date">${today}</div></div>${active?'<div class="home-status">● 回合進行中</div>':''}</div><div class="home-actions">${active?'<button class="home-action primary" onclick="loadActiveRound();renderScore();showPage(\'scorePage\')">繼續未完成回合 →</button>':''}<button class="home-action ${active?'btn2':'primary'}" onclick="openNewRoundFromHome()">＋ 開始新回合</button><button class="home-action btn2" onclick="showPage('summary');setTimeout(()=>document.getElementById('roundLibrarySearch')?.scrollIntoView({behavior:'smooth'}),80)">回合紀錄 ↗</button></div><div class="home-utilities">${currentProfile?.role==='admin'?'<button class="home-action btn2" onclick="openScorecardImportWizard()">匯入球場記分卡</button>':''}<button class="home-action btn2" onclick="refreshFortisAppForUser()">更新應用程式</button></div></div>
   <div class="home-grid"><div class="card home-card full"><div class="fg-section-heading"><h2>快速統計</h2><span class="fg-eyebrow">Your game</span></div><div class="home-kpis"><div class="home-kpi"><b>${rounds.length}</b><span>生涯回合</span></div><div class="home-kpi"><b>${seasonRounds}</b><span>本季回合</span></div><div class="home-kpi"><b>${avg}</b><span>平均桿數</span></div><div class="home-kpi"><b>${birdies}</b><span>生涯博蒂</span></div></div></div>
   <div class="card home-card"><div class="fg-section-heading"><h2>地獄倒楣鬼排行榜</h2><span class="fg-eyebrow">Season leaders</span></div>${leaders.length?leaders.map((r,i)=>`<div class="home-rank"><div class="home-medal">${String(i+1).padStart(2,'0')}</div><div><b>${adminEscapeHtml(r.name)}</b><div class="small">${r.rounds} 回合${r.avg!==null?` · 平均 ${r.avg.toFixed(1)}`:''}</div></div><div class="home-points"><span class="small" style="display:block">地獄倒楣鬼積分</span>${r.points>0?'+':''}${r.points.toFixed(0)}</div></div>`).join(''):'<p class="fg-empty">本季尚無地獄倒楣鬼成績。</p>'}</div>
-  <div class="card home-card"><div class="fg-section-heading"><h2>最近一場</h2><span class="fg-eyebrow">Last round</span></div>${last?`<div class="home-course"><div class="fg-eyebrow">Course · 球場</div><div class="profile-name">${adminEscapeHtml(last.title||'高爾夫回合')}</div><div class="small" style="margin-top:7px">${adminEscapeHtml(last.course)}${last.combo?` · ${adminEscapeHtml(last.combo)}`:''}</div><div class="home-course-note">球場代表照片見下方「打過的球場」。</div></div><div class="home-round-result"><div class="score">${last.total}<span>桿</span></div><div class="small">${adminEscapeHtml(last.date||'')}</div></div>`:'<p class="fg-empty">尚無已儲存回合。</p>'}</div>
+  <div class="card home-card home-last-round" id="homeLastRound"><div class="fg-section-heading"><h2>最近一場</h2><span class="fg-eyebrow">Last round</span></div>${last?`<div class="home-course"><div class="fg-eyebrow">Course · 球場</div><div class="profile-name">${adminEscapeHtml(last.title||'高爾夫回合')}</div><div class="small" style="margin-top:7px">${adminEscapeHtml(last.course)}${last.combo?` · ${adminEscapeHtml(last.combo)}`:''}</div></div><div class="home-round-result"><div class="score">${last.total}<span>桿</span></div><div class="small">${adminEscapeHtml(last.date||'')}</div></div>`:'<p class="fg-empty">尚無已儲存回合。</p>'}</div>
   <div class="card home-card full"><div class="fg-section-heading"><h2>最近五場成績</h2><span class="fg-eyebrow">Recent form</span></div><div class="home-form">${rounds.slice(0,5).map(r=>`<div class="home-form-item"><b>${r.total}</b><div class="small">${adminEscapeHtml(r.date||'')}</div><div class="small">${adminEscapeHtml(r.title||r.course)}</div></div>`).join('')||'<p class="fg-empty">尚無最近回合。</p>'}</div></div></div>`;
   const photos=document.createElement('section');
   photos.className='card home-card';
@@ -2948,7 +2948,8 @@ function renderHome(){
   const played=rounds.map(r=>db.rounds.find(rec=>String(rec.id)===String(r.id))?.course_name).filter(Boolean);
   void window.FortisCoursePhotos?.mount(photos, {
     client:authClient, user:currentUser, courses:db.courses, combos:db.course_combos,
-    played, label:courseNameZh
+    played, label:courseNameZh,
+    featured: last ? {code:db.rounds.find(rec=>String(rec.id)===String(last.id))?.course_name, element:document.getElementById('homeLastRound')} : null
   });
 }
 
@@ -4468,7 +4469,7 @@ async function restoreFortisBackup(event){
     const backup=JSON.parse(raw);
 
     if(backup?.format!=='fortis-golf-backup'||!backup?.tables){
-      throw new Error('這不是有效的 地獄倒霉鬼計分系統 備份檔。');
+      throw new Error('這不是有效的 地獄倒霉鬼 備份檔。');
     }
 
     const supported=[
