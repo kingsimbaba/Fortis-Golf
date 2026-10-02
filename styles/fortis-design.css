@@ -130,13 +130,15 @@ body { padding-bottom: calc(90px + env(safe-area-inset-bottom)); }
 @media(max-width:760px) { .course-photo-grid { grid-template-columns:1fr; } }
 
 /* Latest round reuses the authenticated course photo, with no extra download. */
-#home .home-last-round.has-course-photo {
+#home .home-last-round.has-course-photo,
+#home .home-form-item.has-course-photo {
   background-size: cover; background-position: center;
   --fg-text: #fff; --fg-muted: #eee; --fg-gold: #f3dba9;
   --text: #fff; --muted: #eee;
 }
 #home .home-last-round.has-course-photo .home-course { background: transparent; border-color: rgba(255,255,255,.3); }
-.high-contrast #home .home-last-round.has-course-photo {
+.high-contrast #home .home-last-round.has-course-photo,
+.high-contrast #home .home-form-item.has-course-photo {
   background-image: none !important; background-color: #000;
   --fg-gold: #ffe2a3; --fg-muted: #fff; --muted: #fff;
 }

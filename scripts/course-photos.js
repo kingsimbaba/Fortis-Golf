@@ -50,6 +50,43 @@ window.FortisCoursePhotos = (() => {
     if (text) node.textContent = text;
     return node;
   }
+  async function mountBackgrounds({client, user, courses, combos, items}) {
+    const run = ++generation;
+    urls.forEach(url => URL.revokeObjectURL(url));
+    urls = [];
+    const groups = new Map();
+    for (const {code, element} of items) {
+      if (!element) continue;
+      element.classList.remove('has-course-photo');
+      element.style.backgroundImage = '';
+      if (!code) continue;
+      const key = canonicalCourse(code, courses, combos);
+      if (!groups.has(key)) groups.set(key, []);
+      groups.get(key).push(element);
+    }
+    if (!client || !user) return;
+    const queue = [...groups];
+    await Promise.all(Array.from({length:Math.min(4,queue.length)}, async () => {
+      while (queue.length && generation === run) {
+        const [code, elements] = queue.shift();
+        try {
+          const {data, error} = await client.storage.from(BUCKET).download(await photoPath(code));
+          if (error || !data || generation !== run) continue;
+          const url = URL.createObjectURL(data);
+          urls.push(url);
+          const img = new Image();
+          img.src = url;
+          await img.decode();
+          if (generation !== run) continue;
+          for (const element of elements) {
+            if (!element.isConnected) continue;
+            element.style.backgroundImage = `linear-gradient(rgba(9,17,26,.78),rgba(9,17,26,.9)),url(${JSON.stringify(url)})`;
+            element.classList.add('has-course-photo');
+          }
+        } catch { /* Keep the normal card for unavailable or invalid photos. */ }
+      }
+    }));
+  }
   async function mount(host, {client, user, courses, combos, played, label, featured = null}) {
     const run = ++generation;
     urls.forEach(url => URL.revokeObjectURL(url));
@@ -186,5 +223,5 @@ window.FortisCoursePhotos = (() => {
       while (queue.length && generation === run) { const [code,target] = queue.shift(); await loadImage(code,target); }
     }));
   }
-  return {mount, canonicalCourse, photoPath, validateFile};
+  return {mount, mountBackgrounds, canonicalCourse, photoPath, validateFile};
 })();

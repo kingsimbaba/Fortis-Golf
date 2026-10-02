@@ -1,9 +1,9 @@
-const CACHE = 'fortis-golf-2026-10-02-05';
+const CACHE = 'fortis-golf-2026-10-02-06';
 
 const ASSETS = [
   '/index.html',
-  '/styles/fortis-design.css?v=2026.10.02.05',
-  '/scripts/course-photos.js?v=2026.10.02.05',
+  '/styles/fortis-design.css?v=2026.10.02.06',
+  '/scripts/course-photos.js?v=2026.10.02.06',
   '/manifest.webmanifest',
   '/icon-192.png',
   '/icon-512.png',

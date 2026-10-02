@@ -26,3 +26,7 @@ The app uses the existing authenticated Supabase client. No service-role key is 
 8 automated tests passed, including unchanged Larry-mode and score-animation tests and new checks for parent-course identity, deterministic paths, isolation, file-type and file-size rejection. Browser fixture exercised missing photos, image compression/preview, save, replacement without extra objects, failed upload and successful retry. Tests used mocked storage; no production uploads occurred.
 
 Implementation follows Supabase's [upload reference](https://supabase.com/docs/reference/javascript/file-buckets-upload) and [storage access-control guide](https://supabase.com/docs/guides/storage/security/access-control).
+
+## Layout update — 2026.10.02.06
+
+Photo collection, course picker, upload and camera controls now live under 管理 for every signed-in player. Existing privileged management controls and the infrastructure/backup card remain restricted to admins. Home displays course-photo backgrounds on 最近一場 and 最近五場成績; repeated course codes share one image download per render. Missing/invalid images retain the plain card, and High Contrast suppresses decorative backgrounds. Uploading in 管理 and returning Home fetches the current images. Scoring calculations are unchanged.

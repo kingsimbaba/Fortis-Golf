@@ -556,7 +556,7 @@ th{color:var(--muted)}
 .admin-shortcuts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:12px}.admin-shortcuts button{min-height:58px;font-size:13px}
 @media(max-width:760px){.admin-dashboard{grid-template-columns:repeat(2,1fr)}.admin-shortcuts{grid-template-columns:repeat(2,1fr)}.admin-health{align-items:flex-start;flex-wrap:wrap}.admin-health-actions{width:100%}.admin-health-actions button{flex:1}.admin-issue{grid-template-columns:30px 1fr}.admin-issue button{grid-column:2}}
 </style>
-<link rel="stylesheet" href="styles/fortis-design.css?v=2026.10.02.05">
+<link rel="stylesheet" href="styles/fortis-design.css?v=2026.10.02.06">
 </head><body>
 <header><div class="fortis-brand"><img class="fortis-logo" src="icon-192.png" width="48" height="48" alt="金龍與69旗幟"><h1>地獄倒霉鬼</h1></div><div id="userBar" class="small"></div></header><div class="wrap">
 <section id="auth" class="page"><div class="card"><h2>登入</h2><p class="small">請輸入電子郵件再按登入即可.</p><div class="grid"><div><label>電子郵件</label><input id="auth電子郵件" type="email" placeholder="you@example.com"></div><div><label>密碼</label><input id="auth密碼" type="password" placeholder="密碼"></div><button onclick="signInUser()">登入</button><button class="btn2" onclick="signUpUser()">建立帳號</button><button id="forgotPassword" type="button" class="btn2" onclick="requestPasswordReset()">忘記密碼</button></div><div id="authMsg" class="small" style="margin-top:10px"></div></div></section>
@@ -613,7 +613,7 @@ th{color:var(--muted)}
 </label><div id="matchupSetup" class="small">請先輸入球員，然後點選載入個人對戰。</div></div></section>
 <section id="scorePage" class="page hidden"><div id="scoreContent"></div></section><section id="liveViewer" class="page hidden">
   <div id="liveViewerContent"></div>
-</section><section id="summary" class="page hidden"><div id="summaryContent"></div></section><section id="data" class="page hidden"><div class="card"><h2>資料庫</h2><button class="btn2" onclick="forceFullSync(this)">重新同步資料</button><div id="dataView" class="small" style="margin-top:10px"></div></div></section><section id="admin" class="page hidden"><div id="adminContent"></div></section></div>
+</section><section id="summary" class="page hidden"><div id="summaryContent"></div></section><section id="data" class="page hidden"><div class="card"><h2>資料庫</h2><button class="btn2" onclick="forceFullSync(this)">重新同步資料</button><div id="dataView" class="small" style="margin-top:10px"></div></div></section><section id="admin" class="page hidden"><div id="coursePhotosAdmin" class="card"></div><div id="adminContent"></div></section></div>
 <input id="fortisRestoreFile" type="file" accept="application/json,.json" class="hidden" onchange="restoreFortisBackup(event)">
 <div class="nav hidden">
   <button id="navHome" class="active" onclick="showPage('home')">🏠<br>首頁</button>
@@ -622,7 +622,7 @@ th{color:var(--muted)}
   <button id="navData" onclick="showPage('data')">🗄️<br>資料</button>
   <button id="navAdmin" class="hidden" onclick="showPage('admin')">🔧<br>管理</button>
 </div>
-<script src="scripts/course-photos.js?v=2026.10.02.05"></script>
+<script src="scripts/course-photos.js?v=2026.10.02.06"></script>
 <script>
 let profilePlayer='';
 let scoreAnimationPlaying=false;
@@ -641,7 +641,7 @@ function courseAdminName(c){
   if(!c) return '';
   return [c.display_name_zh,c.display_name_ja,c.display_name].filter(Boolean).filter((v,i,a)=>a.indexOf(v)===i).join(' / ')||c.course_name;
 }
-const APP_BUILD_VERSION='2026.10.02.05';
+const APP_BUILD_VERSION='2026.10.02.06';
 let fortisUpdateReloading=false;
 
 function showFortisUpdateBanner(serverVersion){
@@ -1026,7 +1026,7 @@ async function handleLoggedIn(session){
   currentSession=session; currentUser=session.user;
   await loadProfile();
   document.querySelector('.nav').classList.remove('hidden');
-  document.getElementById('navAdmin').classList.toggle('hidden', !(currentProfile&&currentProfile.role==='admin'));
+  document.getElementById('navAdmin').classList.remove('hidden');
   document.getElementById('userBar').innerHTML=`${adminEscapeHtml(currentProfile?.display_name||currentUser.email)} · ${currentProfile?.role==='admin'?'管理員':'球員'} · <button class="btn2" style="width:auto;padding:6px 10px;font-size:12px" onclick="signOutUser()">登出</button>`;
   await loadAll(); 
   renderSummary(); 
@@ -2941,15 +2941,14 @@ function renderHome(){
   <div class="home-grid"><div class="card home-card full"><div class="fg-section-heading"><h2>快速統計</h2><span class="fg-eyebrow">Your game</span></div><div class="home-kpis"><div class="home-kpi"><b>${rounds.length}</b><span>生涯回合</span></div><div class="home-kpi"><b>${seasonRounds}</b><span>本季回合</span></div><div class="home-kpi"><b>${avg}</b><span>平均桿數</span></div><div class="home-kpi"><b>${birdies}</b><span>生涯博蒂</span></div></div></div>
   <div class="card home-card"><div class="fg-section-heading"><h2>地獄倒楣鬼排行榜</h2><span class="fg-eyebrow">Season leaders</span></div>${leaders.length?leaders.map((r,i)=>`<div class="home-rank"><div class="home-medal">${String(i+1).padStart(2,'0')}</div><div><b>${adminEscapeHtml(r.name)}</b><div class="small">${r.rounds} 回合${r.avg!==null?` · 平均 ${r.avg.toFixed(1)}`:''}</div></div><div class="home-points"><span class="small" style="display:block">地獄倒楣鬼積分</span>${r.points>0?'+':''}${r.points.toFixed(0)}</div></div>`).join(''):'<p class="fg-empty">本季尚無地獄倒楣鬼成績。</p>'}</div>
   <div class="card home-card home-last-round" id="homeLastRound"><div class="fg-section-heading"><h2>最近一場</h2><span class="fg-eyebrow">Last round</span></div>${last?`<div class="home-course"><div class="fg-eyebrow">Course · 球場</div><div class="profile-name">${adminEscapeHtml(last.title||'高爾夫回合')}</div><div class="small" style="margin-top:7px">${adminEscapeHtml(last.course)}${last.combo?` · ${adminEscapeHtml(last.combo)}`:''}</div></div><div class="home-round-result"><div class="score">${last.total}<span>桿</span></div><div class="small">${adminEscapeHtml(last.date||'')}</div></div>`:'<p class="fg-empty">尚無已儲存回合。</p>'}</div>
-  <div class="card home-card full"><div class="fg-section-heading"><h2>最近五場成績</h2><span class="fg-eyebrow">Recent form</span></div><div class="home-form">${rounds.slice(0,5).map(r=>`<div class="home-form-item"><b>${r.total}</b><div class="small">${adminEscapeHtml(r.date||'')}</div><div class="small">${adminEscapeHtml(r.title||r.course)}</div></div>`).join('')||'<p class="fg-empty">尚無最近回合。</p>'}</div></div></div>`;
-  const photos=document.createElement('section');
-  photos.className='card home-card';
-  box.appendChild(photos);
-  const played=rounds.map(r=>db.rounds.find(rec=>String(rec.id)===String(r.id))?.course_name).filter(Boolean);
-  void window.FortisCoursePhotos?.mount(photos, {
-    client:authClient, user:currentUser, courses:db.courses, combos:db.course_combos,
-    played, label:courseNameZh,
-    featured: last ? {code:db.rounds.find(rec=>String(rec.id)===String(last.id))?.course_name, element:document.getElementById('homeLastRound')} : null
+  <div class="card home-card full"><div class="fg-section-heading"><h2>最近五場成績</h2><span class="fg-eyebrow">Recent form</span></div><div class="home-form">${rounds.slice(0,5).map((r,i)=>`<div class="home-form-item" id="homeRecentRound${i}"><b>${r.total}</b><div class="small">${adminEscapeHtml(r.date||'')}</div><div class="small">${adminEscapeHtml(r.title||r.course)}</div></div>`).join('')||'<p class="fg-empty">尚無最近回合。</p>'}</div></div></div>`;
+  const photoItems=rounds.slice(0,5).map((r,i)=>({
+    code:db.rounds.find(rec=>String(rec.id)===String(r.id))?.course_name,
+    element:document.getElementById('homeRecentRound'+i)
+  }));
+  if(last) photoItems.push({code:photoItems[0]?.code,element:document.getElementById('homeLastRound')});
+  void window.FortisCoursePhotos?.mountBackgrounds({
+    client:authClient,user:currentUser,courses:db.courses,combos:db.course_combos,items:photoItems
   });
 }
 
@@ -3823,10 +3822,18 @@ function renderRoundHistory(){
 }
 function renderMatchupHistory(){let html='<div class="card"><h2>近期讓桿紀錄</h2><div class="scroll"><table><tr><th>日期</th><th>對戰</th><th>戰前</th><th>結果</th><th>戰後</th><th>球場</th></tr>'; db.history.slice(0,50).forEach(h=>{let r=+h.result_holes||0, res=r>0?`${h.giver} +${r}`:r<0?`${h.receiver} +${Math.abs(r)}`:'Tie'; html+=`<tr><td>${(h.played_at||'').slice(0,10)}</td><td>${h.giver} vs ${h.receiver}</td><td>${h.before_holes}</td><td>${res}</td><td>${h.after_holes}</td><td>${h.course||''}</td></tr>`}); return html+'</table></div></div>'}
 
+function renderCoursePhotosAdmin(){
+  const rounds=dashboardRoundTotals(getDashboardPlayerName());
+  const played=rounds.map(r=>db.rounds.find(rec=>String(rec.id)===String(r.id))?.course_name).filter(Boolean);
+  void window.FortisCoursePhotos?.mount(document.getElementById('coursePhotosAdmin'), {
+    client:authClient,user:currentUser,courses:db.courses,combos:db.course_combos,played,label:courseNameZh
+  });
+}
 function renderAdmin(){
+  renderCoursePhotosAdmin();
   const courseOptions=db.courses.map(c=>`<option value="${c.id}">${c.course_name}</option>`).join('');
   if(!(currentProfile&&currentProfile.role==='admin')){
-    document.getElementById('adminContent').innerHTML=`<div class="card"><h2>Admin Only</h2><p class="small">You are signed in as ${currentUser?.email||''}. Ask the admin to change your role to admin in the profiles table.</p></div>`;
+    document.getElementById('adminContent').innerHTML='';
     return;
   }
   document.getElementById('adminContent').innerHTML=`
@@ -4294,6 +4301,7 @@ async function adminAddCourse(){
 }
 async function adminSaveMatchup(){try{let giver=document.getElementById('admGiver').value.trim(), receiver=document.getElementById('admReceiver').value.trim(), holes_given=+(document.getElementById('admHoles').value||0); if(!giver||!receiver) return alert('Enter giver and receiver'); let existing=db.matchups.find(m=>pairKey(m.giver,m.receiver)===pairKey(giver,receiver)); if(existing) await sb(`matchups?id=eq.${existing.id}`,{method:'PATCH',body:JSON.stringify({giver,receiver,holes_given,updated_at:new Date().toISOString()})}); else await sb('matchups',{method:'POST',body:JSON.stringify({giver,receiver,holes_given})}); alert('Matchup saved'); await loadAll(); renderAdmin();}catch(e){alert('Save matchup failed: '+e.message)}}
 function renderProductionInfrastructureCard(){
+  if(currentProfile?.role!=='admin') return;
   const root=document.getElementById('adminContent');
   if(!root || document.getElementById('productionInfrastructureCard')) return;
 
