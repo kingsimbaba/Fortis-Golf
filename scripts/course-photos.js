@@ -80,7 +80,7 @@ window.FortisCoursePhotos = (() => {
           if (generation !== run) continue;
           for (const element of elements) {
             if (!element.isConnected) continue;
-            element.style.backgroundImage = `linear-gradient(rgba(9,17,26,.78),rgba(9,17,26,.9)),url(${JSON.stringify(url)})`;
+            element.style.backgroundImage = `linear-gradient(rgba(9,17,26,.30),rgba(9,17,26,.58)),url(${JSON.stringify(url)})`;
             element.classList.add('has-course-photo');
           }
         } catch { /* Keep the normal card for unavailable or invalid photos. */ }
@@ -113,7 +113,7 @@ window.FortisCoursePhotos = (() => {
       if (code !== featuredCode || generation !== run || !featured?.element?.isConnected) return;
       featured.element.classList.toggle('has-course-photo', !!url);
       featured.element.style.backgroundImage = url
-        ? `linear-gradient(rgba(9,17,26,.78),rgba(9,17,26,.9)),url(${JSON.stringify(url)})` : '';
+        ? `linear-gradient(rgba(9,17,26,.30),rgba(9,17,26,.58)),url(${JSON.stringify(url)})` : '';
     }
     async function loadImage(code, target) {
       target.replaceChildren(el('span', 'small', '載入照片中…'));

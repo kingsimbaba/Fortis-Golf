@@ -133,12 +133,20 @@ body { padding-bottom: calc(90px + env(safe-area-inset-bottom)); }
 #home .home-last-round.has-course-photo,
 #home .home-form-item.has-course-photo {
   background-size: cover; background-position: center;
+  text-shadow: 0 1px 3px #000, 0 2px 8px rgba(0,0,0,.8);
   --fg-text: #fff; --fg-muted: #eee; --fg-gold: #f3dba9;
   --text: #fff; --muted: #eee;
 }
 #home .home-last-round.has-course-photo .home-course { background: transparent; border-color: rgba(255,255,255,.3); }
 .high-contrast #home .home-last-round.has-course-photo,
 .high-contrast #home .home-form-item.has-course-photo {
-  background-image: none !important; background-color: #000;
+  background-image: none !important; background-color: #000; text-shadow: none;
   --fg-gold: #ffe2a3; --fg-muted: #fff; --muted: #fff;
 }
+
+/* Local contrast behind information, leaving more of the photo visible. */
+#home .home-last-round.has-course-photo .home-course { background: rgba(9,17,26,.38); }
+#home .home-last-round.has-course-photo .fg-section-heading,
+#home .home-last-round.has-course-photo .home-round-result { background: rgba(9,17,26,.48); border-radius: 8px; padding: 6px 10px; }
+#home .home-form-item.has-course-photo b,
+#home .home-form-item.has-course-photo .small { background: rgba(9,17,26,.48); padding: 3px 6px; border-radius: 4px; }
