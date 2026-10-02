@@ -555,8 +555,10 @@ th{color:var(--muted)}
 .admin-issues{display:grid;gap:8px;margin-top:12px}.admin-issue{display:grid;grid-template-columns:34px 1fr auto;gap:10px;align-items:center;padding:11px;border:1px solid var(--line);border-radius:12px;background:#0e1728}.admin-issue-icon{font-size:22px}.admin-issue button{width:auto;min-height:36px;padding:7px 10px}
 .admin-shortcuts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:12px}.admin-shortcuts button{min-height:58px;font-size:13px}
 @media(max-width:760px){.admin-dashboard{grid-template-columns:repeat(2,1fr)}.admin-shortcuts{grid-template-columns:repeat(2,1fr)}.admin-health{align-items:flex-start;flex-wrap:wrap}.admin-health-actions{width:100%}.admin-health-actions button{flex:1}.admin-issue{grid-template-columns:30px 1fr}.admin-issue button{grid-column:2}}
-</style></head><body>
-<header><h1>地獄倒楣鬼</h1><div class="sub">雲端版 · 歷史紀錄 · 排行榜 · 管理員 · 多人使用</div><div id="userBar" class="small"></div></header><div class="wrap">
+</style>
+<link rel="stylesheet" href="styles/fortis-design.css?v=2026.10.02.03">
+</head><body>
+<header><div class="fortis-brand"><span class="fortis-monogram" aria-hidden="true">F</span><div><h1>FORTIS GOLF</h1><div class="sub">地獄倒楣鬼 · 高爾夫俱樂部</div></div></div><div id="userBar" class="small"></div></header><div class="wrap">
 <section id="auth" class="page"><div class="card"><h2>登入</h2><p class="small">請輸入電子郵件再按登入即可.</p><div class="grid"><div><label>電子郵件</label><input id="auth電子郵件" type="email" placeholder="you@example.com"></div><div><label>密碼</label><input id="auth密碼" type="password" placeholder="密碼"></div><button onclick="signInUser()">登入</button><button class="btn2" onclick="signUpUser()">建立帳號</button><button id="forgotPassword" type="button" class="btn2" onclick="requestPasswordReset()">忘記密碼</button></div><div id="authMsg" class="small" style="margin-top:10px"></div></div></section>
 <section id="passwordReset" class="page hidden"><div class="card">
 <h2>重設密碼</h2><p class="small">請設定新密碼，完成後再登入。</p>
@@ -620,6 +622,7 @@ th{color:var(--muted)}
   <button id="navData" onclick="showPage('data')">🗄️<br>資料</button>
   <button id="navAdmin" class="hidden" onclick="showPage('admin')">🔧<br>管理</button>
 </div>
+<script src="scripts/course-photos.js?v=2026.10.02.03"></script>
 <script>
 let profilePlayer='';
 let scoreAnimationPlaying=false;
@@ -638,7 +641,7 @@ function courseAdminName(c){
   if(!c) return '';
   return [c.display_name_zh,c.display_name_ja,c.display_name].filter(Boolean).filter((v,i,a)=>a.indexOf(v)===i).join(' / ')||c.course_name;
 }
-const APP_BUILD_VERSION='2026.09.24.02';
+const APP_BUILD_VERSION='2026.10.02.03';
 let fortisUpdateReloading=false;
 
 function showFortisUpdateBanner(serverVersion){
@@ -2934,11 +2937,19 @@ function renderHome(){
   const last=rounds[0];
   const active=!!localStorage.getItem('fortisActiveRound');
   const today=new Intl.DateTimeFormat('zh-TW',{year:'numeric',month:'long',day:'numeric',weekday:'long'}).format(new Date());
-  box.innerHTML=`<div class="home-hero"><div class="home-greeting">歡迎回來</div><div class="home-name">${adminEscapeHtml(player)}</div><div class="home-date">${today}</div><div class="home-actions">${active?'<button class="home-action primary" onclick="loadActiveRound();renderScore();showPage(\'scorePage\')">▶️ 繼續未完成回合</button>':''}<button class="home-action ${active?'btn2':'primary'}" onclick="openNewRoundFromHome()">➕ 開始新回合</button><button class="home-action btn2" onclick="showPage('summary');setTimeout(()=>document.getElementById('roundLibrarySearch')?.scrollIntoView({behavior:'smooth'}),80)">📚 回合紀錄</button>${currentProfile?.role==='admin'?'<button class="home-action btn2" onclick="openScorecardImportWizard()">📷 匯入球場記分卡</button>':''}<button class="home-action btn2" onclick="refreshFortisAppForUser()">🔄 更新應用程式</button></div></div>
-  <div class="home-grid"><div class="card home-card full"><h2>📊 快速統計</h2><div class="home-kpis"><div class="home-kpi"><b>${rounds.length}</b><span>生涯回合</span></div><div class="home-kpi"><b>${seasonRounds}</b><span>本季回合</span></div><div class="home-kpi"><b>${avg}</b><span>平均桿數</span></div><div class="home-kpi"><b>${birdies}</b><span>生涯博蒂</span></div></div></div>
-  <div class="card home-card"><h2>🏆 地獄倒楣鬼排行榜</h2>${leaders.length?leaders.map((r,i)=>`<div class="home-rank"><div class="home-medal">${['🥇','🥈','🥉'][i]}</div><div><b>${adminEscapeHtml(r.name)}</b><div class="small">${r.rounds} 回合${r.avg!==null?` · 平均 ${r.avg.toFixed(1)}`:''}</div></div><div class="home-points"><span class="small" style="display:block">地獄倒楣鬼積分</span>${r.points>0?'+':''}${r.points.toFixed(0)}</div></div>`).join(''):'<p class="small">本季尚無地獄倒楣鬼成績。</p>'}</div>
-  <div class="card home-card"><h2>⛳ 最近一場</h2>${last?`<div class="profile-name" style="font-size:21px">${adminEscapeHtml(last.title||'高爾夫回合')}</div><div class="small" style="margin-top:7px">${adminEscapeHtml(last.course)}${last.combo?` · ${adminEscapeHtml(last.combo)}`:''}</div><div class="score" style="margin-top:8px">${last.total} 桿</div><div class="small" style="margin-top:5px">${adminEscapeHtml(last.date||'')}</div>`:'<p class="small">尚無已儲存回合。</p>'}</div>
-  <div class="card home-card full"><h2>📈 最近五場成績</h2><div class="home-form">${rounds.slice(0,5).map(r=>`<div class="home-form-item"><b>${r.total}</b><div class="small">${adminEscapeHtml(r.date||'')}</div><div class="small">${adminEscapeHtml(r.title||r.course)}</div></div>`).join('')||'<p class="small">尚無最近回合。</p>'}</div></div></div>`;
+  box.innerHTML=`<div class="home-hero"><div class="home-welcome"><div><div class="fg-eyebrow">The clubhouse · 俱樂部</div><div class="home-greeting">歡迎回來</div><div class="home-name">${adminEscapeHtml(player)}</div><div class="home-date">${today}</div></div>${active?'<div class="home-status">● 回合進行中</div>':''}</div><div class="home-actions">${active?'<button class="home-action primary" onclick="loadActiveRound();renderScore();showPage(\'scorePage\')">繼續未完成回合 →</button>':''}<button class="home-action ${active?'btn2':'primary'}" onclick="openNewRoundFromHome()">＋ 開始新回合</button><button class="home-action btn2" onclick="showPage('summary');setTimeout(()=>document.getElementById('roundLibrarySearch')?.scrollIntoView({behavior:'smooth'}),80)">回合紀錄 ↗</button></div><div class="home-utilities">${currentProfile?.role==='admin'?'<button class="home-action btn2" onclick="openScorecardImportWizard()">匯入球場記分卡</button>':''}<button class="home-action btn2" onclick="refreshFortisAppForUser()">更新應用程式</button></div></div>
+  <div class="home-grid"><div class="card home-card full"><div class="fg-section-heading"><h2>快速統計</h2><span class="fg-eyebrow">Your game</span></div><div class="home-kpis"><div class="home-kpi"><b>${rounds.length}</b><span>生涯回合</span></div><div class="home-kpi"><b>${seasonRounds}</b><span>本季回合</span></div><div class="home-kpi"><b>${avg}</b><span>平均桿數</span></div><div class="home-kpi"><b>${birdies}</b><span>生涯博蒂</span></div></div></div>
+  <div class="card home-card"><div class="fg-section-heading"><h2>地獄倒楣鬼排行榜</h2><span class="fg-eyebrow">Season leaders</span></div>${leaders.length?leaders.map((r,i)=>`<div class="home-rank"><div class="home-medal">${String(i+1).padStart(2,'0')}</div><div><b>${adminEscapeHtml(r.name)}</b><div class="small">${r.rounds} 回合${r.avg!==null?` · 平均 ${r.avg.toFixed(1)}`:''}</div></div><div class="home-points"><span class="small" style="display:block">地獄倒楣鬼積分</span>${r.points>0?'+':''}${r.points.toFixed(0)}</div></div>`).join(''):'<p class="fg-empty">本季尚無地獄倒楣鬼成績。</p>'}</div>
+  <div class="card home-card"><div class="fg-section-heading"><h2>最近一場</h2><span class="fg-eyebrow">Last round</span></div>${last?`<div class="home-course"><div class="fg-eyebrow">Course · 球場</div><div class="profile-name">${adminEscapeHtml(last.title||'高爾夫回合')}</div><div class="small" style="margin-top:7px">${adminEscapeHtml(last.course)}${last.combo?` · ${adminEscapeHtml(last.combo)}`:''}</div><div class="home-course-note">球場代表照片見下方「打過的球場」。</div></div><div class="home-round-result"><div class="score">${last.total}<span>桿</span></div><div class="small">${adminEscapeHtml(last.date||'')}</div></div>`:'<p class="fg-empty">尚無已儲存回合。</p>'}</div>
+  <div class="card home-card full"><div class="fg-section-heading"><h2>最近五場成績</h2><span class="fg-eyebrow">Recent form</span></div><div class="home-form">${rounds.slice(0,5).map(r=>`<div class="home-form-item"><b>${r.total}</b><div class="small">${adminEscapeHtml(r.date||'')}</div><div class="small">${adminEscapeHtml(r.title||r.course)}</div></div>`).join('')||'<p class="fg-empty">尚無最近回合。</p>'}</div></div></div>`;
+  const photos=document.createElement('section');
+  photos.className='card home-card';
+  box.appendChild(photos);
+  const played=rounds.map(r=>db.rounds.find(rec=>String(rec.id)===String(r.id))?.course_name).filter(Boolean);
+  void window.FortisCoursePhotos?.mount(photos, {
+    client:authClient, user:currentUser, courses:db.courses, combos:db.course_combos,
+    played, label:courseNameZh
+  });
 }
 
 let summaryPlayer='all';

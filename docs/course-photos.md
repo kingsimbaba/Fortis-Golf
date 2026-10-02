@@ -1,0 +1,28 @@
+# Shared course signature photos
+
+One current JPEG per canonical course/parent club. All authenticated users can read, add or replace photos; anonymous access and client-side deletion are not granted by these new policies. This is a shared course image, not a personal album. Last successful save wins if two players replace it at once.
+
+## Setup still required
+
+1. Run `supabase/migrations/202610020001_course_photos.sql` once in the existing project's Supabase SQL editor. It creates a private `course-photos` bucket (2 MB JPEG limit) and bucket-scoped SELECT, INSERT and UPDATE policies. Verify there is no conflicting pre-existing bucket or broad storage policy. The migration deliberately does not change other buckets, tables, policies or scoring data.
+2. Deploy the updated HTML, `scripts/course-photos.js`, stylesheet and service worker together.
+3. Test with two real player accounts: upload using one, read/replace using the other; verify anonymous reads/writes fail. Check a fresh sign-in reload and an offline upload retry. Live policies and persistence have not been exercised here because no Supabase administrative connection is available.
+
+The app uses the existing authenticated Supabase client. No service-role key is shipped. Storage responses are excluded from service-worker caching. Photos are fetched as authenticated blobs; object URLs are transient and revoked on remount. Pictures are shared with signed-in users only under the supplied policies.
+
+## UI behavior
+
+- Separate Choose photo and Take a picture controls feed the same preview, compression and Save flow. The camera control requests the rear camera on supported phones; unsupported devices can show a file picker. Actual camera capture has not been tested on a physical phone.
+
+- Dashboard collection is derived from completed rounds in the app's existing loaded history, not an additional full-history query.
+- Course picker permits uploads before a course has been played. Such a photo is visible in the picker and appears in the collection when a completed round is available.
+- Canonical course codes and explicit parent/combo relationships determine a SHA-256 file path; display-name translations do not change the path. Renaming a database course code requires migrating its photo separately.
+- JPG/PNG/WebP inputs up to 12 MB are decoded, resized to a maximum 1600px edge, and encoded as JPEG at 82% quality. The output limit is 2 MB. HEIC and SVG are rejected with a message.
+- A preview and explicit Save precede replacement. Network/storage failures keep the prepared image available for retry.
+- No photos are invented or preloaded. Users are asked to upload photos they took or have permission to share.
+
+## Validation performed
+
+8 automated tests passed, including unchanged Larry-mode and score-animation tests and new checks for parent-course identity, deterministic paths, isolation, file-type and file-size rejection. Browser fixture exercised missing photos, image compression/preview, save, replacement without extra objects, failed upload and successful retry. Tests used mocked storage; no production uploads occurred.
+
+Implementation follows Supabase's [upload reference](https://supabase.com/docs/reference/javascript/file-buckets-upload) and [storage access-control guide](https://supabase.com/docs/guides/storage/security/access-control).
