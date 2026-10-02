@@ -153,3 +153,68 @@ body { padding-bottom: calc(90px + env(safe-area-inset-bottom)); }
 
 .course-photo-actions { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
 #coursePhotosAdmin .fg-section-heading { margin-bottom:8px; }
+
+/* Scoring and statistics only: no changes to Data or Management. */
+#scorePage .card, #summaryContent .card { border-radius:var(--fg-radius); border-color:var(--fg-border); background:var(--fg-surface); box-shadow:var(--fg-shadow); }
+#scorePage h2 { font-weight:600; }
+#scorePage button, #summaryContent button { background:var(--fg-gold); color:var(--fg-on-gold); border:1px solid transparent; font-weight:600; }
+#scorePage button.btn2, #summaryContent button.btn2 { background:var(--fg-inset); color:var(--fg-text); border-color:var(--fg-border); }
+#scorePage button.btn-red, #summaryContent button.btn-red { background:#742a2a; color:#fff; }
+#scorePage .team, #scorePage .match, #scorePage .leader-row,
+#summaryContent .team, #summaryContent .match, #summaryContent .leader-row,
+#summaryContent .round-library-card, #summaryContent .profile-kpi, #summaryContent .recent-score,
+#summaryContent .summary-stat { background:var(--fg-inset); border-color:var(--fg-border); }
+#scorePage .score, #scorePage .ok, #summaryContent .score, #summaryContent .ok,
+#summaryContent .profile-kpi b, #summaryContent .recent-score b { color:var(--fg-emerald); text-shadow:none; font-variant-numeric:tabular-nums; }
+#scorePage .bad, #summaryContent .bad { color:var(--fg-danger); }
+#scorePage .leader-row { grid-template-columns:minmax(0,1fr) auto; }
+#scorePage .score-hole-picker { border-top:2px solid var(--fg-gold); }
+#scorePage .score-hole-picker button { background:var(--fg-inset); color:var(--fg-muted); border:1px solid var(--fg-border); min-height:44px; }
+/* Match the existing current/played conditions without changing their behavior. */
+#scorePage .score-hole-picker button[style*="background:#1f2f48"] { background:var(--fg-surface)!important; color:var(--fg-emerald); border-color:var(--fg-emerald); }
+#scorePage .score-hole-picker button[style*="background:#38a169"] { background:var(--fg-gold)!important; color:var(--fg-on-gold); border-color:var(--fg-gold); font-weight:800; }
+#scorePage .score-entry { grid-template-columns:minmax(0,1fr) auto!important; padding:18px; gap:12px!important; border-width:1px; }
+#scorePage .score-entry h2 { font-size:19px; overflow-wrap:anywhere; }
+#scorePage .score-stepper button { min-height:50px; border-radius:12px; }
+#scorePage .putt-stepper { grid-template-columns:44px 58px 44px!important; gap:6px!important; }
+#scorePage .putt-stepper button { min-height:44px; }
+#scorePage .score-hole-header { border-left:3px solid var(--fg-gold); }
+#scorePage .score-hole-header > div { flex-wrap:wrap; }
+#summaryContent { gap:18px; }
+#summaryContent .card { padding:18px; }
+#summaryContent .card h2 { font-size:16px; font-weight:600; margin-bottom:12px; }
+#summaryContent .summary-card-title h2 { margin:0; }
+#summaryContent .summary-toolbar, #summaryContent .summary-highlight { border-top:2px solid var(--fg-gold); }
+#summaryContent .summary-highlight { background:var(--fg-surface); border-color:var(--fg-border); border-top-color:var(--fg-gold); }
+#summaryContent .summary-stat { padding:14px 10px; border:1px solid var(--fg-border); }
+#summaryContent .summary-stat b { color:var(--fg-text); font-size:18px; font-weight:600; overflow-wrap:anywhere; }
+#summaryContent .summary-stat span { font-size:11px; color:var(--fg-muted); }
+#summaryContent .summary-more { color:var(--fg-gold); background:var(--fg-inset); border-color:var(--fg-border); min-height:44px; }
+#summaryContent .summary-collapse { background:var(--fg-inset)!important; color:var(--fg-gold); border-color:var(--fg-border); min-height:44px; min-width:44px; }
+#summaryContent .card input, #summaryContent .card select { background:var(--fg-inset); color:var(--fg-text); border-color:var(--fg-border); min-height:44px; }
+#summaryContent .card button { min-height:44px; }
+#summaryContent .small, #summaryContent .sub { font-size:12px; }
+#summaryContent .profile-hero { background:var(--fg-inset); border-color:var(--fg-border); border-top:2px solid var(--fg-gold); }
+#summaryContent .profile-name { font-size:25px; font-weight:600; }
+#summaryContent .premium-badge { background:var(--fg-inset); color:var(--fg-gold); border-color:var(--fg-border); }
+#summaryContent .round-library-title { font-size:16px; font-weight:600; }
+#summaryContent .round-library-actions { gap:8px; }
+#summaryContent table { font-size:12px; font-variant-numeric:tabular-nums; }
+#summaryContent th { background:var(--fg-inset); color:var(--fg-muted); font-weight:600; }
+#summaryContent th, #summaryContent td { padding:10px 8px; border-color:var(--fg-border); }
+#summaryContent .scroll { scrollbar-color:var(--fg-border) var(--fg-inset); }
+#summaryContent .bar { background:var(--fg-emerald); }
+.high-contrast #scorePage button, .high-contrast #summaryContent button { border:2px solid var(--fg-border); }
+@media(max-width:760px) {
+  #scorePage .card, #summaryContent .card { padding:16px; }
+  #summaryContent { gap:14px; }
+  #summaryContent table { font-size:11px; }
+  #summaryContent th, #summaryContent td { padding:8px 6px; }
+  #scorePage .score-hole-header > div > div:last-child { justify-content:flex-start!important; }
+}
+@media(max-width:420px) {
+  #scorePage .score-entry { grid-template-columns:1fr!important; }
+  #scorePage .score-entry > div:first-child { grid-row:auto!important; }
+  #scorePage .score-stepper, #scorePage .putt-stepper { justify-content:start!important; }
+  #summaryContent .round-library-actions { grid-template-columns:1fr; }
+}

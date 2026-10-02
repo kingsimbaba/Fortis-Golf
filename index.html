@@ -556,7 +556,7 @@ th{color:var(--muted)}
 .admin-shortcuts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:12px}.admin-shortcuts button{min-height:58px;font-size:13px}
 @media(max-width:760px){.admin-dashboard{grid-template-columns:repeat(2,1fr)}.admin-shortcuts{grid-template-columns:repeat(2,1fr)}.admin-health{align-items:flex-start;flex-wrap:wrap}.admin-health-actions{width:100%}.admin-health-actions button{flex:1}.admin-issue{grid-template-columns:30px 1fr}.admin-issue button{grid-column:2}}
 </style>
-<link rel="stylesheet" href="styles/fortis-design.css?v=2026.10.02.08">
+<link rel="stylesheet" href="styles/fortis-design.css?v=2026.10.02.09">
 </head><body>
 <header><div class="fortis-brand"><img class="fortis-logo" src="icon-192.png" width="48" height="48" alt="金龍與69旗幟"><h1>地獄倒霉鬼</h1></div><div id="userBar" class="small"></div></header><div class="wrap">
 <section id="auth" class="page"><div class="card"><h2>登入</h2><p class="small">請輸入電子郵件再按登入即可.</p><div class="grid"><div><label>電子郵件</label><input id="auth電子郵件" type="email" placeholder="you@example.com"></div><div><label>密碼</label><input id="auth密碼" type="password" placeholder="密碼"></div><button onclick="signInUser()">登入</button><button class="btn2" onclick="signUpUser()">建立帳號</button><button id="forgotPassword" type="button" class="btn2" onclick="requestPasswordReset()">忘記密碼</button></div><div id="authMsg" class="small" style="margin-top:10px"></div></div></section>
@@ -622,7 +622,7 @@ th{color:var(--muted)}
   <button id="navData" onclick="showPage('data')">🗄️<br>資料</button>
   <button id="navAdmin" class="hidden" onclick="showPage('admin')">🔧<br>管理</button>
 </div>
-<script src="scripts/course-photos.js?v=2026.10.02.08"></script>
+<script src="scripts/course-photos.js?v=2026.10.02.09"></script>
 <script>
 let profilePlayer='';
 let scoreAnimationPlaying=false;
@@ -641,7 +641,7 @@ function courseAdminName(c){
   if(!c) return '';
   return [c.display_name_zh,c.display_name_ja,c.display_name].filter(Boolean).filter((v,i,a)=>a.indexOf(v)===i).join(' / ')||c.course_name;
 }
-const APP_BUILD_VERSION='2026.10.02.08';
+const APP_BUILD_VERSION='2026.10.02.09';
 let fortisUpdateReloading=false;
 
 function showFortisUpdateBanner(serverVersion){
@@ -2464,7 +2464,7 @@ setTimeout(()=>{
 function renderScore(){
   let c=calcFortis(round), h=round.course[roundHole];
 
-  let holeNav='<div class="card"><h2>選擇球洞</h2><div style="display:grid;grid-template-columns:repeat(6,1fr);gap:6px">';
+  let holeNav='<div class="card score-hole-picker"><h2>選擇球洞</h2><div style="display:grid;grid-template-columns:repeat(6,1fr);gap:6px">';
 
 for(let i=0;i<18;i++){
   let played = round.scores[i].some(x=>x !== '');
@@ -2501,7 +2501,7 @@ let comboTitle =
   round.combo ||
   '';
 
-let html=holeNav+`<div class="card">
+let html=holeNav+`<div class="card score-hole-header">
   <div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start">
     <div>
       <h2 style="font-size:24px;margin-bottom:4px">第 ${roundHole+1} 洞</h2>
@@ -2576,19 +2576,19 @@ for(let i=0;i<round.players.length;i++){
     '+'+diff;
 
   html+=`
-    <div class="team" style="display:grid;grid-template-columns:minmax(100px,1fr) auto;gap:8px 12px;align-items:center">
+    <div class="team score-entry" style="display:grid;grid-template-columns:minmax(100px,1fr) auto;gap:8px 12px;align-items:center">
       <div style="min-width:0;grid-row:1 / span 2">
         <h2 style="margin:0">${round.players[i]}</h2>
         <div class="small">Par ${h.par} · ${scoreName}</div>
       </div>
 
-      <div style="display:grid;grid-template-columns:50px 56px 50px;gap:8px;align-items:center">
+      <div class="score-stepper" style="display:grid;grid-template-columns:50px 56px 50px;gap:8px;align-items:center">
         <button class="btn2" style="font-size:24px;padding:12px" onclick="changeScore(${roundHole},${i},-1)">−</button>
         <div style="text-align:center;font-size:34px;font-weight:900">${showVal}</div>
         <button style="font-size:24px;padding:12px" onclick="changeScore(${roundHole},${i},1)">+</button>
       </div>
 
-      <div style="display:grid;grid-template-columns:38px 58px 38px;gap:4px;align-items:center;justify-content:end">
+      <div class="putt-stepper" style="display:grid;grid-template-columns:38px 58px 38px;gap:4px;align-items:center;justify-content:end">
         <button class="btn2" aria-label="減少推桿" style="padding:9px 6px" onclick="changePutts(${roundHole},${i},-1)">−</button>
         <div style="text-align:center"><div style="font-size:22px;font-weight:900">${puttVal}</div><div class="small">推桿</div></div>
         <button class="btn2" aria-label="增加推桿" style="padding:9px 6px" onclick="changePutts(${roundHole},${i},1)">+</button>
