@@ -34,3 +34,13 @@ Photo collection, course picker, upload and camera controls now live under 管�
 ## Compact photo controls — 2026.10.02.08
 
 The 球場照片 panel is at the bottom of 管理, after all admin content. The gallery is replaced by a course dropdown, a single selected-course photo, Upload/Camera buttons and Save. Images load only when a course is selected. After saving, the pending preview clears and the current image refreshes. All signed-in players retain upload/replace access; Home photo backgrounds are unchanged.
+
+## Course finding (2026-10-03)
+
+The authenticated master currently contains 117 course records. The previous picker reduced these to 79 canonical photo keys, hiding individual course codes (including grouped nine-hole courses). Every master record now gets its own selectable name/code entry; combo parents remain available as additional entries. Upload/download still use the unchanged canonical parent photo key, so existing shared pictures require no migration.
+
+Country, region and prefecture filters derive from master metadata and work together with case-insensitive multilingual name/code search. Changing country clears invalid region/prefecture selections. Filtering out the selected course clears its photo preview and pending upload; controls lock during save. Clear filters restores the complete list. Missing location metadata does not exclude a course from the unfiltered list or assign it an invented country. Japan currently has region and prefecture data; Taiwan has region data.
+
+Course and combination loading now use ordered pagination to avoid the single-request API cap. Build and service-worker cache versions advance together. No database or storage migration is required.
+
+Validation: 15 automated tests pass, including master-record coverage, grouped/inactive records, multilingual combined filters, and loading 2,107 records across pages with failure propagation. A 390px browser fixture included all 117 live master codes plus two illustrative location records; combined filters, empty results, dependent resets, TN lookup, photo preview/save/replacement and horizontal overflow passed. Storage writes were mocked; production course records and photos were unchanged.
