@@ -218,3 +218,8 @@ body { padding-bottom: calc(90px + env(safe-area-inset-bottom)); }
   #scorePage .score-stepper, #scorePage .putt-stepper { justify-content:start!important; }
   #summaryContent .round-library-actions { grid-template-columns:1fr; }
 }
+
+.course-photo-filters { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; }
+.course-photo-filters > div { min-width:0; }
+.course-photo-form select, .course-photo-form input[type="search"] { width:100%; min-width:0; min-height:44px; font-size:16px; }
+@media(max-width:600px) { .course-photo-filters { grid-template-columns:1fr; } }
