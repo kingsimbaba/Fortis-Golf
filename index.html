@@ -556,7 +556,7 @@ th{color:var(--muted)}
 .admin-shortcuts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:12px}.admin-shortcuts button{min-height:58px;font-size:13px}
 @media(max-width:760px){.admin-dashboard{grid-template-columns:repeat(2,1fr)}.admin-shortcuts{grid-template-columns:repeat(2,1fr)}.admin-health{align-items:flex-start;flex-wrap:wrap}.admin-health-actions{width:100%}.admin-health-actions button{flex:1}.admin-issue{grid-template-columns:30px 1fr}.admin-issue button{grid-column:2}}
 </style>
-<link rel="stylesheet" href="styles/fortis-design.css?v=2026.10.02.10">
+<link rel="stylesheet" href="styles/fortis-design.css?v=2026.10.03.01">
 </head><body>
 <header><div class="fortis-brand"><img class="fortis-logo" src="icon-192.png" width="48" height="48" alt="金龍與69旗幟"><h1>地獄倒霉鬼</h1></div><div id="userBar" class="small"></div></header><div class="wrap">
 <section id="auth" class="page"><div class="card"><h2>登入</h2><p class="small">請輸入電子郵件再按登入即可.</p><div class="grid"><div><label>電子郵件</label><input id="auth電子郵件" type="email" placeholder="you@example.com"></div><div><label>密碼</label><input id="auth密碼" type="password" placeholder="密碼"></div><button onclick="signInUser()">登入</button><button class="btn2" onclick="signUpUser()">建立帳號</button><button id="forgotPassword" type="button" class="btn2" onclick="requestPasswordReset()">忘記密碼</button></div><div id="authMsg" class="small" style="margin-top:10px"></div></div></section>
@@ -622,7 +622,7 @@ th{color:var(--muted)}
   <button id="navData" onclick="showPage('data')">🗄️<br>資料</button>
   <button id="navAdmin" class="hidden" onclick="showPage('admin')">🔧<br>管理</button>
 </div>
-<script src="scripts/course-photos.js?v=2026.10.02.10"></script>
+<script src="scripts/course-photos.js?v=2026.10.03.01"></script>
 <script>
 let profilePlayer='';
 let scoreAnimationPlaying=false;
@@ -641,7 +641,7 @@ function courseAdminName(c){
   if(!c) return '';
   return [c.display_name_zh,c.display_name_ja,c.display_name].filter(Boolean).filter((v,i,a)=>a.indexOf(v)===i).join(' / ')||c.course_name;
 }
-const APP_BUILD_VERSION='2026.10.02.10';
+const APP_BUILD_VERSION='2026.10.03.01';
 let fortisUpdateReloading=false;
 
 function showFortisUpdateBanner(serverVersion){
@@ -1162,7 +1162,7 @@ async function loadPaged(path){
 async function loadAll(){
 document.getElementById('dbStatus').innerHTML='<span class="small">正在載入雲端資料…</span>';
 if(document.getElementById('summaryContent'))document.getElementById('summaryContent').innerHTML='<div class="card loading-box">正在載入統計資料…</div>';
-try{db.courses=await sb('courses?select=*&order=id'); db.holes = await loadPaged('holes?select=*&order=course_id,hole_number');db.course_combos=await sb('course_combos?select=*&order=id'); db.matchups=await sb('matchups?select=*&order=id'); db.players=await sb('players?select=*&order=name').catch(()=>[]); db.rounds=await sb('fortis_rounds?select=*&order=id.desc&limit=30').catch(()=>[]); roundLibraryTotal=await fetchRoundLibraryTotal().catch(()=>db.rounds.length); db.scores=await loadPaged('hole_scores?select=*&order=round_id.desc,hole_number').catch(()=>[]); db.history=await sb('matchup_history?select=*&order=id.desc&limit=200').catch(()=>[]);
+try{db.courses=await loadPaged('courses?select=*&order=id'); db.holes = await loadPaged('holes?select=*&order=course_id,hole_number');db.course_combos=await loadPaged('course_combos?select=*&order=id'); db.matchups=await sb('matchups?select=*&order=id'); db.players=await sb('players?select=*&order=name').catch(()=>[]); db.rounds=await sb('fortis_rounds?select=*&order=id.desc&limit=30').catch(()=>[]); roundLibraryTotal=await fetchRoundLibraryTotal().catch(()=>db.rounds.length); db.scores=await loadPaged('hole_scores?select=*&order=round_id.desc,hole_number').catch(()=>[]); db.history=await sb('matchup_history?select=*&order=id.desc&limit=200').catch(()=>[]);
 
 try{
   db.seasons=await sb('seasons?select=*&order=id');
