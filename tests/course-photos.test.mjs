@@ -67,3 +67,36 @@ test('players can manage course photos without rendering privileged admin contro
  vm.runInContext(extract('renderProductionInfrastructureCard')+';renderProductionInfrastructureCard();',ctx);
  assert.equal(root.innerHTML,'');
 });
+
+test('every master record remains selectable, including grouped, inactive and unplayed courses',()=>{
+ const courses=[{id:1,course_name:'TPE-A',course_group:'TPE',display_name_zh:'台北 A區',country:'Taiwan',region:'North'},
+ {id:2,course_name:'TPE-B',course_group:'TPE',country:'Taiwan',region:'North',active:false},
+ {id:3,course_name:'TN',display_name_zh:'台南(新化)',country:'Taiwan',region:'South'},
+ {id:4,course_name:'JP-X',display_name:'Test Club',display_name_ja:'テスト',country:'Japan',region:'Kyushu',prefecture:'Fukuoka'}];
+ const combos=[{parent_course_code:'TPE',combo_code:'TPE-AB',parent_course_name:'台北'}, {parent_course_code:'TPE',combo_code:'TPE-BA'}];
+ const entries=photos.courseEntries(courses,combos,x=>x);
+ assert.equal(entries.filter(e=>e.value.startsWith('course:')).length,courses.length);
+ for(const c of courses)assert.ok(entries.some(e=>e.code===c.course_name));
+ assert.equal(entries.filter(e=>e.code==='TPE').length,1);
+ for(const e of entries.filter(e=>e.code.startsWith('TPE')))assert.equal(e.photoCode,'TPE');
+ assert.equal(photos.filterEntries(entries,{country:'Japan',region:'Kyushu',prefecture:'Fukuoka',search:'TEST club'}).length,1);
+ assert.equal(photos.filterEntries(entries,{country:'Taiwan',search:'JP-X'}).length,0);
+ assert.equal(photos.filterEntries(entries,{country:'Taiwan',region:'North',search:'tpe-b'})[0].code,'TPE-B');
+ assert.equal(photos.filterEntries(entries,{search:'台南'})[0].code,'TN');
+ assert.equal(photos.filterEntries(entries,{search:'テスト'})[0].code,'JP-X');
+ assert.equal(photos.filterEntries(entries,{search:'missing'}).length,0);
+ assert.equal(photos.filterEntries(entries,{}).length,entries.length);
+});
+
+test('course master loader reads beyond API row limits and does not accept partial failures',async()=>{
+ const source=readFileSync(new URL('../index.html',import.meta.url),'utf8');
+ assert.match(source,/db.courses=await loadPaged\('courses\?select=\*&order=id'\)/);
+ assert.match(source,/db.course_combos=await loadPaged\('course_combos\?select=\*&order=id'\)/);
+ const fn=source.slice(source.indexOf('async function loadPaged('),source.indexOf('async function loadAll('));
+ const rows=Array.from({length:2107},(_,id)=>({id})); const calls=[];
+ const ctx=vm.createContext({sb:async path=>{calls.push(path);const offset=+path.match(/offset=(\d+)/)[1];return rows.slice(offset,offset+1000);}});
+ vm.runInContext(fn,ctx);const loaded=await ctx.loadPaged('courses?select=*&order=id');
+ assert.equal(loaded.length,rows.length);assert.equal(new Set(loaded.map(x=>x.id)).size,rows.length);assert.equal(calls.length,3);
+ ctx.sb=async path=>{if(path.includes('offset=1000'))throw Error('network');return rows.slice(0,1000);};
+ await assert.rejects(()=>ctx.loadPaged('courses?select=*&order=id'),/network/);
+});
