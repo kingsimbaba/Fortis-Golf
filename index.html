@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>地獄倒霉鬼</title><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>地獄倒楣鬼</title><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
@@ -552,13 +552,12 @@ th{color:var(--muted)}
 .admin-health.warn .admin-health-dot{background:#ecc94b;box-shadow:0 0 16px rgba(236,201,75,.5)}
 .admin-health.bad .admin-health-dot{background:#fc8181;box-shadow:0 0 16px rgba(252,129,129,.5)}
 .admin-health-copy{flex:1}.admin-health-copy b{font-size:17px}.admin-health-actions{display:flex;gap:8px;flex-wrap:wrap}.admin-health-actions button{width:auto;min-height:38px;padding:8px 12px}
+.active-scorer-list{display:grid;gap:9px;margin-top:10px}.active-scorer{display:grid;grid-template-columns:12px minmax(0,1fr) auto;gap:10px;align-items:center;padding:12px;border:1px solid #2f855a;border-radius:13px;background:rgba(56,161,105,.09)}.active-scorer-dot{width:10px;height:10px;border-radius:50%;background:#68d391;box-shadow:0 0 12px rgba(104,211,145,.8)}.active-scorer-meta{text-align:right;color:var(--muted);font-size:11px}.active-scorer-empty{padding:12px;border:1px solid var(--line);border-radius:12px;background:#0e1728;color:var(--muted)}
 .admin-issues{display:grid;gap:8px;margin-top:12px}.admin-issue{display:grid;grid-template-columns:34px 1fr auto;gap:10px;align-items:center;padding:11px;border:1px solid var(--line);border-radius:12px;background:#0e1728}.admin-issue-icon{font-size:22px}.admin-issue button{width:auto;min-height:36px;padding:7px 10px}
 .admin-shortcuts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:12px}.admin-shortcuts button{min-height:58px;font-size:13px}
 @media(max-width:760px){.admin-dashboard{grid-template-columns:repeat(2,1fr)}.admin-shortcuts{grid-template-columns:repeat(2,1fr)}.admin-health{align-items:flex-start;flex-wrap:wrap}.admin-health-actions{width:100%}.admin-health-actions button{flex:1}.admin-issue{grid-template-columns:30px 1fr}.admin-issue button{grid-column:2}}
-</style>
-<link rel="stylesheet" href="styles/fortis-design.css?v=2026.10.03.02">
-</head><body>
-<header><div class="fortis-brand"><img class="fortis-logo" src="icon-192.png" width="48" height="48" alt="金龍與69旗幟"><h1>地獄倒霉鬼</h1></div><div id="userBar" class="small"></div></header><div class="wrap">
+</style></head><body>
+<header><h1>地獄倒楣鬼</h1><div class="sub">雲端版 · 歷史紀錄 · 排行榜 · 管理員 · 多人使用</div><div id="userBar" class="small"></div></header><div class="wrap">
 <section id="auth" class="page"><div class="card"><h2>登入</h2><p class="small">請輸入電子郵件再按登入即可.</p><div class="grid"><div><label>電子郵件</label><input id="auth電子郵件" type="email" placeholder="you@example.com"></div><div><label>密碼</label><input id="auth密碼" type="password" placeholder="密碼"></div><button onclick="signInUser()">登入</button><button class="btn2" onclick="signUpUser()">建立帳號</button><button id="forgotPassword" type="button" class="btn2" onclick="requestPasswordReset()">忘記密碼</button></div><div id="authMsg" class="small" style="margin-top:10px"></div></div></section>
 <section id="passwordReset" class="page hidden"><div class="card">
 <h2>重設密碼</h2><p class="small">請設定新密碼，完成後再登入。</p>
@@ -613,7 +612,7 @@ th{color:var(--muted)}
 </label><div id="matchupSetup" class="small">請先輸入球員，然後點選載入個人對戰。</div></div></section>
 <section id="scorePage" class="page hidden"><div id="scoreContent"></div></section><section id="liveViewer" class="page hidden">
   <div id="liveViewerContent"></div>
-</section><section id="summary" class="page hidden"><div id="summaryContent"></div></section><section id="data" class="page hidden"><div class="card"><h2>資料庫</h2><button class="btn2" onclick="forceFullSync(this)">重新同步資料</button><div id="dataView" class="small" style="margin-top:10px"></div></div></section><section id="admin" class="page hidden"><div id="adminContent"></div><div id="coursePhotosAdmin" class="card"></div></section></div>
+</section><section id="summary" class="page hidden"><div id="summaryContent"></div></section><section id="data" class="page hidden"><div class="card"><h2>資料庫</h2><button class="btn2" onclick="forceFullSync(this)">重新同步資料</button><div id="dataView" class="small" style="margin-top:10px"></div></div></section><section id="admin" class="page hidden"><div id="adminContent"></div></section></div>
 <input id="fortisRestoreFile" type="file" accept="application/json,.json" class="hidden" onchange="restoreFortisBackup(event)">
 <div class="nav hidden">
   <button id="navHome" class="active" onclick="showPage('home')">🏠<br>首頁</button>
@@ -622,13 +621,14 @@ th{color:var(--muted)}
   <button id="navData" onclick="showPage('data')">🗄️<br>資料</button>
   <button id="navAdmin" class="hidden" onclick="showPage('admin')">🔧<br>管理</button>
 </div>
-<script src="scripts/course-photos.js?v=2026.10.03.02"></script>
 <script>
 let profilePlayer='';
 let scoreAnimationPlaying=false;
 let currentPage='home';
 let useIndividualMatchups=true;
 let lastForegroundSync=0;
+let adminPresenceTimer=null;
+const ACTIVE_SCORING_WINDOW_MS=90000;
 let SB={url:'',key:''}, authClient=null, currentSession=null, currentUser=null, currentProfile=null, db={courses:[],holes:[],course_combos:[],matchups:[],players:[],rounds:[],scores:[],history:[],seasons:[]}, round=null, roundHole=0, localRounds=[];
 const courseIdName={1:'DH',2:'SR',3:'TPE-A',4:'TPE-B',5:'TPE-C',6:'TPE-D',8:'TC-E',9:'TC-C',10:'TC-W'};
 function courseLocalizedName(c){
@@ -641,7 +641,7 @@ function courseAdminName(c){
   if(!c) return '';
   return [c.display_name_zh,c.display_name_ja,c.display_name].filter(Boolean).filter((v,i,a)=>a.indexOf(v)===i).join(' / ')||c.course_name;
 }
-const APP_BUILD_VERSION='2026.10.03.02';
+const APP_BUILD_VERSION='2026.10.14.01';
 let fortisUpdateReloading=false;
 
 function showFortisUpdateBanner(serverVersion){
@@ -652,7 +652,7 @@ function showFortisUpdateBanner(serverVersion){
   banner.style.cssText='position:fixed;left:12px;right:12px;top:12px;z-index:20000;background:#1f2f48;color:#fff;border:2px solid #38a169;border-radius:16px;padding:12px;box-shadow:0 12px 36px rgba(0,0,0,.45);display:flex;gap:10px;align-items:center;flex-wrap:wrap';
   banner.innerHTML=`
     <div style="flex:1;min-width:220px">
-      <b>地獄倒霉鬼 有新版本</b>
+      <b>Fortis Golf 有新版本</b>
       <div style="font-size:12px;color:#cbd5e0;margin-top:3px">版本 ${serverVersion} 已可使用。更新後會自動重新載入。</div>
     </div>
     <button style="width:auto;min-height:40px;padding:8px 14px" onclick="installFortisUpdate()">立即更新</button>
@@ -739,7 +739,7 @@ if (latestSignature) {
 }
 
   const banner=document.getElementById('fortisUpdateBanner');
-  if(banner) banner.innerHTML='<b style="width:100%;text-align:center">正在更新 地獄倒霉鬼…</b>';
+  if(banner) banner.innerHTML='<b style="width:100%;text-align:center">正在更新 Fortis Golf…</b>';
 
   try{
     if('caches' in window){
@@ -787,7 +787,7 @@ function updateLastSyncStatus(){
 
 async function refreshFortisAppForUser(){
   const ok=confirm(
-    '更新 地獄倒霉鬼 應用程式？\n\n'+
+    '更新 Fortis Golf 應用程式？\n\n'+
     '這會清除舊的應用程式快取、下載最新版本並重新啟動。\n'+
     '你的帳號、球局和成績都不會被刪除。'
   );
@@ -830,7 +830,7 @@ async function refreshFortisAppForUser(){
 }
 
 async function repairFortisApp(){
-  const ok=confirm('這會清除 地獄倒霉鬼 的快取並重新載入，不會刪除 Supabase 的球局資料。確定繼續？');
+  const ok=confirm('這會清除 Fortis Golf 的快取並重新載入，不會刪除 Supabase 的球局資料。確定繼續？');
   if(!ok) return;
 
   try{
@@ -1026,7 +1026,7 @@ async function handleLoggedIn(session){
   currentSession=session; currentUser=session.user;
   await loadProfile();
   document.querySelector('.nav').classList.remove('hidden');
-  document.getElementById('navAdmin').classList.remove('hidden');
+  document.getElementById('navAdmin').classList.toggle('hidden', !(currentProfile&&currentProfile.role==='admin'));
   document.getElementById('userBar').innerHTML=`${adminEscapeHtml(currentProfile?.display_name||currentUser.email)} · ${currentProfile?.role==='admin'?'管理員':'球員'} · <button class="btn2" style="width:auto;padding:6px 10px;font-size:12px" onclick="signOutUser()">登出</button>`;
   await loadAll(); 
   renderSummary(); 
@@ -1080,7 +1080,7 @@ async function signUpUser(){
   const {error}=await authClient.auth.signUp({email,password});
   document.getElementById('authMsg').innerHTML=error?`<span class="bad">${error.message}</span>`:'帳號已建立。若已啟用電子郵件驗證，請先確認信箱後再登入。';
 }
-async function signOutUser(){await authClient.auth.signOut();}
+async function signOutUser(){await endActiveScoringSession();await authClient.auth.signOut();}
 
 async function loadConfig(){try{let r=await fetch('/api/config',{cache:'no-store'}); let j=await r.json(); SB.url=j.supabaseUrl; SB.key=j.supabaseAnonKey; document.getElementById('dbStatus').innerHTML=SB.url&&SB.key?'<span class="ok">Connected to Vercel config.</span>':'<span class="bad">Missing env vars.</span>';}catch(e){document.getElementById('dbStatus').innerHTML='<span class="bad">Could not load /api/config.</span>';}}
 async function sb(path,opts={}){if(!SB.url||!SB.key) throw new Error('Missing Supabase config'); let r=await fetch(`${SB.url}/rest/v1/${path}`,{cache:'no-store',...opts,headers:{apikey:SB.key,Authorization:`Bearer ${currentSession?.access_token||SB.key}`,'Content-Type':'application/json','Cache-Control':'no-cache',Pragma:'no-cache',Prefer:'return=representation',...(opts.headers||{})}}); if(!r.ok){let t=await r.text(); throw new Error(t)} return await r.json();}
@@ -1162,7 +1162,7 @@ async function loadPaged(path){
 async function loadAll(){
 document.getElementById('dbStatus').innerHTML='<span class="small">正在載入雲端資料…</span>';
 if(document.getElementById('summaryContent'))document.getElementById('summaryContent').innerHTML='<div class="card loading-box">正在載入統計資料…</div>';
-try{db.courses=await loadPaged('courses?select=*&order=id'); db.holes = await loadPaged('holes?select=*&order=course_id,hole_number');db.course_combos=await loadPaged('course_combos?select=*&order=id'); db.matchups=await sb('matchups?select=*&order=id'); db.players=await sb('players?select=*&order=name').catch(()=>[]); db.rounds=await sb('fortis_rounds?select=*&order=id.desc&limit=30').catch(()=>[]); roundLibraryTotal=await fetchRoundLibraryTotal().catch(()=>db.rounds.length); db.scores=await loadPaged('hole_scores?select=*&order=round_id.desc,hole_number').catch(()=>[]); db.history=await sb('matchup_history?select=*&order=id.desc&limit=200').catch(()=>[]);
+try{db.courses=await sb('courses?select=*&order=id'); db.holes = await loadPaged('holes?select=*&order=course_id,hole_number');db.course_combos=await sb('course_combos?select=*&order=id'); db.matchups=await sb('matchups?select=*&order=id'); db.players=await sb('players?select=*&order=name').catch(()=>[]); db.rounds=await sb('fortis_rounds?select=*&order=id.desc&limit=30').catch(()=>[]); roundLibraryTotal=await fetchRoundLibraryTotal().catch(()=>db.rounds.length); db.scores=await loadPaged('hole_scores?select=*&order=round_id.desc,hole_number').catch(()=>[]); db.history=await sb('matchup_history?select=*&order=id.desc&limit=200').catch(()=>[]);
 
 try{
   db.seasons=await sb('seasons?select=*&order=id');
@@ -1914,10 +1914,30 @@ function saveActiveRound(){
   }
 }
 
+function activeRecorderDetails(){
+  return {
+    userId:currentUser?.id||null,
+    displayName:currentProfile?.display_name||currentProfile?.player_name||String(currentUser?.email||'').split('@')[0]||'球員',
+    email:currentUser?.email||'',
+    courseName:round?.courseName||'',
+    combo:round?.combo||'',
+    hole:(roundHole||0)+1,
+    players:Array.isArray(round?.players)?round.players:[],
+    deviceId:getScoringDeviceId(),
+    heartbeatAt:new Date().toISOString()
+  };
+}
+function getScoringDeviceId(){
+  let id=localStorage.getItem('fortisScoringDeviceId');
+  if(!id){id=(crypto.randomUUID?.()||`${Date.now()}-${Math.random().toString(36).slice(2)}`);localStorage.setItem('fortisScoringDeviceId',id);}
+  return id;
+}
+
   async function syncLiveRound(){
   if(!round) return;
 
   try{
+    const sharedRound={...round,_presence:activeRecorderDetails()};
     await sb('live_rounds',{
       method:'POST',
       headers:{
@@ -1925,7 +1945,7 @@ function saveActiveRound(){
       },
       body:JSON.stringify({
         id:round.id,
-        round_data:round,
+        round_data:sharedRound,
         round_hole:roundHole,
         updated_at:new Date().toISOString(),
         active:true
@@ -1935,6 +1955,20 @@ function saveActiveRound(){
     console.log('Live sync failed:', e.message);
   }
 }
+
+async function endActiveScoringSession(){
+  if(!round?.id||!currentSession)return;
+  try{
+    await sb(`live_rounds?id=eq.${encodeURIComponent(round.id)}`,{
+      method:'PATCH',
+      body:JSON.stringify({active:false,updated_at:new Date().toISOString()})
+    });
+  }catch(e){console.warn('Could not close live scoring presence:',e.message);}
+}
+
+setInterval(()=>{
+  if(round&&currentSession&&document.visibilityState==='visible')syncLiveRound();
+},25000);
 
 async function loadLiveRound(roundId){
   try{
@@ -2464,7 +2498,7 @@ setTimeout(()=>{
 function renderScore(){
   let c=calcFortis(round), h=round.course[roundHole];
 
-  let holeNav='<div class="card score-hole-picker"><h2>選擇球洞</h2><div style="display:grid;grid-template-columns:repeat(6,1fr);gap:6px">';
+  let holeNav='<div class="card"><h2>選擇球洞</h2><div style="display:grid;grid-template-columns:repeat(6,1fr);gap:6px">';
 
 for(let i=0;i<18;i++){
   let played = round.scores[i].some(x=>x !== '');
@@ -2501,7 +2535,7 @@ let comboTitle =
   round.combo ||
   '';
 
-let html=holeNav+`<div class="card score-hole-header">
+let html=holeNav+`<div class="card">
   <div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start">
     <div>
       <h2 style="font-size:24px;margin-bottom:4px">第 ${roundHole+1} 洞</h2>
@@ -2576,19 +2610,19 @@ for(let i=0;i<round.players.length;i++){
     '+'+diff;
 
   html+=`
-    <div class="team score-entry" style="display:grid;grid-template-columns:minmax(100px,1fr) auto;gap:8px 12px;align-items:center">
+    <div class="team" style="display:grid;grid-template-columns:minmax(100px,1fr) auto;gap:8px 12px;align-items:center">
       <div style="min-width:0;grid-row:1 / span 2">
         <h2 style="margin:0">${round.players[i]}</h2>
         <div class="small">Par ${h.par} · ${scoreName}</div>
       </div>
 
-      <div class="score-stepper" style="display:grid;grid-template-columns:50px 56px 50px;gap:8px;align-items:center">
+      <div style="display:grid;grid-template-columns:50px 56px 50px;gap:8px;align-items:center">
         <button class="btn2" style="font-size:24px;padding:12px" onclick="changeScore(${roundHole},${i},-1)">−</button>
         <div style="text-align:center;font-size:34px;font-weight:900">${showVal}</div>
         <button style="font-size:24px;padding:12px" onclick="changeScore(${roundHole},${i},1)">+</button>
       </div>
 
-      <div class="putt-stepper" style="display:grid;grid-template-columns:38px 58px 38px;gap:4px;align-items:center;justify-content:end">
+      <div style="display:grid;grid-template-columns:38px 58px 38px;gap:4px;align-items:center;justify-content:end">
         <button class="btn2" aria-label="減少推桿" style="padding:9px 6px" onclick="changePutts(${roundHole},${i},-1)">−</button>
         <div style="text-align:center"><div style="font-size:22px;font-weight:900">${puttVal}</div><div class="small">推桿</div></div>
         <button class="btn2" aria-label="增加推桿" style="padding:9px 6px" onclick="changePutts(${roundHole},${i},1)">+</button>
@@ -2734,7 +2768,7 @@ function showRoundAchievements(data){
 async function shareRoundAchievements(){
   const d=document.getElementById('roundAchievementOverlay')?._achievementData;if(!d)return;
   const text=`🏆 ${d.title}\n${d.course}\n\n`+d.awards.map(a=>`${a.icon} ${a.label}：${a.player} ${a.value}`).join('\n');
-  try{if(navigator.share)await navigator.share({title:'地獄倒霉鬼 回合獎項',text});else{await navigator.clipboard.writeText(text);alert('獎項內容已複製');}}catch(e){if(e.name!=='AbortError')alert('分享失敗：'+e.message)}
+  try{if(navigator.share)await navigator.share({title:'Fortis Golf 回合獎項',text});else{await navigator.clipboard.writeText(text);alert('獎項內容已複製');}}catch(e){if(e.name!=='AbortError')alert('分享失敗：'+e.message)}
 }
 async function saveRound(){try{
 let activeSeason=db.seasons.find(s=>s.active===true || s.active==='true' || s.active==='TRUE');
@@ -2753,7 +2787,7 @@ for(let h=0;h<=lastPlayedHole;h++)for(let i=0;i<round.players.length;i++){
 }
 if(scores.length)await sb('hole_scores',{method:'POST',body:JSON.stringify(scores)});
 for(const r of calcIndividual(round)){if(r.skipped)continue;let n=nextGive(r);if(r.id)await sb(`matchups?id=eq.${r.id}`,{method:'PATCH',body:JSON.stringify({giver:n.giver,receiver:n.receiver,holes_given:n.strokes,updated_at:new Date().toISOString()})});else await sb('matchups',{method:'POST',body:JSON.stringify({giver:n.giver,receiver:n.receiver,holes_given:n.strokes})});let giverResult=r.giver===r.a?r.totalResult:-r.totalResult;await sb('matchup_history',{method:'POST',body:JSON.stringify({giver:r.giver,receiver:r.receiver,before_holes:r.strokes,after_holes:n.strokes,result_holes:giverResult,course:round.courseName+(round.combo?' '+round.combo:'')})});}
-const achievements=buildRoundAchievements(completedRound,priorScores);localRounds.push(round);await loadAll();clearActiveRound();renderSummary();showPage('summary');setTimeout(()=>showRoundAchievements(achievements),120);
+const achievements=buildRoundAchievements(completedRound,priorScores);localRounds.push(round);await endActiveScoringSession();await loadAll();clearActiveRound();round=null;renderSummary();showPage('summary');setTimeout(()=>showRoundAchievements(achievements),120);
 }catch(e){alert('Save failed: '+e.message)}}
 function renderHeadToHead(){
   let records={};
@@ -2937,19 +2971,11 @@ function renderHome(){
   const last=rounds[0];
   const active=!!localStorage.getItem('fortisActiveRound');
   const today=new Intl.DateTimeFormat('zh-TW',{year:'numeric',month:'long',day:'numeric',weekday:'long'}).format(new Date());
-  box.innerHTML=`<div class="home-hero"><div class="home-welcome"><div><div class="home-greeting">歡迎回來</div><div class="home-name">${adminEscapeHtml(player)}</div><div class="home-date">${today}</div></div>${active?'<div class="home-status">● 回合進行中</div>':''}</div><div class="home-actions">${active?'<button class="home-action primary" onclick="loadActiveRound();renderScore();showPage(\'scorePage\')">繼續未完成回合 →</button>':''}<button class="home-action ${active?'btn2':'primary'}" onclick="openNewRoundFromHome()">＋ 開始新回合</button><button class="home-action btn2" onclick="showPage('summary');setTimeout(()=>document.getElementById('roundLibrarySearch')?.scrollIntoView({behavior:'smooth'}),80)">回合紀錄 ↗</button></div><div class="home-utilities">${currentProfile?.role==='admin'?'<button class="home-action btn2" onclick="openScorecardImportWizard()">匯入球場記分卡</button>':''}<button class="home-action btn2" onclick="refreshFortisAppForUser()">更新應用程式</button></div></div>
-  <div class="home-grid"><div class="card home-card full"><div class="fg-section-heading"><h2>個人統計</h2></div><div class="home-kpis"><div class="home-kpi"><b>${rounds.length}</b><span>生涯回合</span></div><div class="home-kpi"><b>${seasonRounds}</b><span>本季回合</span></div><div class="home-kpi"><b>${avg}</b><span>平均桿數</span></div><div class="home-kpi"><b>${birdies}</b><span>生涯博蒂</span></div></div></div>
-  <div class="card home-card"><div class="fg-section-heading"><h2>地獄倒楣鬼排行榜</h2></div>${leaders.length?leaders.map((r,i)=>`<div class="home-rank"><div class="home-medal">${String(i+1).padStart(2,'0')}</div><div><b>${adminEscapeHtml(r.name)}</b><div class="small">${r.rounds} 回合${r.avg!==null?` · 平均 ${r.avg.toFixed(1)}`:''}</div></div><div class="home-points"><span class="small" style="display:block">地獄倒楣鬼積分</span>${r.points>0?'+':''}${r.points.toFixed(0)}</div></div>`).join(''):'<p class="fg-empty">本季尚無地獄倒楣鬼成績。</p>'}</div>
-  <div class="card home-card home-last-round" id="homeLastRound"><div class="fg-section-heading"><h2>最近一場</h2></div>${last?`<div class="home-course"><div class="fg-eyebrow">Course · 球場</div><div class="profile-name">${adminEscapeHtml(last.title||'高爾夫回合')}</div><div class="small" style="margin-top:7px">${adminEscapeHtml(last.course)}${last.combo?` · ${adminEscapeHtml(last.combo)}`:''}</div></div><div class="home-round-result"><div class="score">${last.total}<span>桿</span></div><div class="small">${adminEscapeHtml(last.date||'')}</div></div>`:'<p class="fg-empty">尚無已儲存回合。</p>'}</div>
-  <div class="card home-card full"><div class="fg-section-heading"><h2>最近五場成績</h2></div><div class="home-form">${rounds.slice(0,5).map((r,i)=>`<div class="home-form-item" id="homeRecentRound${i}"><b>${r.total}</b><div class="small">${adminEscapeHtml(r.date||'')}</div>${r.title?`<div class="small">${adminEscapeHtml(r.title)}</div>`:''}<div class="small home-form-course">${adminEscapeHtml(r.course)}${r.combo?` · ${adminEscapeHtml(r.combo)}`:''}</div></div>`).join('')||'<p class="fg-empty">尚無最近回合。</p>'}</div></div></div>`;
-  const photoItems=rounds.slice(0,5).map((r,i)=>({
-    code:db.rounds.find(rec=>String(rec.id)===String(r.id))?.course_name,
-    element:document.getElementById('homeRecentRound'+i)
-  }));
-  if(last) photoItems.push({code:photoItems[0]?.code,element:document.getElementById('homeLastRound')});
-  void window.FortisCoursePhotos?.mountBackgrounds({
-    client:authClient,user:currentUser,courses:db.courses,combos:db.course_combos,items:photoItems
-  });
+  box.innerHTML=`<div class="home-hero"><div class="home-greeting">歡迎回來</div><div class="home-name">${adminEscapeHtml(player)}</div><div class="home-date">${today}</div><div class="home-actions">${active?'<button class="home-action primary" onclick="loadActiveRound();renderScore();showPage(\'scorePage\')">▶️ 繼續未完成回合</button>':''}<button class="home-action ${active?'btn2':'primary'}" onclick="openNewRoundFromHome()">➕ 開始新回合</button><button class="home-action btn2" onclick="showPage('summary');setTimeout(()=>document.getElementById('roundLibrarySearch')?.scrollIntoView({behavior:'smooth'}),80)">📚 回合紀錄</button>${currentProfile?.role==='admin'?'<button class="home-action btn2" onclick="openScorecardImportWizard()">📷 匯入球場記分卡</button>':''}<button class="home-action btn2" onclick="refreshFortisAppForUser()">🔄 更新應用程式</button></div></div>
+  <div class="home-grid"><div class="card home-card full"><h2>📊 快速統計</h2><div class="home-kpis"><div class="home-kpi"><b>${rounds.length}</b><span>生涯回合</span></div><div class="home-kpi"><b>${seasonRounds}</b><span>本季回合</span></div><div class="home-kpi"><b>${avg}</b><span>平均桿數</span></div><div class="home-kpi"><b>${birdies}</b><span>生涯博蒂</span></div></div></div>
+  <div class="card home-card"><h2>🏆 地獄倒楣鬼排行榜</h2>${leaders.length?leaders.map((r,i)=>`<div class="home-rank"><div class="home-medal">${['🥇','🥈','🥉'][i]}</div><div><b>${adminEscapeHtml(r.name)}</b><div class="small">${r.rounds} 回合${r.avg!==null?` · 平均 ${r.avg.toFixed(1)}`:''}</div></div><div class="home-points"><span class="small" style="display:block">地獄倒楣鬼積分</span>${r.points>0?'+':''}${r.points.toFixed(0)}</div></div>`).join(''):'<p class="small">本季尚無地獄倒楣鬼成績。</p>'}</div>
+  <div class="card home-card"><h2>⛳ 最近一場</h2>${last?`<div class="profile-name" style="font-size:21px">${adminEscapeHtml(last.title||'高爾夫回合')}</div><div class="small" style="margin-top:7px">${adminEscapeHtml(last.course)}${last.combo?` · ${adminEscapeHtml(last.combo)}`:''}</div><div class="score" style="margin-top:8px">${last.total} 桿</div><div class="small" style="margin-top:5px">${adminEscapeHtml(last.date||'')}</div>`:'<p class="small">尚無已儲存回合。</p>'}</div>
+  <div class="card home-card full"><h2>📈 最近五場成績</h2><div class="home-form">${rounds.slice(0,5).map(r=>`<div class="home-form-item"><b>${r.total}</b><div class="small">${adminEscapeHtml(r.date||'')}</div><div class="small">${adminEscapeHtml(r.title||r.course)}</div></div>`).join('')||'<p class="small">尚無最近回合。</p>'}</div></div></div>`;
 }
 
 let summaryPlayer='all';
@@ -3822,20 +3848,15 @@ function renderRoundHistory(){
 }
 function renderMatchupHistory(){let html='<div class="card"><h2>近期讓桿紀錄</h2><div class="scroll"><table><tr><th>日期</th><th>對戰</th><th>戰前</th><th>結果</th><th>戰後</th><th>球場</th></tr>'; db.history.slice(0,50).forEach(h=>{let r=+h.result_holes||0, res=r>0?`${h.giver} +${r}`:r<0?`${h.receiver} +${Math.abs(r)}`:'Tie'; html+=`<tr><td>${(h.played_at||'').slice(0,10)}</td><td>${h.giver} vs ${h.receiver}</td><td>${h.before_holes}</td><td>${res}</td><td>${h.after_holes}</td><td>${h.course||''}</td></tr>`}); return html+'</table></div></div>'}
 
-function renderCoursePhotosAdmin(){
-  void window.FortisCoursePhotos?.mount(document.getElementById('coursePhotosAdmin'), {
-    client:authClient,user:currentUser,courses:db.courses,combos:db.course_combos,label:courseNameZh
-  });
-}
 function renderAdmin(){
-  renderCoursePhotosAdmin();
   const courseOptions=db.courses.map(c=>`<option value="${c.id}">${c.course_name}</option>`).join('');
   if(!(currentProfile&&currentProfile.role==='admin')){
-    document.getElementById('adminContent').innerHTML='';
+    document.getElementById('adminContent').innerHTML=`<div class="card"><h2>Admin Only</h2><p class="small">You are signed in as ${currentUser?.email||''}. Ask the admin to change your role to admin in the profiles table.</p></div>`;
     return;
   }
   document.getElementById('adminContent').innerHTML=`
   <div class="card"><div class="summary-card-title"><h2>🛠️ 管理中心</h2><span class="premium-badge">Mission Control</span></div><div id="adminDashboard"></div></div>
+  <div class="card"><div class="summary-card-title"><h2>🟢 目前正在計分</h2><button class="btn2" style="width:auto;min-height:38px;padding:8px 12px" onclick="loadActiveScorers()">重新整理</button></div><div id="activeScorers"><div class="active-scorer-empty">正在檢查…</div></div><p class="small">最近 90 秒內仍在回報的計分裝置會顯示於此。有人計分時，系統會阻止重設所有成績。</p></div>
   <div class="card"><h2>帳號與球員對應</h2><button class="btn2" onclick="loadAdminUsers()">重新載入帳號</button><div id="adminUsers" class="small" style="margin-top:10px">正在載入帳號…</div><p class="small">每個登入帳號必須對應一位球員。首頁與個人統計只會顯示該帳號所對應的球員資料。</p></div>
   <div class="card"><h2>Add Player</h2><div class="grid"><div><label>球員 Name</label><input id="admPlayer" placeholder="Ralf"></div><div><label>&nbsp;</label><button onclick="adminAddPlayer()">Add Player</button></div></div></div>
   <div class="card">
@@ -3906,8 +3927,40 @@ function renderAdmin(){
   </div>
   <div class="card"><h2>Current Players</h2><div class="scroll"><table><tr><th>Name</th><th>Active</th></tr>${db.players.map(p=>`<tr><td>${p.name}</td><td>${p.active}</td></tr>`).join('')}</table></div></div><div class="card"><h2>Current Matchups</h2><div class="scroll"><table><tr><th>Giver</th><th>Receiver</th><th>Holes</th></tr>${db.matchups.map(m=>`<tr><td>${m.giver}</td><td>${m.receiver}</td><td>${m.holes_given}</td></tr>`).join('')}</table></div></div>`;
   renderAdminDashboard();
+  loadActiveScorers();
+  clearInterval(adminPresenceTimer);
+  adminPresenceTimer=setInterval(()=>{if(currentPage==='admin')loadActiveScorers(false);},15000);
   loadAdminUsers();
   adminLoadCourseManager();
+}
+
+async function fetchActiveScorers(){
+  const cutoff=new Date(Date.now()-ACTIVE_SCORING_WINDOW_MS).toISOString();
+  const rows=await sb(`live_rounds?active=eq.true&updated_at=gte.${encodeURIComponent(cutoff)}&select=id,round_data,round_hole,updated_at&order=updated_at.desc`);
+  const seen=new Set();
+  return (rows||[]).filter(row=>{
+    const p=row.round_data?._presence||{};
+    const key=p.deviceId||`${p.userId||p.email||'unknown'}-${row.id}`;
+    if(seen.has(key))return false;seen.add(key);return true;
+  });
+}
+function activeScorerLabel(row){
+  const data=row.round_data||{},p=data._presence||{};
+  return {
+    name:p.displayName||p.email||data.players?.join('、')||'未知球員',
+    course:[p.courseName||data.courseName,p.combo||data.combo].filter(Boolean).join(' ')||'未指定球場',
+    hole:Number(p.hole||row.round_hole+1||1),
+    players:Array.isArray(p.players)&&p.players.length?p.players:(data.players||[]),
+    updatedAt:row.updated_at
+  };
+}
+async function loadActiveScorers(showError=true){
+  const box=document.getElementById('activeScorers');if(!box)return [];
+  try{
+    const rows=await fetchActiveScorers();
+    box.innerHTML=rows.length?`<div class="active-scorer-list">${rows.map(row=>{const x=activeScorerLabel(row);return `<div class="active-scorer"><span class="active-scorer-dot"></span><div><b>${adminEscapeHtml(x.name)}</b><div class="small">${adminEscapeHtml(x.course)} · 第 ${x.hole} 洞${x.players.length?` · ${adminEscapeHtml(x.players.join('、'))}`:''}</div></div><div class="active-scorer-meta">${new Date(x.updatedAt).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}<br>剛剛更新</div></div>`}).join('')}</div>`:'<div class="active-scorer-empty">目前沒有人正在計分，可以安全管理歷史成績。</div>';
+    return rows;
+  }catch(e){if(showError)box.innerHTML=`<div class="active-scorer-empty bad">無法檢查目前計分者：${adminEscapeHtml(e.message)}</div>`;return [];}
 }
 
 
@@ -4299,7 +4352,6 @@ async function adminAddCourse(){
 }
 async function adminSaveMatchup(){try{let giver=document.getElementById('admGiver').value.trim(), receiver=document.getElementById('admReceiver').value.trim(), holes_given=+(document.getElementById('admHoles').value||0); if(!giver||!receiver) return alert('Enter giver and receiver'); let existing=db.matchups.find(m=>pairKey(m.giver,m.receiver)===pairKey(giver,receiver)); if(existing) await sb(`matchups?id=eq.${existing.id}`,{method:'PATCH',body:JSON.stringify({giver,receiver,holes_given,updated_at:new Date().toISOString()})}); else await sb('matchups',{method:'POST',body:JSON.stringify({giver,receiver,holes_given})}); alert('Matchup saved'); await loadAll(); renderAdmin();}catch(e){alert('Save matchup failed: '+e.message)}}
 function renderProductionInfrastructureCard(){
-  if(currentProfile?.role!=='admin') return;
   const root=document.getElementById('adminContent');
   if(!root || document.getElementById('productionInfrastructureCard')) return;
 
@@ -4475,7 +4527,7 @@ async function restoreFortisBackup(event){
     const backup=JSON.parse(raw);
 
     if(backup?.format!=='fortis-golf-backup'||!backup?.tables){
-      throw new Error('這不是有效的 地獄倒霉鬼 備份檔。');
+      throw new Error('這不是有效的 Fortis Golf 備份檔。');
     }
 
     const supported=[
@@ -4720,6 +4772,15 @@ async function adminSaveCourseManager(){
   }
 }
 async function adminResetStats(){
+  let active=[];
+  try{active=await fetchActiveScorers();}
+  catch(e){alert('無法確認是否有人正在計分，因此為安全起見不執行重設。請檢查網路後再試。');return;}
+  if(active.length){
+    const names=active.map(row=>activeScorerLabel(row).name).join('、');
+    alert(`目前有人正在計分（${names}）。為避免刪除他們的成績，重設功能已暫時鎖定。`);
+    await loadActiveScorers(false);
+    return;
+  }
   if(!confirm('Reset all round stats? This deletes hole_scores and fortis_rounds only. Matchups stay.')) return;
 
   try{
@@ -4926,7 +4987,6 @@ function showReplayPanel() {
         <tr>
           <th>球員</th>
           <th>桿數</th>
-          <th>推桿</th>
           <th>地獄倒楣鬼分</th>
           <th>配對</th>
         </tr>
@@ -4939,8 +4999,6 @@ function showReplayPanel() {
     ) || holeData[i];
 
     const strokes = s?.gross_score ?? '';
-    const putts = s?.putts != null && s.putts !== '' && Number.isInteger(Number(s.putts)) && Number(s.putts) >= 0 && Number(s.putts) <= 9
-      ? Number(s.putts) : '—';
 
     const pts = isTwoPlayerReplay
       ? ''
@@ -4954,7 +5012,6 @@ function showReplayPanel() {
       <tr>
         <td>${p}</td>
         <td>${strokes}</td>
-        <td>${putts}</td>
         <td>${pts}</td>
         <td>${pairing}</td>
       </tr>
