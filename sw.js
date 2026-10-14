@@ -2,6 +2,8 @@ const CACHE = 'fortis-golf-2026-10-14-01';
 
 const ASSETS = [
   '/index.html',
+  '/styles/fortis-design.css?v=2026.10.03.02',
+  '/scripts/course-photos.js?v=2026.10.03.02',
   '/manifest.webmanifest',
   '/icon-192.png',
   '/icon-512.png',
@@ -74,6 +76,9 @@ self.addEventListener('fetch', event => {
 
   if (url.pathname.startsWith('/api/'))
     return;
+
+  // Private user-uploaded course images stay out of the offline cache.
+  if (url.pathname.startsWith('/storage/v1/')) return;
 
   // Never cache videos
   if (
