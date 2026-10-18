@@ -1936,7 +1936,16 @@ function getScoringDeviceId(){
   return id;
 }
 
-  async function syncLiveRound(){
+let roundActionPending=false;
+const pendingLiveSyncs=new Set();
+function syncLiveRound(){
+  if(!round || roundActionPending) return Promise.resolve();
+  const request=writeLiveRound();
+  pendingLiveSyncs.add(request);
+  request.finally(()=>pendingLiveSyncs.delete(request));
+  return request;
+}
+  async function writeLiveRound(){
   if(!round) return;
 
   try{
@@ -1956,6 +1965,31 @@ function getScoringDeviceId(){
     });
   }catch(e){
     console.log('Live sync failed:', e.message);
+  }
+}
+
+async function cancelLiveRound(){
+  if(roundActionPending || !round) return;
+  if(!confirm('取消此回合且不儲存？\n本回合的桿數將被捨棄，不會加入回合紀錄、統計或更新讓桿。')) return;
+  roundActionPending=true;
+  try{
+    // Finish any earlier upload before closing, so it cannot reactivate this round.
+    await Promise.allSettled([...pendingLiveSyncs]);
+    if(!currentSession) throw new Error('請先登入，再取消即時回合。');
+    const closed=await sb(`live_rounds?id=eq.${encodeURIComponent(round.id)}`,{
+      method:'PATCH',
+      body:JSON.stringify({active:false,updated_at:new Date().toISOString()})
+    });
+    if(!Array.isArray(closed) || !closed.length) throw new Error('無法確認即時回合已關閉，請重試。');
+    clearActiveRound();
+    round=null;
+    roundHole=0;
+    document.getElementById('scoreContent').innerHTML='';
+    showPage('home');
+  }catch(e){
+    alert('取消失敗，回合仍保留，可稍後重試：'+e.message);
+  }finally{
+    roundActionPending=false;
   }
 }
 
@@ -1985,6 +2019,11 @@ async function loadLiveRound(roundId){
     }
 
     const live = rows[0];
+    if(live.active===false){
+      document.getElementById('liveViewerContent').innerHTML='<div class="card"><h2>此即時回合已結束</h2></div>';
+      showPage('liveViewer');
+      return;
+    }
 
     let r = live.round_data;
 let h = live.round_hole || 0;
@@ -2087,6 +2126,7 @@ function clearActiveRound(){
   localStorage.removeItem('fortisActiveRound');
 }
 function startRound(){
+  if(roundActionPending) return;
   if(!document.getElementById('matchupSetup').querySelector('.match')) renderMatchups();
 
  let n=currentPlayers().length;
@@ -2572,6 +2612,7 @@ let html=holeNav+`<div class="card score-hole-header">
     <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end">
     <button class="btn2" style="width:auto;min-width:88px;padding:10px 12px;font-size:13px" onclick="copyLiveLink()">分享</button>
     <button class="btn2" style="width:auto;min-width:88px;padding:10px 12px;font-size:13px" onclick="saveRound()">儲存</button>
+    <button class="btn2" style="width:auto;padding:10px 12px;font-size:13px" onclick="cancelLiveRound()">取消回合（不儲存）</button>
 </div>
   </div>
 </div>`;
@@ -2797,7 +2838,10 @@ async function shareRoundAchievements(){
   const text=`🏆 ${d.title}\n${d.course}\n\n`+d.awards.map(a=>`${a.icon} ${a.label}：${a.player} ${a.value}`).join('\n');
   try{if(navigator.share)await navigator.share({title:'地獄倒霉鬼 回合獎項',text});else{await navigator.clipboard.writeText(text);alert('獎項內容已複製');}}catch(e){if(e.name!=='AbortError')alert('分享失敗：'+e.message)}
 }
-async function saveRound(){try{
+async function saveRound(){
+if(roundActionPending || !round) return;
+roundActionPending=true;
+try{
 let activeSeason=db.seasons.find(s=>s.active===true || s.active==='true' || s.active==='TRUE');
 let lastPlayedHole=-1;for(let h=0;h<18;h++)if(round.scores[h].some(x=>x!==''))lastPlayedHole=h;
 if(lastPlayedHole<0){alert('No scores entered yet.');return;}
@@ -2815,7 +2859,7 @@ for(let h=0;h<=lastPlayedHole;h++)for(let i=0;i<round.players.length;i++){
 if(scores.length)await sb('hole_scores',{method:'POST',body:JSON.stringify(scores)});
 for(const r of calcIndividual(round)){if(r.skipped)continue;let n=nextGive(r);if(r.id)await sb(`matchups?id=eq.${r.id}`,{method:'PATCH',body:JSON.stringify({giver:n.giver,receiver:n.receiver,holes_given:n.strokes,updated_at:new Date().toISOString()})});else await sb('matchups',{method:'POST',body:JSON.stringify({giver:n.giver,receiver:n.receiver,holes_given:n.strokes})});let giverResult=r.giver===r.a?r.totalResult:-r.totalResult;await sb('matchup_history',{method:'POST',body:JSON.stringify({giver:r.giver,receiver:r.receiver,before_holes:r.strokes,after_holes:n.strokes,result_holes:giverResult,course:round.courseName+(round.combo?' '+round.combo:'')})});}
 const achievements=buildRoundAchievements(completedRound,priorScores);localRounds.push(round);await endActiveScoringSession();await loadAll();clearActiveRound();round=null;renderSummary();showPage('summary');setTimeout(()=>showRoundAchievements(achievements),120);
-}catch(e){alert('Save failed: '+e.message)}}
+}catch(e){alert('Save failed: '+e.message)}finally{roundActionPending=false;}}
 function renderHeadToHead(){
   let records={};
 
