@@ -2423,7 +2423,7 @@ function playScoreAnimation(result){
     </div>
   `;
 
-  if(scene.icon==='double-bogey'){
+  if(scene.icon==='double-bogey' || scene.icon==='triple-bogey'){
     return new Promise(resolve=>{
       const video=overlay.querySelector('video');
       let finished=false;

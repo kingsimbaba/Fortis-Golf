@@ -29,14 +29,16 @@ function animationHarness(diff){
   return {completion:context.playScoreAnimation({diff,score:4+diff,player:'Test'}),listeners,sourceListeners,timers,get removed(){return removed;}};
 }
 
-test('Double Bogey stays visible until playback ends, including loading time',async()=>{
-  const h=animationHarness(2);
+test('Bogey videos with action endings stay visible until playback ends',async()=>{
+  for(const diff of [2,3]){
+  const h=animationHarness(diff);
   assert.equal(h.removed,false);
   assert.deepEqual(h.timers.map(t=>t.ms),[30000]);
   h.listeners.ended();
   await h.completion;
   assert.equal(h.removed,true);
   assert.equal(h.timers[0].cleared,true);
+  }
 });
 
 test('Double Bogey releases scoring on media failure or loading timeout',async()=>{
@@ -49,7 +51,7 @@ test('Double Bogey releases scoring on media failure or loading timeout',async()
 });
 
 test('Other score animations retain their six-second dismissal',()=>{
-  for(const diff of [-3,-2,-1,0,1,3,4]){
+  for(const diff of [-3,-2,-1,0,1,4]){
     const h=animationHarness(diff);
     assert.equal(h.completion,undefined);
     assert.deepEqual(h.timers.map(t=>t.ms),[6000]);
