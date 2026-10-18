@@ -2423,8 +2423,30 @@ function playScoreAnimation(result){
     </div>
   `;
 
-  document.body.appendChild(overlay);
+  if(scene.icon==='double-bogey'){
+    return new Promise(resolve=>{
+      const video=overlay.querySelector('video');
+      let finished=false;
+      const finish=()=>{
+        if(finished) return;
+        finished=true;
+        clearTimeout(fallback);
+        video.pause();
+        overlay.remove();
+        resolve();
+      };
+      // Keep loading or failed playback from blocking scoring indefinitely.
+      const fallback=setTimeout(finish,30000);
+      video.addEventListener('ended',finish,{once:true});
+      video.addEventListener('error',finish,{once:true});
+      video.querySelector('source').addEventListener('error',finish,{once:true});
+      document.body.appendChild(overlay);
+      const playback=video.play();
+      if(playback) playback.catch(finish);
+    });
+  }
 
+  document.body.appendChild(overlay);
   setTimeout(()=>{
     overlay.remove();
   },6000);
@@ -2484,18 +2506,20 @@ function confirmHoleScores(){
     animationResult = results.sort((a,b)=>b.score-a.score)[0];
   }
 
-  playScoreAnimation(animationResult);
+  const animationFinished=playScoreAnimation(animationResult);
 
 saveActiveRound();
 syncLiveRound();
 
-setTimeout(()=>{
+const advanceHole=()=>{
   roundHole = (roundHole + 1) % 18;
   saveActiveRound();
   syncLiveRound();
   scoreAnimationPlaying=false;
   renderScore();
-},2200);
+};
+if(animationFinished) animationFinished.then(advanceHole);
+else setTimeout(advanceHole,2200);
 }
   
 function renderScore(){
