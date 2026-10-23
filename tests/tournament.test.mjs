@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {createRequire} from 'node:module';
 import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
-const {leaderboard,snapshot}=createRequire(import.meta.url)('../scripts/tournament.js');
+const {leaderboard,snapshot,errorMessage,validId}=createRequire(import.meta.url)('../scripts/tournament.js');
 const course=Array.from({length:18},(_,i)=>({par:i%3===0?3:4,display:'Hole '+(i+1),sourceCourseId:'1'}));
 const event={course,status:'live'};
 const group=(id,players,scores)=>({id,players,scores:Array.from({length:18},(_,h)=>players.map((_,i)=>scores(h,i)))});
@@ -41,7 +41,7 @@ function syncHarness(){
  const html=readFileSync(new URL('../index.html',import.meta.url),'utf8');
  const code=html.slice(html.indexOf('let tournamentQueue='),html.lastIndexOf('</script>'));
  const calls=[],pending=[];
- const context=vm.createContext({currentUser:{id:'scorer'},FortisTournament:{snapshot},round:{players:['A','B'],scores:[['',4]],tournament:{eventId:'e',groupId:'g',revision:0},course:[]},
+ const context=vm.createContext({currentUser:{id:'scorer'},FortisTournament:{snapshot,errorMessage,validId},round:{players:['A','B'],scores:[['',4]],tournament:{eventId:'e',groupId:'g',revision:0},course:[]},
   sb:async(path,options)=>{const data=JSON.parse(options.body);calls.push(data);return new Promise((resolve,reject)=>pending.push({resolve,reject}));},
   document:{getElementById:()=>null},saveActiveRound(){},setInterval(){},console});
  context.FortisTournament.courseFor=()=>[];
@@ -72,4 +72,35 @@ test('service worker bypasses authenticated database responses',()=>{
 test('successful flush permits saving a tournament round',async()=>{
  const h=syncHarness();const done=h.run('flushTournamentSync()');await new Promise(setImmediate);
  h.pending[0].resolve({revision:1});await done;assert.equal(h.context.round.tournament.revision,1);
+});
+test('database UUID errors become actionable instructions without raw JSON',()=>{
+ const text=errorMessage(Error(JSON.stringify({code:'22P02',details:null,message:'invalid input syntax for type uuid: "Fukuoka Invitational"'})));
+ assert.match(text,/賽事名稱/);assert.doesNotMatch(text,/22P02|uuid|details|[{}]/);
+ assert.equal(validId('Fukuoka Invitational'),false);
+ assert.equal(validId('00000000-0000-0000-0000-000000000001'),true);
+ assert.doesNotMatch(errorMessage(Error('{"code":"PGRST","message":"arbitrary SQL internals"}')),/PGRST|SQL|[{}]/);
+});
+function setupHarness({hasRound=true,selected='',name='Fukuoka Invitational'}={}){
+ const h=syncHarness();const status={textContent:''};
+ const fields={tournamentStatus:status,tournamentSelect:{value:selected},tournamentName:{value:name}};
+ h.context.document.getElementById=id=>fields[id]||null;
+ if(!hasRound)h.context.round=null;else delete h.context.round.tournament;
+ return {...h,status,fields};
+}
+test('a name typed as an event identifier never reaches the database',async()=>{
+ const h=setupHarness({selected:'Fukuoka Invitational'});await h.run('openTournament()');
+ assert.equal(h.calls.length,0);assert.match(h.status.textContent,/清單選擇賽事/);
+});
+test('creation guides users to course and group setup before writing',async()=>{
+ const h=setupHarness({hasRound:false});await h.run('createTournament()');assert.equal(h.calls.length,0);
+ assert.match(h.status.textContent,/設定球場與本組球員/);
+});
+test('blank tournament name is rejected locally',async()=>{
+ const h=setupHarness({name:'  '});await h.run('createTournament()');assert.equal(h.calls.length,0);assert.match(h.status.textContent,/賽事名稱/);
+});
+test('tournament name is submitted as a name, with null event ID',async()=>{
+ const h=setupHarness();const done=h.run('createTournament()');await new Promise(setImmediate);
+ assert.equal(h.calls[0].action,'create');assert.equal(h.calls[0].event_id,null);
+ assert.equal(h.calls[0].payload.name,'Fukuoka Invitational');
+ h.pending[0].reject(Error('offline'));await done;assert.doesNotMatch(h.status.textContent,/offline|[{}]/);
 });

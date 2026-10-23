@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>地獄倒霉鬼</title><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="/scripts/tournament.js?v=2026.10.23.01"></script>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>地獄倒霉鬼</title><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="/scripts/tournament.js?v=2026.10.23.02"></script>
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
@@ -573,7 +573,7 @@ th{color:var(--muted)}
 <button type="button" class="btn2" onclick="leavePasswordReset()">返回登入</button>
 </div></section>
 
-<section id="home" class="page hidden"><div id="homeContent"></div><div class="card"><button class="btn2" onclick="showPage('scorePage');mountTournamentPanel();openTournament()">跨組總桿賽排名</button></div></section><section id="setup" class="page hidden"><div class="card" style="display:flex;align-items:center;gap:10px"><button class="btn2" style="width:auto;padding:9px 13px;min-height:38px" onclick="showPage('home')">← 返回首頁</button><div><b>建立新回合</b><div class="small">完成設定後即可開始計分</div></div></div><div class="card"><h2>資料庫狀態</h2><div id="dbStatus" class="small">連線中…</div></div><div class="card"><div class="card"><h2>顯示設定</h2><label>主題</label><select id="themeSelector" onchange="changeTheme()"><option value="dark">深色</option><option value="light">淺色</option><option value="contrast">高對比</option></select></div><h2>新回合</h2><div class="grid"><div><label>國家</label>
+<section id="home" class="page hidden"><div id="homeContent"></div><div class="card"><button class="btn2" onclick="showTournamentHome()">跨組總桿賽排名</button></div></section><section id="setup" class="page hidden"><div class="card" style="display:flex;align-items:center;gap:10px"><button class="btn2" style="width:auto;padding:9px 13px;min-height:38px" onclick="showPage('home')">← 返回首頁</button><div><b>建立新回合</b><div class="small">完成設定後即可開始計分</div></div></div><div class="card"><h2>資料庫狀態</h2><div id="dbStatus" class="small">連線中…</div></div><div class="card"><div class="card"><h2>顯示設定</h2><label>主題</label><select id="themeSelector" onchange="changeTheme()"><option value="dark">深色</option><option value="light">淺色</option><option value="contrast">高對比</option></select></div><h2>新回合</h2><div class="grid"><div><label>國家</label>
 <select id="country" onchange="updateCourseFilters()"></select>
 
 <label>地區</label>
@@ -2849,7 +2849,7 @@ try{
 let activeSeason=db.seasons.find(s=>s.active===true || s.active==='true' || s.active==='TRUE');
 let lastPlayedHole=-1;for(let h=0;h<18;h++)if(round.scores[h].some(x=>x!==''))lastPlayedHole=h;
 if(lastPlayedHole<0){alert('No scores entered yet.');return;}
-if(round.tournament){await flushTournamentSync();}
+if(round.tournament){try{await flushTournamentSync();}catch(e){throw Error(FortisTournament.errorMessage(e));}}
 const completedRound=JSON.parse(JSON.stringify(round));
 const priorScores=[...db.scores];
 let persistedCourseData=round.course.map(h=>({...h,larryMode:round.larryMode===true}));
@@ -5158,6 +5158,7 @@ document.addEventListener('keydown',e=>{
 
 // Tournament writes are serialized; capture snapshots so later edits cannot mutate in-flight data.
 let tournamentQueue=Promise.resolve(), tournamentSyncError=null, tournamentWatching=null, tournamentReadBusy=false;
+let tournamentEvent=null, tournamentUiBusy=false;
 async function tournamentCommand(action,eventId,payload={}){
   return sb('rpc/golf_event_command',{method:'POST',body:JSON.stringify({action,event_id:eventId,payload})});
 }
@@ -5173,68 +5174,107 @@ function queueTournamentSync(){
     link.revision=saved.revision;
     if(round===active)saveActiveRound();
     tournamentStatus('已同步');
-  }).catch(e=>{tournamentSyncError=e;tournamentStatus('未同步：'+e.message);});
+  }).catch(e=>{tournamentSyncError=e;tournamentStatus('未同步：'+FortisTournament.errorMessage(e));});
 }
 async function retryTournamentSync(){
   tournamentSyncError=null;
-  try{await flushTournamentSync();await refreshTournament();}catch(e){tournamentStatus(e.message);}
+  try{await flushTournamentSync();await refreshTournament();}catch(e){tournamentStatus(FortisTournament.errorMessage(e));}
 }
 async function unlinkTournamentGroup(){
   try{if(!round?.tournament)throw Error('本回合未連結賽事');
     if(!confirm('從尚未結束的賽事移除本組？本機回合與 8421 保留。'))return;
     await tournamentQueue;
     await tournamentCommand('withdraw',round.tournament.eventId,{group_id:round.tournament.groupId});
-    delete round.tournament;tournamentSyncError=null;saveActiveRound();await refreshTournament();
-  }catch(e){tournamentStatus(e.message);}
+    delete round.tournament;tournamentSyncError=null;saveActiveRound();mountTournamentPanel(true);await refreshTournament();
+  }catch(e){tournamentStatus(FortisTournament.errorMessage(e));}
 }
 async function flushTournamentSync(){queueTournamentSync();await tournamentQueue;if(tournamentSyncError)throw tournamentSyncError;}
 function tournamentStatus(text){const el=document.getElementById('tournamentStatus');if(el)el.textContent=text;}
-function mountTournamentPanel(){
-  if(!document.getElementById('tournamentPanel')){
-    const panel=document.createElement('div');panel.id='tournamentPanel';panel.className='card';
-    document.getElementById('scorePage').appendChild(panel);
-  }
-  document.getElementById('tournamentPanel').innerHTML=`<h2>跨組總桿賽</h2><div class="small">各組 8421 獨立計算。即時依已完成洞數的總桿與標準桿差排名。</div>
-    <button class="btn2" onclick="createTournament()">建立賽事</button>
-    <button class="btn2" onclick="openTournament()">開啟賽事 / 連結本組</button>
-    <button class="btn2" onclick="inviteTournamentUser()">邀請參賽者</button>
-    <button class="btn2" onclick="retryTournamentSync()">重試同步</button>
-    <button class="btn2" onclick="unlinkTournamentGroup()">退出賽事</button>
-    <button class="btn2" onclick="restoreTournamentGroup()">載入本組雲端桿數</button>
-    <button class="btn2" onclick="finalizeTournament()">公布最終排名</button>
-    <div id="tournamentStatus" role="status"></div><div id="tournamentBoard"></div>`;
-  if(round?.tournament){tournamentWatching=round.tournament.eventId;refreshTournament();}
+function showTournamentHome(){
+  showPage('scorePage');
+  if(!round)document.getElementById('scoreContent').innerHTML='';
+  mountTournamentPanel(true);
+}
+function mountTournamentPanel(force=false){
+  let panel=document.getElementById('tournamentPanel');
+  if(!panel){panel=document.createElement('div');panel.id='tournamentPanel';panel.className='card';document.getElementById('scorePage').appendChild(panel);}
+  const key=String(round?.id||'viewer')+':'+String(round?.tournament?.eventId||'');
+  if(!force&&panel._tournamentKey===key)return;
+  panel._tournamentKey=key;
+  const esc=adminEscapeHtml, linked=!!round?.tournament;
+  panel.innerHTML=`<h2>跨組總桿賽</h2><p class="small">各組照常計算 8421；這裡另外比較所有球員的總桿。</p>
+    ${!linked?`<div class="card"><h3>1. 先設定你這一組</h3><p>${round?'本組：'+round.players.map(esc).join('、')+' · '+esc(round.courseName||''):'建立賽事前，先選擇球場和本組球員，再開始回合。不需要先輸入桿數。'}</p>${!round?`<button onclick="openNewRoundFromHome()">設定球場與本組球員 →</button>`:''}</div>
+    <div class="card"><h3>2. 主辦人：建立新賽事</h3><label for="tournamentName">賽事名稱</label><input id="tournamentName" maxlength="120" placeholder="例如：Fukuoka Invitational" ${!round?'disabled':''}><button onclick="createTournament()" ${!round?'disabled':''}>建立賽事並加入本組</button><p class="small">建立後可邀請其他組別的記分者。</p></div>`:`<p>本組已連結賽事，照常輸入桿數就會自動更新排名。</p>`}
+    <div class="card"><h3>${linked?'查看其他賽事':'其他組別或觀眾：開啟已受邀的賽事'}</h3><p class="small">請先由主辦人邀請你，再從清單選擇賽事；不用輸入賽事代碼。</p><label for="tournamentSelect">已受邀的賽事</label><select id="tournamentSelect"><option value="">正在載入…</option></select><button class="btn2" onclick="openTournament()">查看此賽事</button>${round&&!linked?`<button class="btn2" onclick="linkSelectedTournament()">將本組加入選取的賽事</button><button class="btn2" onclick="restoreSelectedTournament()">載入我已加入的組別</button>`:''}<button class="btn2" onclick="loadTournamentChoices()">重新整理清單</button></div>
+    <div id="tournamentStatus" role="status" aria-live="polite"></div><div id="tournamentBoard"></div>
+    <div id="tournamentManage" class="hidden"><h3>主辦人管理</h3><button class="btn2" onclick="inviteTournamentUser()">邀請其他組別 / 觀眾</button><button class="btn2" onclick="finalizeTournament()">所有人完成後：公布最終排名</button></div>
+    ${linked?`<details><summary>同步與本組管理</summary><button class="btn2" onclick="retryTournamentSync()">重試同步</button><button class="btn2" onclick="restoreTournamentGroup()">載入本組雲端桿數</button><button class="btn2" onclick="unlinkTournamentGroup()">退出賽事</button></details>`:''}
+    <details><summary>讓主辦人邀請我</summary><p class="small">將以下個人邀請碼傳給主辦人，主辦人即可邀請你。這不是賽事名稱。</p><code style="overflow-wrap:anywhere">${esc(currentUser?.id||'請先登入')}</code></details>`;
+  loadTournamentChoices();
+  if(linked)tournamentWatching=round.tournament.eventId;
+  if(tournamentWatching)refreshTournament();
+}
+async function loadTournamentChoices(){
+  const select=document.getElementById('tournamentSelect');if(!select)return;
+  try{
+    const events=await loadPaged('golf_events?select=id,name,status&order=created_at.desc,id');
+    if(select!==document.getElementById('tournamentSelect'))return;
+    select.innerHTML=events.length?'<option value="">請選擇賽事</option>'+events.map(e=>`<option value="${adminEscapeHtml(e.id)}">${adminEscapeHtml(e.name)}${e.status==='final'?'（已結束）':''}</option>`).join(''):'<option value="">目前沒有賽事，請先建立或請主辦人邀請你</option>';
+    if(events.some(e=>e.id===tournamentWatching))select.value=tournamentWatching;
+  }catch(e){select.innerHTML='<option value="">無法載入，請按重新整理清單</option>';tournamentStatus(FortisTournament.errorMessage(e));}
 }
 async function createTournament(){
+  if(tournamentUiBusy)return;
   try{
-    if(!round||round.tournament)throw Error('請使用尚未連結賽事的回合');
-    const name=prompt('賽事名稱');if(!name)return;
+    if(!round)throw Error('請先按「設定球場與本組球員」，開始本組回合後再建立賽事。');
+    if(round.tournament)throw Error('本組已加入賽事，請照常輸入桿數。');
+    const name=document.getElementById('tournamentName')?.value.trim();
+    if(!name)throw Error('請在「賽事名稱」輸入名稱，例如 Fukuoka Invitational。');
+    tournamentUiBusy=true;tournamentStatus('正在建立賽事…');
     const e=await tournamentCommand('create',null,{name,course:FortisTournament.courseFor(round)});
     round.tournament={eventId:e.id,groupId:crypto.randomUUID(),revision:0};
-    tournamentSyncError=null;saveActiveRound();await flushTournamentSync();
-    tournamentWatching=e.id;await refreshTournament();
-  }catch(e){tournamentStatus(e.message);}
+    tournamentWatching=e.id;tournamentEvent=e;tournamentSyncError=null;saveActiveRound();
+    mountTournamentPanel(true);await flushTournamentSync();await refreshTournament();
+    tournamentStatus('賽事已建立，本組已加入。接下來邀請其他組別，或照常輸入桿數。');
+  }catch(e){tournamentStatus(FortisTournament.errorMessage(e));}finally{tournamentUiBusy=false;}
+}
+async function selectedTournament(){
+  const id=document.getElementById('tournamentSelect')?.value;
+  if(!FortisTournament.validId(id))throw Error('請先從「已受邀的賽事」清單選擇賽事。若沒有清單項目，請先建立賽事或請主辦人邀請你。');
+  const events=await sb('golf_events?id=eq.'+encodeURIComponent(id)+'&select=*');
+  if(!events.length)throw Error('找不到賽事或尚未獲邀');
+  return events[0];
 }
 async function openTournament(){
+  try{const e=await selectedTournament();tournamentWatching=e.id;tournamentEvent=e;await refreshTournament();}
+  catch(e){tournamentStatus(FortisTournament.errorMessage(e));}
+}
+async function restoreSelectedTournament(){
+  try{const e=await selectedTournament();tournamentWatching=e.id;tournamentEvent=e;await restoreTournamentGroup();}
+  catch(e){tournamentStatus(FortisTournament.errorMessage(e));}
+}
+async function linkSelectedTournament(){
+  if(tournamentUiBusy)return;
   try{
-    const id=prompt('賽事 ID',round?.tournament?.eventId||tournamentWatching||'');if(!id)return;
-    const events=await sb('golf_events?id=eq.'+encodeURIComponent(id)+'&select=*');
-    if(!events.length)throw Error('找不到賽事或尚未獲邀');
-    tournamentWatching=events[0].id;await refreshTournament();
-    if(round&&!round.tournament&&!events[0].course.every((h,i)=>Object.keys(h).every(k=>h[k]===FortisTournament.courseFor(round)[i]?.[k])))throw Error('請使用相同球場與 18 洞配置');
-    if(round&&!round.tournament&&confirm('將目前回合連結至此賽事？每位記分者限一組，球員名單連結後固定。')){
-      const mine=await sb('golf_event_groups?event_id=eq.'+encodeURIComponent(id)+'&scorer_id=eq.'+encodeURIComponent(currentUser.id)+'&select=*');
-      if(mine.length)throw Error('已有本組，請使用「載入本組雲端桿數」');
-      round.tournament={eventId:id,groupId:crypto.randomUUID(),revision:0};tournamentSyncError=null;
-      saveActiveRound();await flushTournamentSync();await refreshTournament();
-    }
-  }catch(e){tournamentStatus(e.message);}
+    if(!round)throw Error('請先設定球場與本組球員，再開始回合。');
+    if(round.tournament)throw Error('本組已加入賽事。');
+    const e=await selectedTournament();
+    if(!e.course.every((h,i)=>Object.keys(h).every(k=>h[k]===FortisTournament.courseFor(round)[i]?.[k])))throw Error('請使用相同球場與 18 洞配置');
+    const mine=await sb('golf_event_groups?event_id=eq.'+encodeURIComponent(e.id)+'&scorer_id=eq.'+encodeURIComponent(currentUser.id)+'&select=*');
+    if(mine.length)throw Error('你已有一組連結此賽事。請使用「載入我已加入的組別」或回到原本回合繼續計分。');
+    if(!confirm('將目前這一組加入「'+e.name+'」？球員名單加入後固定。'))return;
+    tournamentUiBusy=true;
+    round.tournament={eventId:e.id,groupId:crypto.randomUUID(),revision:0};tournamentSyncError=null;
+    tournamentWatching=e.id;tournamentEvent=e;saveActiveRound();mountTournamentPanel(true);
+    await flushTournamentSync();await refreshTournament();tournamentStatus('本組已加入，照常輸入桿數即可。');
+  }catch(e){tournamentStatus(FortisTournament.errorMessage(e));}finally{tournamentUiBusy=false;}
 }
 async function inviteTournamentUser(){
-  try{if(!tournamentWatching)throw Error('請先開啟賽事');const user=prompt('受邀者 Supabase 使用者 ID');if(!user)return;
+  try{if(!tournamentWatching)throw Error('請先開啟賽事');const user=prompt('請貼上對方的個人邀請碼（對方可在賽事頁的「讓主辦人邀請我」找到）');if(!user)return;
+    if(!FortisTournament.validId(user.trim()))throw Error('這不是有效的個人邀請碼。請對方複製「讓主辦人邀請我」內的完整邀請碼。');
     const canScore=confirm('指派此使用者為一組的記分者？選「取消」則僅可查看排名。');
-    await tournamentCommand('invite',tournamentWatching,{user_id:user,can_score:canScore});tournamentStatus('已邀請');
-  }catch(e){tournamentStatus(e.message);}
+    await tournamentCommand('invite',tournamentWatching,{user_id:user.trim(),can_score:canScore});tournamentStatus('已邀請');
+  }catch(e){tournamentStatus(FortisTournament.errorMessage(e));}
 }
 async function restoreTournamentGroup(){
   try{
@@ -5253,14 +5293,14 @@ async function restoreTournamentGroup(){
     round.scores=g.scores.map(row=>row.map(v=>v===null?'':v));
     round.tournament={eventId:g.event_id,groupId:g.id,revision:g.revision};
     tournamentSyncError=null;saveActiveRound();renderScore();tournamentStatus('已載入，可修正桿數');
-  }catch(e){tournamentStatus(e.message);}
+  }catch(e){tournamentStatus(FortisTournament.errorMessage(e));}
 }
 async function finalizeTournament(){
   try{if(!tournamentWatching)throw Error('請先開啟賽事');
     if(round?.tournament?.eventId===tournamentWatching)await flushTournamentSync();
     if(!confirm('確認所有組別已加入，並公布最終排名？之後無法新增組別。'))return;
     await tournamentCommand('finalize',tournamentWatching);await refreshTournament();
-  }catch(e){tournamentStatus(e.message);}
+  }catch(e){tournamentStatus(FortisTournament.errorMessage(e));}
 }
 async function refreshTournament(){
   if(!tournamentWatching||tournamentReadBusy||!currentSession)return;
@@ -5270,9 +5310,12 @@ async function refreshTournament(){
     const groups=await loadPaged('golf_event_groups?event_id=eq.'+encodeURIComponent(id)+'&select=*&order=id');
     if(id!==tournamentWatching)return;
     const e=events[0];if(!e)throw Error('賽事無法存取');
+    tournamentEvent=e;
+    document.getElementById('tournamentManage')?.classList.toggle('hidden',e.owner_id!==currentUser?.id);
+    if(!document.getElementById('tournamentBoard'))return;
     const rows=FortisTournament.leaderboard(e,groups),esc=adminEscapeHtml;
-    document.getElementById('tournamentBoard').innerHTML=`<h3>${esc(e.name)} · ${e.status==='final'?'最終總桿排名':'即時排名'}</h3><div class="small">賽事 ID：${esc(id)} · 每 10 秒更新</div><table><thead><tr><th>名次</th><th>球員</th><th>完成</th><th>總桿</th><th>差</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${r.rank??'—'}</td><td>${esc(r.name)}</td><td>${r.thru}/18</td><td>${r.thru?r.gross:'—'}</td><td>${r.thru?(r.relative>0?'+':'')+r.relative:'—'}</td></tr>`).join('')}</tbody></table>`;
-  }catch(e){tournamentStatus('排名更新失敗：'+e.message);}
+    document.getElementById('tournamentBoard').innerHTML=`<h3>${esc(e.name)} · ${e.status==='final'?'最終總桿排名':'即時排名'}</h3><div class="small">每 10 秒更新 · 各組 8421 維持獨立</div><table><thead><tr><th>名次</th><th>球員</th><th>完成</th><th>總桿</th><th>差</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${r.rank??'—'}</td><td>${esc(r.name)}</td><td>${r.thru}/18</td><td>${r.thru?r.gross:'—'}</td><td>${r.thru?(r.relative>0?'+':'')+r.relative:'—'}</td></tr>`).join('')}</tbody></table>`;
+  }catch(e){tournamentStatus('排名更新失敗：'+FortisTournament.errorMessage(e));}
   finally{tournamentReadBusy=false;}
 }
 setInterval(()=>{if(document.visibilityState==='visible')refreshTournament();},10000);
