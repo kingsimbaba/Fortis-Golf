@@ -32,14 +32,18 @@ Existing `live_rounds` sharing and historical-table permissions are outside the 
 
 ## Use
 
-Start a normal round, then use the new tournament panel below the scoring controls. Organizer creates an event, copies its displayed ID, and invites viewers or scorers by user ID. Each scorer starts their normal group round with the same course, opens that event ID, and links their group. Invited viewers can use the tournament button on Home without starting a round.
+Open the tournament panel from Home. The guided setup first asks for the course and group players using the existing normal round setup. Then enter a tournament name in the labeled field and select “建立賽事並加入本組”. No scores need to be entered before creation.
 
-For corrections on another device or after saving a round: start a round with the same course and player order, open the event, and select “載入本組雲端桿數”. Review the overwrite confirmation, then edit normally. Do not save this temporary correction round into 8421 history unless a separate historical round is actually intended.
+Other groups use the invited-event dropdown, selected by name, and explicitly select “將本組加入選取的賽事”. Viewing and linking are separate actions; users never need to type an event UUID. Existing linked groups can be restored with “載入我已加入的組別”.
+
+Organizer controls appear only after an owned event is open. Participants can expand “讓主辦人邀請我” to find their personal invitation code and send it to the organizer, who uses “邀請其他組別 / 觀眾”. Recovery and withdrawal controls are under a collapsed management section. Database errors are translated into actionable instructions; raw backend JSON is not shown.
+
+For corrections after saving, start a round with the same course and player order, choose the event from the dropdown, and select “載入我已加入的組別”. This loads tournament scores for editing; only save a new legacy 8421 round if a separate historical round is intended.
 
 ## Validation and release
 
 Install development dependencies (`npm install`), then run `npm test`. Tests execute the migration in PGlite PostgreSQL with synthetic Supabase auth roles, run permission and mutation checks, exercise 12-player ranking and corrections, and test the client upload queue. Existing tests remain included. PGlite module location may alternatively be supplied with `PGLITE_MODULE`.
 
-Local result: **33 passed, zero skipped**, including existing 22 tests. The additive migration was subsequently installed in the Fortis-Golf Supabase project. Before-and-after fingerprints matched for all 39 saved rounds, 2,628 hole score rows, 114 matchups and 1,620 course holes. The app release uses the existing GitHub-to-Vercel deployment.
+Local result: **38 passed, zero skipped**, including existing 22 tests. The additive migration was subsequently installed in the Fortis-Golf Supabase project. Before-and-after fingerprints matched for all 39 saved rounds, 2,628 hole score rows, 114 matchups and 1,620 course holes. The app release uses the existing GitHub-to-Vercel deployment.
 
 Release sequence: review the additive SQL, apply it to a staging Supabase project, test three real scorer sessions and an invited viewer, then apply the migration and deploy the updated assets together. Existing 8421 works without the new migration, but tournament controls report unavailable until it is installed. The user confirmed access and 18-hole decisions before schema preparation, then authorized production deployment. Existing tables and 8421 rules were not changed.
