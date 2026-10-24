@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>地獄倒霉鬼</title><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="/scripts/tournament.js?v=2026.10.23.02"></script>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>地獄倒霉鬼</title><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="/scripts/tournament.js?v=2026.10.24.02"></script><script src="/scripts/vegas.js?v=2026.10.24.02"></script><script src="/scripts/cross-group.js?v=2026.10.24.02"></script>
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
@@ -573,7 +573,7 @@ th{color:var(--muted)}
 <button type="button" class="btn2" onclick="leavePasswordReset()">返回登入</button>
 </div></section>
 
-<section id="home" class="page hidden"><div id="homeContent"></div><div class="card"><button class="btn2" onclick="showTournamentHome()">跨組總桿賽排名</button></div></section><section id="setup" class="page hidden"><div class="card" style="display:flex;align-items:center;gap:10px"><button class="btn2" style="width:auto;padding:9px 13px;min-height:38px" onclick="showPage('home')">← 返回首頁</button><div><b>建立新回合</b><div class="small">完成設定後即可開始計分</div></div></div><div class="card"><h2>資料庫狀態</h2><div id="dbStatus" class="small">連線中…</div></div><div class="card"><div class="card"><h2>顯示設定</h2><label>主題</label><select id="themeSelector" onchange="changeTheme()"><option value="dark">深色</option><option value="light">淺色</option><option value="contrast">高對比</option></select></div><h2>新回合</h2><div class="grid"><div><label>國家</label>
+<section id="home" class="page hidden"><div id="homeContent"></div><div class="card"><button class="btn2" onclick="showTournamentHome()">Cross Group Game · 跨組賽</button><button class="btn2" onclick="showVegasHistory()">Vegas 回合紀錄</button><div id="vegasHistory"></div></div></section><section id="setup" class="page hidden"><div class="card" style="display:flex;align-items:center;gap:10px"><button class="btn2" style="width:auto;padding:9px 13px;min-height:38px" onclick="showPage('home')">← 返回首頁</button><div><b>建立新回合</b><div class="small">完成設定後即可開始計分</div></div></div><div class="card"><h2>資料庫狀態</h2><div id="dbStatus" class="small">連線中…</div></div><div class="card"><div class="card"><h2>顯示設定</h2><label>主題</label><select id="themeSelector" onchange="changeTheme()"><option value="dark">深色</option><option value="light">淺色</option><option value="contrast">高對比</option></select></div><h2>新回合</h2><div class="grid"><div><label>國家</label>
 <select id="country" onchange="updateCourseFilters()"></select>
 
 <label>地區</label>
@@ -596,7 +596,7 @@ th{color:var(--muted)}
 <select id="course"></select>
 <button class="btn2" style="margin-top:10px" onclick="detectNearbyCourse()">📍 偵測附近球場</button>
 <div id="gpsCourseStatus" class="gps-status small">尚未使用 GPS 偵測。</div></div><div id="comboBox" class="hidden"><label id="comboLabel">組合</label><select id="combo"></select></div><div><label>備註</label><input id="roundNote" placeholder="週日球局"></div></div><p class="small">球場有超過18個洞，請選擇擊球的兩個場地.</p></div>
-<div class="card"><label>球員人數</label>
+<div class="card"><label for="gameMode">本組玩法</label><select id="gameMode" onchange="document.getElementById('vegasDrawSetup').hidden=this.value!=='vegas'"><option value="individual8421" selected>Individual 8421（預設）</option><option value="vegas">Vegas（獨立玩法）</option><option value="crossGroup">Cross Group Game（僅跨組總桿）</option></select><div id="vegasDrawSetup" hidden><p>依下方球員順序輸入實際抽籤號碼，各一次 1–4。Vegas 從第 1 洞開始。</p><label for="vegasDraw0">球員 1 抽籤號碼</label><input id="vegasDraw0" type="number" min="1" max="4" step="1"><label for="vegasDraw1">球員 2 抽籤號碼</label><input id="vegasDraw1" type="number" min="1" max="4" step="1"><label for="vegasDraw2">球員 3 抽籤號碼</label><input id="vegasDraw2" type="number" min="1" max="4" step="1"><label for="vegasDraw3">球員 4 抽籤號碼</label><input id="vegasDraw3" type="number" min="1" max="4" step="1"><p>數字合併低桿在前；10+ 在前；Birdie ×2、Eagle ×5、一桿進洞 ×10。勝方取最高倍數，不疊加、不翻轉。</p></div><label>球員人數</label>
 <select id="playerCount" onchange="makePlayers(); renderMatchups();">
   <option value="4" selected>4 位球員</option>
   <option value="3">3 位球員</option>
@@ -644,7 +644,7 @@ function courseAdminName(c){
   if(!c) return '';
   return [c.display_name_zh,c.display_name_ja,c.display_name].filter(Boolean).filter((v,i,a)=>a.indexOf(v)===i).join(' / ')||c.course_name;
 }
-const APP_BUILD_VERSION='2026.10.14.01';
+const APP_BUILD_VERSION='2026.10.24.02';
 let fortisUpdateReloading=false;
 
 function showFortisUpdateBanner(serverVersion){
@@ -1942,13 +1942,14 @@ const pendingLiveSyncs=new Set();
 function syncLiveRound(){
   if(!round || roundActionPending) return Promise.resolve();
   if(round.tournament) queueTournamentSync();
+  if(['vegas','crossGroup'].includes(round.gameMode)||round.tournament?.gameKind==='cross')return Promise.resolve();
   const request=writeLiveRound();
   pendingLiveSyncs.add(request);
   request.finally(()=>pendingLiveSyncs.delete(request));
   return request;
 }
   async function writeLiveRound(){
-  if(!round) return;
+  if(!round||['vegas','crossGroup'].includes(round.gameMode)||round.tournament?.gameKind==='cross') return;
 
   try{
     const sharedRound={...round,_presence:activeRecorderDetails()};
@@ -1979,11 +1980,13 @@ async function cancelLiveRound(){
     // Finish any earlier upload before closing, so it cannot reactivate this round.
     await Promise.allSettled([...pendingLiveSyncs]);
     if(!currentSession) throw new Error('請先登入，再取消即時回合。');
+    if(!['vegas','crossGroup'].includes(round.gameMode)){
     const closed=await sb(`live_rounds?id=eq.${encodeURIComponent(round.id)}`,{
       method:'PATCH',
       body:JSON.stringify({active:false,updated_at:new Date().toISOString()})
     });
     if(!Array.isArray(closed) || !closed.length) throw new Error('無法確認即時回合已關閉，請重試。');
+    }
     clearActiveRound();
     round=null;
     roundHole=0;
@@ -1997,7 +2000,7 @@ async function cancelLiveRound(){
 }
 
 async function endActiveScoringSession(){
-  if(!round?.id||!currentSession)return;
+  if(!round?.id||!currentSession||['vegas','crossGroup'].includes(round.gameMode)||round.tournament?.gameKind==='cross')return;
   try{
     await sb(`live_rounds?id=eq.${encodeURIComponent(round.id)}`,{
       method:'PATCH',
@@ -2030,6 +2033,11 @@ async function loadLiveRound(roundId){
 
     let r = live.round_data;
 let h = live.round_hole || 0;
+if(['vegas','crossGroup'].includes(r.gameMode)){
+ const pair=r.gameMode==='vegas'?FortisVegas.pairing(r,h):null,esc=adminEscapeHtml;
+ document.getElementById('liveViewerContent').innerHTML=`<div class="card"><h2>${r.gameMode==='vegas'?'Vegas':'Cross Group Game'} · 第 ${h+1} 洞</h2><p>${pair?pair.order.map(i=>esc(r.players[i])).join(' → '):'前洞桿數未完成'}</p>${pair?`<p>${pair.team1.map(i=>esc(r.players[i])).join(' + ')} vs ${pair.team2.map(i=>esc(r.players[i])).join(' + ')}</p>`:''}${r.gameMode==='vegas'?vegasScoreboardHtml(r,h):'<p>跨組總桿</p>'}${r.players.map((name,i)=>`<p>${esc(name)} · ${r.scores.reduce((sum,row)=>sum+(Number.isInteger(row[i])?row[i]:0),0)}</p>`).join('')}</div>`;
+ showPage('liveViewer');setTimeout(()=>loadLiveRound(roundId),5000);return;
+}
 let c = calcFortis(r);
 
 let gross = r.players.map((p,i)=>{
@@ -2084,6 +2092,7 @@ document.getElementById('liveViewerContent').innerHTML = `
 }
 async function copyLiveLink(){
   if(!round) return;
+  if(['vegas','crossGroup'].includes(round.gameMode)||round.tournament?.gameKind==='cross'){alert('跨組賽事請使用賽事邀請功能；此玩法不使用公開即時分享。');return;}
 
   await syncLiveRound();
 
@@ -2135,7 +2144,7 @@ function startRound(){
  let n=currentPlayers().length;
 let ranks=[...Array(n).keys()].map(i=>+document.getElementById('r'+i).value);
 
-if(new Set(ranks).size!==n){
+if((document.getElementById('gameMode')?.value||'individual8421')==='individual8421'&&new Set(ranks).size!==n){
   alert('第一洞開球順序不可重複。');
   return;
 }
@@ -2152,7 +2161,13 @@ let selected組合=
     ? document.getElementById('combo').value
     : null;
 
+  const gameMode=document.getElementById('gameMode')?.value||'individual8421';
+  let vegasDraw;
+  if(gameMode==='vegas'){
+    try{if(currentPlayers().length!==4)throw Error('Vegas 需要四位球員。');vegasDraw=[0,1,2,3].map(i=>Number(document.getElementById('vegasDraw'+i).value));FortisVegas.drawOrder(vegasDraw);}catch(e){alert(e.message);return;}
+  }
   round={
+    gameMode,vegasDraw,...(gameMode==='vegas'?{vegasRules:{...FortisVegas.RULES}}:{}),
     id:Date.now(),
     note:document.getElementById('roundNote').value,
     courseName:selectedCourseType,
@@ -2167,7 +2182,7 @@ let selected組合=
     created:new Date().toISOString()
   };
 
-  let startHole = prompt("從第幾洞開始？（1–18）", "1");
+  let startHole = gameMode==='vegas'?"1":prompt("從第幾洞開始？（1–18）", "1");
   let startHoleIndex = Math.max(0, Math.min(17, (+startHole || 1) - 1));
 
 round.startHoleIndex = startHoleIndex;
@@ -2495,6 +2510,7 @@ function playScoreAnimation(result){
   },6000);
 }
   function changeScore(h,i,delta){
+  if(round.tournament?.locked){alert('賽事已結算並鎖定。');return;}
   let current=round.scores[h][i];
   let par=round.course[h].par;
   let next=current==='' ? par+delta : +current+delta;
@@ -2518,6 +2534,7 @@ function changePutts(h,i,delta){
 }
 
 function confirmHoleScores(){
+  if(round.tournament?.locked){alert('賽事已結算並鎖定。');return;}
     if(scoreAnimationPlaying) return;
       scoreAnimationPlaying=true;
 
@@ -2566,6 +2583,7 @@ else setTimeout(advanceHole,2200);
 }
   
 function renderScore(){
+  if(['vegas','crossGroup'].includes(round?.gameMode)){renderVegasScore();return;}
   let c=calcFortis(round), h=round.course[roundHole];
 
   let holeNav='<div class="card score-hole-picker"><h2>選擇球洞</h2><div style="display:grid;grid-template-columns:repeat(6,1fr);gap:6px">';
@@ -2843,6 +2861,7 @@ async function shareRoundAchievements(){
   try{if(navigator.share)await navigator.share({title:'地獄倒霉鬼 回合獎項',text});else{await navigator.clipboard.writeText(text);alert('獎項內容已複製');}}catch(e){if(e.name!=='AbortError')alert('分享失敗：'+e.message)}
 }
 async function saveRound(){
+if(['vegas','crossGroup'].includes(round?.gameMode)){await saveVegasRound();return;}
 if(roundActionPending || !round) return;
 roundActionPending=true;
 try{
@@ -4924,6 +4943,8 @@ if(!activeSeason && db.seasons.length){
   }
 }
 function openNewRoundFromHome(){
+  const mode=document.getElementById('gameMode');if(mode)mode.value='individual8421';
+  const draw=document.getElementById('vegasDrawSetup');if(draw)draw.hidden=true;
   showPage('setup');
   const homeNav=document.getElementById('navHome');
   if(homeNav) homeNav.classList.add('active');
@@ -5156,6 +5177,93 @@ document.addEventListener('keydown',e=>{
   }
 });
 
+function startCrossSetup(){openNewRoundFromHome();document.getElementById('gameMode').value='crossGroup';}
+function vegasScoreboardHtml(r,h){
+ const result=FortisVegas.calculate(r),row=result.rows[h],esc=adminEscapeHtml;
+ const sign=n=>n>0?'+'+n:String(n);
+ return `<div class="card"><h3>Vegas 點數</h3><p>Birdie ×2 · Eagle ×5 · 一桿進洞 ×10 · 不翻轉 · 勝方最高倍數（不疊加）</p>${row?`<p>本洞 ${row.t1} vs ${row.t2} · ${row.multiplier} × ${Math.abs(row.difference)} = ${Math.abs(row.points)}</p><p>${row.points===0?'本洞平手':(row.points>0?row.team1:row.team2).map(i=>esc(r.players[i])).join(' + ')+'：每人 +'+Math.abs(row.points)}</p>`:'<p>請完成本洞及之前每洞的全部桿數，才能計算本洞點數。</p>'}<table><thead><tr><th>球員</th><th>累計點數</th></tr></thead><tbody>${r.players.map((name,i)=>`<tr><td>${esc(name)}</td><td>${sign(result.totals[i])}</td></tr>`).join('')}</tbody></table><details><summary>逐洞點數</summary><table><thead><tr><th>洞</th><th>配對與組合數</th><th>倍數</th><th>第一組每人點數</th></tr></thead><tbody>${result.rows.map((v,i)=>`<tr><td>${i+1}</td><td>${v?v.team1.map(i=>esc(r.players[i])).join(' + ')+' ('+v.t1+') vs '+v.team2.map(i=>esc(r.players[i])).join(' + ')+' ('+v.t2+')':'—'}</td><td>${v?v.multiplier:'—'}</td><td>${v?sign(v.points):'—'}</td></tr>`).join('')}</tbody></table></details></div>`;
+}
+function renderVegasScore(){
+ const esc=adminEscapeHtml,h=roundHole,isVegas=round.gameMode==='vegas',pair=isVegas?FortisVegas.pairing(round,h):null,label=isVegas?'Vegas':'Cross Group Game';
+ let html=`<div class="card"><h2>${label} · 第 ${h+1} 洞 · Par ${round.course[h].par}</h2><p>${isVegas?'Birdie ×2 · Eagle ×5 · 一桿進洞 ×10 · 不翻轉':'獨立跨組總桿 · 請在下方建立或加入賽事'}</p><button class="btn2" onclick="saveRound()">儲存 ${label} 回合</button><button class="btn2" onclick="cancelLiveRound()">取消回合</button></div>`;
+ if(isVegas)html+=`<div class="card"><h3>開球順序與配對</h3>${pair?`<p>${pair.order.map(i=>esc(round.players[i])).join(' → ')}</p><p>${pair.team1.map(i=>esc(round.players[i])).join(' + ')} vs ${pair.team2.map(i=>esc(round.players[i])).join(' + ')}</p>`:'請先完成之前每一洞的四位球員桿數，才能確定本洞配對。'}</div>`;
+ html+='<div class="card"><h3>桿數</h3>';
+ for(const i of pair?.order||round.players.map((_,i)=>i)){
+  const val=round.scores[h][i];
+  html+=`<label for="vegasScore${i}">${esc(round.players[i])} · 總桿 ${round.scores.reduce((sum,row)=>sum+(Number.isInteger(row[i])?row[i]:0),0)}</label><input id="vegasScore${i}" type="number" min="1" max="999" step="1" value="${val===''?'':val}" onchange="setVegasScore(${h},${i},this.value)">`;
+ }
+ html+='</div>';if(isVegas)html+=vegasScoreboardHtml(round,h);html+='<div class="card">';
+ for(let i=0;i<18;i++)html+=`<button class="btn2" style="width:auto" onclick="roundHole=${i};renderScore()">${i+1}</button>`;
+ html+='</div>';document.getElementById('scoreContent').innerHTML=html;mountTournamentPanel();
+}
+function setVegasScore(h,i,value){
+ if(round?.tournament?.locked){alert('賽事已結算並鎖定。');renderScore();return;}
+ const score=value===''?'':Number(value);
+ if(score!==''&&(!Number.isInteger(score)||score<1||score>999)){alert('請輸入 1–999 的整數桿數。');renderScore();return;}
+ round.scores[h][i]=score;saveActiveRound();syncLiveRound();renderScore();
+}
+async function saveVegasRound(){
+ if(roundActionPending||!round)return;
+ roundActionPending=true;
+ try{
+  if(round.scores.some(row=>row.some(s=>!Number.isInteger(s)||s<1)))throw Error('請完成全部 18 洞；未完成回合已保留在本機。');
+  if(round.gameMode==='crossGroup'&&!round.tournament)throw Error('請先建立或加入跨組賽事。');
+  if(round.tournament)await flushTournamentSync();
+  if(round.gameMode==='vegas'){round.vegasRules={...FortisVegas.RULES};FortisVegas.calculate(round);}
+  if(round.gameMode==='vegas')await sb('golf_vegas_rounds',{method:'POST',body:JSON.stringify({id:String(round.id),owner_id:currentUser.id,round_data:round})});
+  await endActiveScoringSession();clearActiveRound();round=null;showPage('home');alert('獨立回合已儲存。');
+ }catch(e){alert(FortisTournament.errorMessage(e));}finally{roundActionPending=false;}
+}
+async function showVegasHistory(){
+ try{
+  const rows=await loadPaged('golf_vegas_rounds?select=*&order=created_at.desc,id');
+  const el=document.getElementById('vegasHistory');
+  el.innerHTML=rows.map(r=>`<div class="card"><b>${adminEscapeHtml(r.round_data.note||'Vegas')}</b><p>${adminEscapeHtml(r.round_data.created)}</p>${r.round_data.players.map((name,i)=>`<p>${adminEscapeHtml(name)}: ${r.round_data.scores.reduce((sum,h)=>sum+h[i],0)}</p>`).join('')}${vegasScoreboardHtml(r.round_data,17)}</div>`).join('')||'<p>尚無已儲存的 Vegas 回合。</p>';
+ }catch(e){alert(FortisTournament.errorMessage(e));}
+}
+let crossGroups=[];
+async function renderCrossGroup(e,groups){
+ const controls=document.getElementById('crossAdminControls');if(controls)controls.innerHTML='';
+ if(e.game_kind!=='cross')return;
+ const state=await sb('rpc/golf_cross_state',{method:'POST',body:JSON.stringify({event_id:e.id})});
+ if(e.id!==tournamentWatching)return;
+ crossGroups=groups;
+ if(round?.tournament?.eventId===e.id){round.tournament.locked=e.status==='final';saveActiveRound();}
+ const board=document.getElementById('tournamentBoard');if(!board)return;
+ const rows=FortisCrossGroup.netLeaderboard(e,groups,state),esc=adminEscapeHtml;
+ board.insertAdjacentHTML('beforeend',`<h3>New New Peoria Net</h3>${rows?`<p>隱藏洞：${state.holes.join(', ')}</p><table><thead><tr><th>名次</th><th>球員</th><th>Gross</th><th>HDCP</th><th>Net</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${r.rank}</td><td>${esc(r.name)}</td><td>${r.gross}</td><td>${r.handicap.toFixed(1)}</td><td>${r.net.toFixed(1)}</td></tr>`).join('')}</tbody></table><p>已結算並鎖定。</p>`:'<p>隱藏洞及 Net 排名於結算後公開。</p>'}<p>HDCP = (隱藏洞桿數 × 1.5 − 全場 Par) × 80%；隱藏洞計算採 double-par 上限、HDCP 0–36、小數 1 位。實際 Gross 不變。</p>`);
+ if(controls&&e.owner_id===currentUser?.id&&e.status==='live'){
+  controls.innerHTML=`<h3>隱藏洞（僅主辦人可見）</h3><p>${state.holes.join(', ')}</p><button class="btn2" onclick="crossRules()">確認 Peoria 規則${state.rules?' ✓':''}</button><button class="btn2" onclick="crossSelection(false)">手動選 12 洞</button><button class="btn2" onclick="crossSelection(true)">重新隨機抽選</button><h3>組別記分者與修正</h3><p>每組只有一位記分者。修正會檢查版本，結算後全部鎖定。</p>${groups.map((g,i)=>`<div><p>${g.players.map(esc).join(' / ')} · 記分者 ${esc(g.scorer_id)}</p><button class="btn2" onclick="crossOverride(${i})">管理員修正桿數</button><button class="btn2" onclick="crossAssign(${i})">更換本組記分者</button></div>`).join('')}`;
+ }
+}
+async function crossRules(){
+ try{if(!confirm('確認使用畫面上的 Peoria 公式、double-par 計算上限、HDCP 0–36 與小數 1 位？'))return;await tournamentCommand('rules',tournamentWatching,{rules:FortisCrossGroup.RULES});await refreshTournament();}catch(e){tournamentStatus(FortisTournament.errorMessage(e));}
+}
+async function crossSelection(reroll){
+ try{
+  const eventId=tournamentWatching;let payload={};
+  if(reroll){if(!confirm('重新抽選 12 個隱藏洞？'))return;}
+  else{const input=prompt('輸入 12 個不同的洞號（1–18），以逗號分隔');if(input===null)return;const holes=input.split(',').map(v=>Number(v.trim()));if(holes.length!==12||new Set(holes).size!==12||holes.some(h=>!Number.isInteger(h)||h<1||h>18))throw Error('請輸入 12 個不同的洞號（1–18）。');payload={holes};}
+  await tournamentCommand(reroll?'reroll':'selection',eventId,payload);await refreshTournament();
+ }catch(e){tournamentStatus(FortisTournament.errorMessage(e));}
+}
+async function crossOverride(index){
+ const g=crossGroups[index],eventId=tournamentWatching;if(!g)return;
+ const holeText=prompt('修正第幾洞？（1–18）');if(holeText===null)return;const hole=Number(holeText);
+ if(!Number.isInteger(hole)||hole<1||hole>18){tournamentStatus('請輸入洞號 1–18。');return;}
+ const input=prompt(g.players.join(', ')+'：依序輸入桿數，以逗號分隔；空白代表未完成',g.scores[hole-1].map(s=>s??'').join(','));if(input===null)return;
+ const row=input.split(',').map(v=>v.trim()===''?null:Number(v.trim()));
+ if(row.length!==g.players.length||row.some(s=>s!==null&&(!Number.isInteger(s)||s<1||s>999))){tournamentStatus('請依球員順序輸入有效桿數。');return;}
+ const scores=g.scores.map(r=>[...r]);scores[hole-1]=row;
+ try{await tournamentCommand('override',eventId,{group_id:g.id,revision:g.revision,players:g.players,scores,course:tournamentEvent.course});await refreshTournament();tournamentStatus('雲端桿數已修正；記分者請先載入雲端桿數。');}catch(e){tournamentStatus(FortisTournament.errorMessage(e));}
+}
+async function crossAssign(index){
+ const g=crossGroups[index],eventId=tournamentWatching;if(!g)return;
+ const user=prompt('輸入已受邀且有記分權限之使用者的個人邀請碼');if(user===null)return;
+ if(!FortisTournament.validId(user.trim())){tournamentStatus('請輸入有效的個人邀請碼。');return;}
+ try{await tournamentCommand('assign',eventId,{group_id:g.id,revision:g.revision,user_id:user.trim()});await refreshTournament();}catch(e){tournamentStatus(FortisTournament.errorMessage(e));}
+}
+
 // Tournament writes are serialized; capture snapshots so later edits cannot mutate in-flight data.
 let tournamentQueue=Promise.resolve(), tournamentSyncError=null, tournamentWatching=null, tournamentReadBusy=false;
 let tournamentEvent=null, tournamentUiBusy=false;
@@ -5163,7 +5271,7 @@ async function tournamentCommand(action,eventId,payload={}){
   return sb('rpc/golf_event_command',{method:'POST',body:JSON.stringify({action,event_id:eventId,payload})});
 }
 function queueTournamentSync(){
-  if(!round?.tournament)return;
+  if(!round?.tournament||round.tournament.locked)return;
   const active=round, link=active.tournament, scorer=currentUser?.id;
   const data={...FortisTournament.snapshot(active),course:FortisTournament.courseFor(active),group_id:link.groupId};
   tournamentQueue=tournamentQueue.then(async()=>{
@@ -5188,7 +5296,7 @@ async function unlinkTournamentGroup(){
     delete round.tournament;tournamentSyncError=null;saveActiveRound();mountTournamentPanel(true);await refreshTournament();
   }catch(e){tournamentStatus(FortisTournament.errorMessage(e));}
 }
-async function flushTournamentSync(){queueTournamentSync();await tournamentQueue;if(tournamentSyncError)throw tournamentSyncError;}
+async function flushTournamentSync(){if(round?.tournament?.locked)return;queueTournamentSync();await tournamentQueue;if(tournamentSyncError)throw tournamentSyncError;}
 function tournamentStatus(text){const el=document.getElementById('tournamentStatus');if(el)el.textContent=text;}
 function showTournamentHome(){
   showPage('scorePage');
@@ -5202,12 +5310,12 @@ function mountTournamentPanel(force=false){
   if(!force&&panel._tournamentKey===key)return;
   panel._tournamentKey=key;
   const esc=adminEscapeHtml, linked=!!round?.tournament;
-  panel.innerHTML=`<h2>跨組總桿賽</h2><p class="small">各組照常計算 8421；這裡另外比較所有球員的總桿。</p>
-    ${!linked?`<div class="card"><h3>1. 先設定你這一組</h3><p>${round?'本組：'+round.players.map(esc).join('、')+' · '+esc(round.courseName||''):'建立賽事前，先選擇球場和本組球員，再開始回合。不需要先輸入桿數。'}</p>${!round?`<button onclick="openNewRoundFromHome()">設定球場與本組球員 →</button>`:''}</div>
+  panel.innerHTML=`<h2>Cross Group Game · 跨組賽</h2><p class="small">本組玩法保持獨立；跨組比較 Gross 與新新 Peoria Net。12 個隱藏洞於結算後公開。</p>
+    ${!linked?`<div class="card"><h3>1. 先設定你這一組</h3><p>${round?'本組：'+round.players.map(esc).join('、')+' · '+esc(round.courseName||''):'建立賽事前，先選擇球場和本組球員，再開始回合。不需要先輸入桿數。'}</p>${!round?`<button onclick="startCrossSetup()">設定球場與本組球員 →</button>`:''}</div>
     <div class="card"><h3>2. 主辦人：建立新賽事</h3><label for="tournamentName">賽事名稱</label><input id="tournamentName" maxlength="120" placeholder="例如：Fukuoka Invitational" ${!round?'disabled':''}><button onclick="createTournament()" ${!round?'disabled':''}>建立賽事並加入本組</button><p class="small">建立後可邀請其他組別的記分者。</p></div>`:`<p>本組已連結賽事，照常輸入桿數就會自動更新排名。</p>`}
     <div class="card"><h3>${linked?'查看其他賽事':'其他組別或觀眾：開啟已受邀的賽事'}</h3><p class="small">請先由主辦人邀請你，再從清單選擇賽事；不用輸入賽事代碼。</p><label for="tournamentSelect">已受邀的賽事</label><select id="tournamentSelect"><option value="">正在載入…</option></select><button class="btn2" onclick="openTournament()">查看此賽事</button>${round&&!linked?`<button class="btn2" onclick="linkSelectedTournament()">將本組加入選取的賽事</button><button class="btn2" onclick="restoreSelectedTournament()">載入我已加入的組別</button>`:''}<button class="btn2" onclick="loadTournamentChoices()">重新整理清單</button></div>
     <div id="tournamentStatus" role="status" aria-live="polite"></div><div id="tournamentBoard"></div>
-    <div id="tournamentManage" class="hidden"><h3>主辦人管理</h3><button class="btn2" onclick="inviteTournamentUser()">邀請其他組別 / 觀眾</button><button class="btn2" onclick="finalizeTournament()">所有人完成後：公布最終排名</button></div>
+    <div id="tournamentManage" class="hidden"><h3>主辦人管理</h3><button class="btn2" onclick="inviteTournamentUser()">邀請其他組別 / 觀眾</button><button class="btn2" onclick="finalizeTournament()">所有人完成後：公布最終排名</button><div id="crossAdminControls"></div></div>
     ${linked?`<details><summary>同步與本組管理</summary><button class="btn2" onclick="retryTournamentSync()">重試同步</button><button class="btn2" onclick="restoreTournamentGroup()">載入本組雲端桿數</button><button class="btn2" onclick="unlinkTournamentGroup()">退出賽事</button></details>`:''}
     <details><summary>讓主辦人邀請我</summary><p class="small">將以下個人邀請碼傳給主辦人，主辦人即可邀請你。這不是賽事名稱。</p><code style="overflow-wrap:anywhere">${esc(currentUser?.id||'請先登入')}</code></details>`;
   loadTournamentChoices();
@@ -5231,8 +5339,9 @@ async function createTournament(){
     const name=document.getElementById('tournamentName')?.value.trim();
     if(!name)throw Error('請在「賽事名稱」輸入名稱，例如 Fukuoka Invitational。');
     tournamentUiBusy=true;tournamentStatus('正在建立賽事…');
-    const e=await tournamentCommand('create',null,{name,course:FortisTournament.courseFor(round)});
-    round.tournament={eventId:e.id,groupId:crypto.randomUUID(),revision:0};
+    const e=await tournamentCommand('create',null,{name,course:FortisTournament.courseFor(round),game_kind:'cross'});
+    if(e.game_kind==='cross'){await Promise.allSettled([...pendingLiveSyncs]);await endActiveScoringSession();}
+    round.tournament={eventId:e.id,groupId:crypto.randomUUID(),revision:0,gameKind:e.game_kind};
     tournamentWatching=e.id;tournamentEvent=e;tournamentSyncError=null;saveActiveRound();
     mountTournamentPanel(true);await flushTournamentSync();await refreshTournament();
     tournamentStatus('賽事已建立，本組已加入。接下來邀請其他組別，或照常輸入桿數。');
@@ -5264,7 +5373,8 @@ async function linkSelectedTournament(){
     if(mine.length)throw Error('你已有一組連結此賽事。請使用「載入我已加入的組別」或回到原本回合繼續計分。');
     if(!confirm('將目前這一組加入「'+e.name+'」？球員名單加入後固定。'))return;
     tournamentUiBusy=true;
-    round.tournament={eventId:e.id,groupId:crypto.randomUUID(),revision:0};tournamentSyncError=null;
+    if(e.game_kind==='cross'){await Promise.allSettled([...pendingLiveSyncs]);await endActiveScoringSession();}
+    round.tournament={eventId:e.id,groupId:crypto.randomUUID(),revision:0,gameKind:e.game_kind};tournamentSyncError=null;
     tournamentWatching=e.id;tournamentEvent=e;saveActiveRound();mountTournamentPanel(true);
     await flushTournamentSync();await refreshTournament();tournamentStatus('本組已加入，照常輸入桿數即可。');
   }catch(e){tournamentStatus(FortisTournament.errorMessage(e));}finally{tournamentUiBusy=false;}
@@ -5291,7 +5401,7 @@ async function restoreTournamentGroup(){
     if(JSON.stringify(g.players)!==JSON.stringify(round.players))throw Error('球員名單與順序不符');
     if(!confirm('以雲端桿數取代目前本機桿數？'))return;
     round.scores=g.scores.map(row=>row.map(v=>v===null?'':v));
-    round.tournament={eventId:g.event_id,groupId:g.id,revision:g.revision};
+    round.tournament={eventId:g.event_id,groupId:g.id,revision:g.revision,gameKind:events[0].game_kind,locked:events[0].game_kind==='cross'&&events[0].status==='final'};
     tournamentSyncError=null;saveActiveRound();renderScore();tournamentStatus('已載入，可修正桿數');
   }catch(e){tournamentStatus(FortisTournament.errorMessage(e));}
 }
@@ -5311,10 +5421,11 @@ async function refreshTournament(){
     if(id!==tournamentWatching)return;
     const e=events[0];if(!e)throw Error('賽事無法存取');
     tournamentEvent=e;
-    document.getElementById('tournamentManage')?.classList.toggle('hidden',e.owner_id!==currentUser?.id);
+    document.getElementById('tournamentManage')?.classList.toggle('hidden',e.owner_id!==currentUser?.id||e.status==='final');
     if(!document.getElementById('tournamentBoard'))return;
     const rows=FortisTournament.leaderboard(e,groups),esc=adminEscapeHtml;
-    document.getElementById('tournamentBoard').innerHTML=`<h3>${esc(e.name)} · ${e.status==='final'?'最終總桿排名':'即時排名'}</h3><div class="small">每 10 秒更新 · 各組 8421 維持獨立</div><table><thead><tr><th>名次</th><th>球員</th><th>完成</th><th>總桿</th><th>差</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${r.rank??'—'}</td><td>${esc(r.name)}</td><td>${r.thru}/18</td><td>${r.thru?r.gross:'—'}</td><td>${r.thru?(r.relative>0?'+':'')+r.relative:'—'}</td></tr>`).join('')}</tbody></table>`;
+    document.getElementById('tournamentBoard').innerHTML=`<h3>Gross · ${esc(e.name)} · ${e.status==='final'?'最終總桿排名':'即時排名'}</h3><div class="small">每 10 秒更新 · 各組 8421 維持獨立</div><table><thead><tr><th>名次</th><th>球員</th><th>完成</th><th>總桿</th><th>差</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${r.rank??'—'}</td><td>${esc(r.name)}</td><td>${r.thru}/18</td><td>${r.thru?r.gross:'—'}</td><td>${r.thru?(r.relative>0?'+':'')+r.relative:'—'}</td></tr>`).join('')}</tbody></table>`;
+    await renderCrossGroup(e,groups);
   }catch(e){tournamentStatus('排名更新失敗：'+FortisTournament.errorMessage(e));}
   finally{tournamentReadBusy=false;}
 }
