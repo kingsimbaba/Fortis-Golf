@@ -28,6 +28,10 @@ function errorMessage(error){
   let message=error?.message||String(error||'');
   try{message=JSON.parse(message).message||'';}catch{}
   const messages=[
+    [/Finalized game is locked/i,'賽事已結算並鎖定，無法再修改。'],
+    [/Confirm Peoria rules/i,'請主辦人先確認 Peoria 規則，再公布最終排名。'],
+    [/12 unique holes/i,'請選擇 12 個不重複的洞號（1–18）。'],
+    [/golf_event_groups_event_id_scorer_id_key/i,'此記分者已負責另一組。每位記分者在同一賽事只能負責一組。'],
     [/uuid|22P02/i,'請從「已受邀的賽事」清單選擇賽事。建立新賽事時，請在「賽事名稱」輸入名稱。'],
     [/Assigned scorer/i,'你目前只有觀看權限，請主辦人指派你為本組記分者。'],
     [/another device/i,'另一台裝置已更新桿數。請先載入本組雲端桿數，再繼續修改。'],
