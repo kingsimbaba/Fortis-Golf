@@ -1,3 +1,11 @@
+# Compact Vegas totals and concurrent scoring verification — 26 October 2026
+
+The live Vegas card now shows cumulative totals, current pairing and next pairing, with hole calculations and the per-hole table inside a closed details control. Saved Vegas history retains its per-hole breakdown. Statistics has no Vegas tally. Both calculation modules and persistence paths are unchanged.
+
+Added integration coverage runs the actual score-change and hole-confirmation functions over four holes with real 8421 and Vegas calculators, checks each displayed cumulative 8421 result, and corrects an earlier score. An additional test reproduces the reported strokes 4/5/4/7, 3/4/4/4, 3/2/3/3 on par 4/4/3: first player's cumulative 8421 totals are -2, +2, -2. Hole 2 awards +4 for that hole, offsetting hole 1's -2. Hole 3 awards -4, returning the total to -2. This can resemble a stalled total, but the calculations are concurrent. No freeze was reproduced. All 60 tests pass; core 8421 calculator hashes remain unchanged.
+
+---
+
 # Live Vegas section — 26 October 2026
 
 Vegas score entry now includes a separate results card after the existing gross/8421 leaderboard and before the unchanged stroke/putt controls. It shows current pairing, each player's selected-hole delta and overall Vegas total, next-hole pairing once scores are available, and completed-hole deltas with running totals. The selected pending hole remains visible; other unplayed rows are omitted. Previous-score edits recompute all results through the existing Vegas calculator. The card appears only for Vegas; standalone Individual 8421 is unchanged.

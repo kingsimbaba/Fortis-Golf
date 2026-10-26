@@ -5203,20 +5203,20 @@ function vegasLiveScoreboardHtml(r,h){
  const names=team=>team.map(i=>esc(r.players[i])).join(' + ');
  const pairingText=p=>`${names(p.team1)} vs ${names(p.team2)}`;
  const deltas=v=>r.players.map((_,i)=>v.team1.includes(i)?v.points:-v.points);
- const current=row?deltas(row):null,running=r.players.map(()=>0);
- const next=h<17?FortisVegas.pairing(r,h+1):null;
- return `<section id="vegasLiveScoreboard" class="card" aria-label="Vegas 即時點數與配對"><h2>Vegas 即時點數 · 第 ${h+1} 洞</h2>
- <p class="small">第 1 洞依抽籤配對；之後依前一洞桿數由低到高排序，平手保留先前順序。第 1 + 4 位 vs 第 2 + 3 位。</p>
+ const running=r.players.map(()=>0),next=h<17?FortisVegas.pairing(r,h+1):null;
+ return `<section id="vegasLiveScoreboard" class="card" aria-label="Vegas 累計點數與配對"><h2>Vegas 累計點數</h2>
+ ${r.players.map((_,i)=>i).sort((a,b)=>result.totals[b]-result.totals[a]).map((i,k)=>`<div class="leader-row" style="padding:8px 10px;margin:5px 0"><div>${k+1}. <b>${esc(r.players[i])}</b></div><div class="score" style="font-size:22px">${sign(result.totals[i])}</div></div>`).join('')}
  <p><b>本洞配對：</b>${pair?pairingText(pair):'請先完成之前各洞四位球員的桿數。'}</p>
- ${row?`<p>組合數 ${row.t1} vs ${row.t2} · ${Math.abs(row.difference)} × ${row.multiplier} = ${Math.abs(row.points)} 點／人${row.points===0?' · 平手':''}</p>`:'<p>本洞點數待定：請完成本洞及之前各洞四位球員的桿數。</p>'}
- <div class="scroll"><table><thead><tr><th>球員</th><th>本洞 Vegas</th><th>累計 Vegas</th></tr></thead><tbody>${r.players.map((name,i)=>`<tr><td>${esc(name)}</td><td>${current?sign(current[i]):'—'}</td><td>${sign(result.totals[i])}</td></tr>`).join('')}</tbody></table></div>
  ${h<17?`<p><b>第 ${h+2} 洞配對：</b>${next?pairingText(next):'完成本洞後顯示'}</p>`:''}
- <h3>Vegas 逐洞點數變化</h3><p class="small">每格顯示「本洞點數（累計）」。修改之前的桿數，之後的配對及點數會同步重算。</p>
+ <details><summary>查看本洞與逐洞明細</summary>
+ <p class="small">第 1 洞依抽籤配對；之後依前一洞桿數由低到高排序，平手保留先前順序。第 1 + 4 位 vs 第 2 + 3 位。</p>
+ ${row?`<p>組合數 ${row.t1} vs ${row.t2} · ${Math.abs(row.difference)} × ${row.multiplier} = ${Math.abs(row.points)} 點／人${row.points===0?' · 平手':''}</p>`:'<p>本洞點數待定：請完成本洞及之前各洞四位球員的桿數。</p>'}
+ <p class="small">每格顯示「本洞點數（累計）」。修改之前的桿數，之後的配對及點數會同步重算。</p>
  <div class="scroll"><table><thead><tr><th>洞</th><th>配對與組合數</th>${r.players.map(name=>`<th>${esc(name)}</th>`).join('')}</tr></thead><tbody>${result.rows.map((v,index)=>{
   if(!v&&index!==h)return '';
   const points=v?deltas(v):null;if(points)points.forEach((n,i)=>running[i]+=n);
   return `<tr${index===h?' aria-current="true"':''}><td>${index+1}</td><td>${v?`${pairingText(v)} · ${v.t1} vs ${v.t2} · ×${v.multiplier}`:'待完成'}</td>${r.players.map((_,i)=>`<td>${points?`${sign(points[i])} (${sign(running[i])})`:'—'}</td>`).join('')}</tr>`;
- }).join('')}</tbody></table></div></section>`;
+ }).join('')}</tbody></table></div></details></section>`;
 }
 function vegasScoreboardHtml(r,h){
  const result=FortisVegas.calculate(r),row=result.rows[h],esc=adminEscapeHtml;
