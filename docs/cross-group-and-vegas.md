@@ -1,3 +1,15 @@
+# Shared score-entry correction — 26 October 2026
+
+This local review candidate supersedes the separate Vegas entry/save behavior described in the older implementation record below. Vegas now uses the unchanged Individual 8421 score-entry markup and calculators, including strokes, putts (default 2), hole confirmation and navigation. New Vegas rounds save through the ordinary 8421 statistics/matchup path and additionally store an owner-only Vegas snapshot derived from those same scores. Historical records are not migrated or recalculated.
+
+Statistics shows current Vegas results separately; saved Vegas history shows both 8421 and Vegas totals. Cross-group ranking is a separate unchecked setup option or explicit Home action. An existing linked event remains enabled when resuming a round. Unlinked rounds do not create tournament controls or request event lists.
+
+If the additional Vegas snapshot fails after normal saving completes, the local round records that completed stage. Retrying does not repeat the completed 8421 writes; score edits remain blocked until snapshot saving completes. The snapshot uses an immutable, namespaced legacy-round ID and ignores duplicate inserts to tolerate a lost response. The pre-existing sequence of legacy round/score/matchup requests is still not a database transaction; failures inside that older sequence remain an existing limitation.
+
+Validation: 55 local tests pass, including identical rendered entry markup between modes, default putts, shared persistence and snapshot retry, unchanged calculator hashes, Vegas rules, cross-group opt-in, and synthetic database authorization/locking checks. No production database requests, migrations, pushes, or deployments were performed for this correction. Browser/device review remains a release check. Service-worker cache advances to 2026-10-26-01.
+
+---
+
 # Vegas and Cross Group Game — local implementation, 24 October 2026
 
 Status: implementation complete locally with the user's confirmed Vegas and Peoria rules. Database migration installed and verified; application release is in progress. No historical data was changed.

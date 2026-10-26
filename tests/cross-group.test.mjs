@@ -58,15 +58,6 @@ test('Cross migration preserves history, authorizes corrections, hides holes and
  }finally{await db.close();}
 });
 
-test('Vegas renderer and save bypass Individual 8421 writes',async()=>{
- const {default:vm}=await import('node:vm'),html=readFileSync(new URL('../index.html',import.meta.url),'utf8');
- const code=html.slice(html.indexOf('function vegasScoreboardHtml('),html.indexOf('let crossGroups='));
- const writes=[],content={innerHTML:''},r={id:12,gameMode:'vegas',players:['A','B','C','D'],vegasDraw:[1,2,3,4],scores:Array.from({length:18},()=>[4,5,6,7]),course};
- const ctx=vm.createContext({round:r,roundHole:0,FortisVegas:V,FortisTournament:require('../scripts/tournament.js'),adminEscapeHtml:String,roundActionPending:false,currentUser:{id:'user'},document:{getElementById:()=>content},mountTournamentPanel(){},alert(){},showPage(){},endActiveScoringSession:async()=>{},clearActiveRound(){},sb:async(path,opts)=>{writes.push({path,data:JSON.parse(opts.body)});},calcFortis(){throw Error('8421 called');},calcIndividual(){throw Error('Individual called');}});
- vm.runInContext(code,ctx);vm.runInContext('renderVegasScore()',ctx);assert.match(content.innerHTML,/Vegas/);assert.doesNotMatch(content.innerHTML,/8421/);assert.match(content.innerHTML,/累計點數|逐洞點數/);
- await vm.runInContext('saveVegasRound()',ctx);assert.equal(writes.length,1);assert.equal(writes[0].path,'golf_vegas_rounds');assert.equal(writes[0].data.round_data.vegasRules.version,1);assert.equal(writes[0].data.round_data.vegasRules.flip,false);assert.equal(ctx.round,null);
-});
-
 test('Individual 8421 calculators are byte-identical and default stays Individual',async()=>{
  const {createHash}=await import('node:crypto'),html=readFileSync(new URL('../index.html',import.meta.url),'utf8');
  for(const [start,end,hash] of [
@@ -82,9 +73,9 @@ test('Peoria works on non-72 courses, negative handicaps clamp to zero, twelve p
 });
 test('standalone Cross Group rendering does not require a Vegas draw',async()=>{
  const {default:vm}=await import('node:vm'),html=readFileSync(new URL('../index.html',import.meta.url),'utf8'),content={innerHTML:''};
- const code=html.slice(html.indexOf('function renderVegasScore(){'),html.indexOf('function setVegasScore('));
+ const code=html.slice(html.indexOf('function renderCrossScore(){'),html.indexOf('function setCrossScore('));
  const ctx=vm.createContext({round:{gameMode:'crossGroup',players:['A','B'],scores:Array.from({length:18},()=>['','']),course},roundHole:0,adminEscapeHtml:String,document:{getElementById:()=>content},mountTournamentPanel(){}});
- vm.runInContext(code,ctx);vm.runInContext('renderVegasScore()',ctx);assert.match(content.innerHTML,/Cross Group Game/);assert.doesNotMatch(content.innerHTML.replace(/<[^>]*>/g,''),/開球順序與配對|Vegas/);
+ vm.runInContext(code,ctx);vm.runInContext('renderCrossScore()',ctx);assert.match(content.innerHTML,/Cross Group Game/);assert.doesNotMatch(content.innerHTML.replace(/<[^>]*>/g,''),/開球順序與配對|Vegas/);
 });
 
 function vegasRound(par=4){return {players:['A','B','C','D'],vegasDraw:[1,2,3,4],course:Array.from({length:18},()=>({par})),scores:Array.from({length:18},()=>['','','',''])};}

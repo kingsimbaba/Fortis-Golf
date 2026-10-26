@@ -1,4 +1,4 @@
-const CACHE = 'fortis-golf-2026-10-24-02';
+const CACHE = 'fortis-golf-2026-10-26-01';
 
 const ASSETS = [
   '/index.html',
