@@ -3099,7 +3099,6 @@ let summaryPlayer='all';
 function renderSummary(){
   let playerNames=[...new Set(db.players.map(p=>p.name).concat(db.scores.map(s=>s.player_name)).filter(Boolean))].sort();
   let html=`<div class="card summary-toolbar"><h2>統計篩選</h2><label>查看球員</label><select onchange="summaryPlayer=this.value;renderSummary()"><option value="all">所有球員</option>${playerNames.map(n=>`<option value="${n}" ${summaryPlayer===n?'selected':''}>${n}</option>`).join('')}</select></div>`;
-  html+=`<div class="card"><h2>Vegas 結果</h2>${round?.gameMode==='vegas'?vegas8421ResultsHtml(round)+vegasScoreboardHtml(round,roundHole):''}<button class="btn2" onclick="showVegasHistory('vegasStatisticsHistory')">查看 Vegas 回合紀錄</button><div id="vegasStatisticsHistory"></div></div>`;
   html+=renderLatestRoundHighlight();
   html+=renderSeasonLeaderboard();
   html+=renderLifetimeRankings();
@@ -5251,10 +5250,10 @@ async function saveCrossRound(){
   await endActiveScoringSession();clearActiveRound();round=null;showPage('home');alert('獨立回合已儲存。');
  }catch(e){alert(FortisTournament.errorMessage(e));}finally{roundActionPending=false;}
 }
-async function showVegasHistory(targetId='vegasHistory'){
+async function showVegasHistory(){
  try{
   const rows=await loadPaged('golf_vegas_rounds?select=*&order=created_at.desc,id');
-  const el=document.getElementById(targetId);
+  const el=document.getElementById('vegasHistory');
   el.innerHTML=rows.map(r=>`<div class="card"><b>${adminEscapeHtml(r.round_data.note||'Vegas')}</b><p>${adminEscapeHtml(r.round_data.created)}</p>${r.round_data.players.map((name,i)=>`<p>${adminEscapeHtml(name)}: ${r.round_data.scores.reduce((sum,h)=>sum+h[i],0)}</p>`).join('')}${vegas8421ResultsHtml(r.round_data)}${vegasScoreboardHtml(r.round_data,17)}</div>`).join('')||'<p>尚無已儲存的 Vegas 回合。</p>';
  }catch(e){alert(FortisTournament.errorMessage(e));}
 }
