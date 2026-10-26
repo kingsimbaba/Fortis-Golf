@@ -1,3 +1,11 @@
+# Live Vegas section — 26 October 2026
+
+Vegas score entry now includes a separate results card after the existing gross/8421 leaderboard and before the unchanged stroke/putt controls. It shows current pairing, each player's selected-hole delta and overall Vegas total, next-hole pairing once scores are available, and completed-hole deltas with running totals. The selected pending hole remains visible; other unplayed rows are omitted. Previous-score edits recompute all results through the existing Vegas calculator. The card appears only for Vegas; standalone Individual 8421 is unchanged.
+
+56 tests pass, including first-hole drawn teams, pending scores, next-hole pairing from gross scores, earlier corrections, unchanged score-entry markup after excluding the new card, and the existing 8421 calculator hashes. Neither scoring calculator, database schema, nor save behavior changes in this follow-up.
+
+---
+
 # Shared score-entry correction — 26 October 2026
 
 This local review candidate supersedes the separate Vegas entry/save behavior described in the older implementation record below. Vegas now uses the unchanged Individual 8421 score-entry markup and calculators, including strokes, putts (default 2), hole confirmation and navigation. New Vegas rounds save through the ordinary 8421 statistics/matchup path and additionally store an owner-only Vegas snapshot derived from those same scores. Historical records are not migrated or recalculated.
