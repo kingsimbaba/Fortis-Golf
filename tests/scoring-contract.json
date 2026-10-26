@@ -1,0 +1,25 @@
+{
+  "regions": [
+    {
+      "start": "function playerPoint(",
+      "end": "function eligibleStrokeHoles(",
+      "sha256": "c0033f90e6c638327412f6f502e53d0ac0b03cd8eb96fb7eec9096904fc0dca3"
+    },
+    {
+      "start": "function changeScore(",
+      "end": "function renderScore(){",
+      "sha256": "8dea371775d8f0b11e981f56d1c613e65702d24a851a54be133126ef2ad61db5"
+    },
+    {
+      "start": "function renderScore(){",
+      "end": "function individualHtml(){",
+      "sha256": "8421b60133c349d3388be8604cab45293d49c0b2fd3fccc41ba22e872e606c98"
+    },
+    {
+      "start": "function vegasLiveScoreboardHtml(",
+      "end": "function vegasScoreboardHtml(",
+      "sha256": "898cc8e82683bf302cd778bdbdd8129df6827fcc9b5baa85ffaf9e78e8627076"
+    }
+  ],
+  "vegasModule": "2524506b3fe64e0d6b1cbae3db8a73aebe77f07ed19f152452ae147e4688951a"
+}

@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>地獄倒霉鬼</title><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="/scripts/tournament.js?v=2026.10.24.02"></script><script src="/scripts/vegas.js?v=2026.10.24.02"></script><script src="/scripts/cross-group.js?v=2026.10.24.02"></script>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>地獄倒霉鬼</title><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="/scripts/tournament.js?v=2026.10.24.02"></script><script src="/scripts/vegas.js?v=2026.10.24.02"></script><script src="/scripts/cross-group.js?v=2026.10.24.02"></script><script src="/scripts/peoria.js?v=2026.10.26.05"></script><script src="/scripts/peoria-ui.js?v=2026.10.26.05"></script><link rel="stylesheet" href="/styles/peoria.css?v=2026.10.26.05">
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
@@ -573,7 +573,7 @@ th{color:var(--muted)}
 <button type="button" class="btn2" onclick="leavePasswordReset()">返回登入</button>
 </div></section>
 
-<section id="home" class="page hidden"><div id="homeContent"></div><div class="card"><button class="btn2" onclick="showTournamentHome()">Cross Group Game · 跨組賽</button><button class="btn2" onclick="showVegasHistory()">Vegas 回合紀錄</button><div id="vegasHistory"></div></div></section><section id="setup" class="page hidden"><div class="card" style="display:flex;align-items:center;gap:10px"><button class="btn2" style="width:auto;padding:9px 13px;min-height:38px" onclick="showPage('home')">← 返回首頁</button><div><b>建立新回合</b><div class="small">完成設定後即可開始計分</div></div></div><div class="card"><h2>資料庫狀態</h2><div id="dbStatus" class="small">連線中…</div></div><div class="card"><div class="card"><h2>顯示設定</h2><label>主題</label><select id="themeSelector" onchange="changeTheme()"><option value="dark">深色</option><option value="light">淺色</option><option value="contrast">高對比</option></select></div><h2>新回合</h2><div class="grid"><div><label>國家</label>
+<section id="home" class="page hidden"><div id="homeContent"></div><div class="card"><button class="btn2" onclick="FortisPeoriaUI.openList().catch(e=>alert(e.message))">賽事成績</button><button class="btn2" onclick="showVegasHistory()">Vegas 回合紀錄</button><div id="vegasHistory"></div></div></section><section id="peoriaPage" class="page hidden"><div id="peoriaContent"></div></section><section id="setup" class="page hidden"><div class="card" style="display:flex;align-items:center;gap:10px"><button class="btn2" style="width:auto;padding:9px 13px;min-height:38px" onclick="showPage('home')">← 返回首頁</button><div><b>建立新回合</b><div class="small">完成設定後即可開始計分</div></div></div><div class="card"><h2>資料庫狀態</h2><div id="dbStatus" class="small">連線中…</div></div><div class="card"><div class="card"><h2>顯示設定</h2><label>主題</label><select id="themeSelector" onchange="changeTheme()"><option value="dark">深色</option><option value="light">淺色</option><option value="contrast">高對比</option></select></div><h2>新回合</h2><div class="grid"><div><label>國家</label>
 <select id="country" onchange="updateCourseFilters()"></select>
 
 <label>地區</label>
@@ -596,7 +596,7 @@ th{color:var(--muted)}
 <select id="course"></select>
 <button class="btn2" style="margin-top:10px" onclick="detectNearbyCourse()">📍 偵測附近球場</button>
 <div id="gpsCourseStatus" class="gps-status small">尚未使用 GPS 偵測。</div></div><div id="comboBox" class="hidden"><label id="comboLabel">組合</label><select id="combo"></select></div><div><label>備註</label><input id="roundNote" placeholder="週日球局"></div></div><p class="small">球場有超過18個洞，請選擇擊球的兩個場地.</p></div>
-<div class="card"><label for="gameMode">本組玩法</label><select id="gameMode" onchange="document.getElementById('vegasDrawSetup').hidden=this.value!=='vegas'"><option value="individual8421" selected>Individual 8421（預設）</option><option value="vegas">Vegas + Individual 8421</option><option value="crossGroup">Cross Group Game（僅跨組總桿）</option></select><div id="vegasDrawSetup" hidden><p>依下方球員順序輸入實際抽籤號碼，各一次 1–4。Vegas 從第 1 洞開始。</p><label for="vegasDraw0">球員 1 抽籤號碼</label><input id="vegasDraw0" type="number" min="1" max="4" step="1"><label for="vegasDraw1">球員 2 抽籤號碼</label><input id="vegasDraw1" type="number" min="1" max="4" step="1"><label for="vegasDraw2">球員 3 抽籤號碼</label><input id="vegasDraw2" type="number" min="1" max="4" step="1"><label for="vegasDraw3">球員 4 抽籤號碼</label><input id="vegasDraw3" type="number" min="1" max="4" step="1"><p>數字合併低桿在前；10+ 在前；Birdie ×2、Eagle ×5、一桿進洞 ×10。勝方取最高倍數，不疊加、不翻轉。</p></div><label><input id="enableCrossGroup" type="checkbox"> 啟用跨組排名（獨立選項）</label><label>球員人數</label>
+<div class="card"><label for="gameMode">本組玩法</label><select id="gameMode" onchange="document.getElementById('vegasDrawSetup').hidden=this.value!=='vegas'"><option value="individual8421" selected>Individual 8421（預設）</option><option value="vegas">Vegas + Individual 8421</option></select><div id="vegasDrawSetup" hidden><p>依下方球員順序輸入實際抽籤號碼，各一次 1–4。Vegas 從第 1 洞開始。</p><label for="vegasDraw0">球員 1 抽籤號碼</label><input id="vegasDraw0" type="number" min="1" max="4" step="1"><label for="vegasDraw1">球員 2 抽籤號碼</label><input id="vegasDraw1" type="number" min="1" max="4" step="1"><label for="vegasDraw2">球員 3 抽籤號碼</label><input id="vegasDraw2" type="number" min="1" max="4" step="1"><label for="vegasDraw3">球員 4 抽籤號碼</label><input id="vegasDraw3" type="number" min="1" max="4" step="1"><p>數字合併低桿在前；10+ 在前；Birdie ×2、Eagle ×5、一桿進洞 ×10。勝方取最高倍數，不疊加、不翻轉。</p></div><label>球員人數</label>
 <select id="playerCount" onchange="makePlayers(); renderMatchups();">
   <option value="4" selected>4 位球員</option>
   <option value="3">3 位球員</option>
@@ -880,6 +880,8 @@ async function init(){
   }
 
   await loadConfig();
+  const peoriaToken=new URLSearchParams(location.search).get('peoria');
+  if(peoriaToken){try{await FortisPeoriaUI.openPublic(peoriaToken,true);}catch(e){showPage('peoriaPage');document.getElementById('peoriaContent').textContent='成績暫時無法載入，請重新整理後再試。';}return;}
   await initAuth();
 
 
@@ -918,7 +920,7 @@ async function initAuth(){
       showPasswordReset(session);
       return;
     }
-    if(event==='SIGNED_OUT'){tournamentWatching=null;document.getElementById('tournamentPanel')?.remove();}
+    if(event==='SIGNED_OUT'){window.FortisPeoriaUI?.clearMemory();tournamentWatching=null;document.getElementById('tournamentPanel')?.remove();}
     if(event==='INITIAL_SESSION') return;
     if(passwordRecoveryMode){
       if(event==='SIGNED_OUT') showPasswordReset(null);
@@ -2092,7 +2094,7 @@ document.getElementById('liveViewerContent').innerHTML = `
 }
 async function copyLiveLink(){
   if(!round) return;
-  if(['vegas','crossGroup'].includes(round.gameMode)||round.tournament?.gameKind==='cross'){alert('跨組賽事請使用賽事邀請功能；此玩法不使用公開即時分享。');return;}
+  if(['vegas','crossGroup'].includes(round.gameMode)||round.tournament?.gameKind==='cross'){alert('此回合不提供公開即時分享；儲存後可查看回合紀錄。');return;}
 
   await syncLiveRound();
 
@@ -2896,7 +2898,7 @@ if(round.gameMode==='vegas'&&!round.vegasSnapshotSaved){
   await sb('golf_vegas_rounds?on_conflict=owner_id,id',{method:'POST',headers:{Prefer:'resolution=ignore-duplicates,return=representation'},body:JSON.stringify({id:`fortis:${round_id}`,owner_id:currentUser.id,round_data:{...completedRound,fortisRoundId:round_id}})});
   round.vegasSnapshotSaved=true;saveActiveRound();
 }
-const achievements=buildRoundAchievements(completedRound,priorScores);localRounds.push(round);await endActiveScoringSession();await loadAll();clearActiveRound();round=null;renderSummary();showPage('summary');setTimeout(()=>showRoundAchievements(achievements),120);
+const achievements=buildRoundAchievements(completedRound,priorScores);localRounds.push(round);await endActiveScoringSession();await loadAll();clearActiveRound();round=null;renderSummary();showPage('summary');const peoriaStarted=typeof FortisPeoriaUI!=='undefined'&&FortisPeoriaUI.afterSave(completedRound,round_id);if(!peoriaStarted)setTimeout(()=>showRoundAchievements(achievements),120);
 }catch(e){alert('Save failed: '+e.message)}finally{roundActionPending=false;}}
 function renderHeadToHead(){
   let records={};
@@ -4974,7 +4976,7 @@ function showPage(id){
 
   document.querySelectorAll('.nav button').forEach(b=>b.classList.remove('active'));
 
-  let navTarget=id==='setup'?'Home':id[0].toUpperCase()+id.slice(1);
+  let navTarget=['setup','peoriaPage'].includes(id)?'Home':id[0].toUpperCase()+id.slice(1);
   let nb=document.getElementById('nav'+navTarget);
   if(nb) nb.classList.add('active');
 
@@ -5341,24 +5343,8 @@ function showTournamentHome(){
   mountTournamentPanel(true);
 }
 function mountTournamentPanel(force=false){
-  let panel=document.getElementById('tournamentPanel');
-  if(!force&&!round?.tournament&&!round?.crossGroupEnabled&&round?.gameMode!=='crossGroup'){panel?.remove();return;}
-  if(!panel){panel=document.createElement('div');panel.id='tournamentPanel';panel.className='card';document.getElementById('scorePage').appendChild(panel);}
-  const key=String(round?.id||'viewer')+':'+String(round?.tournament?.eventId||'');
-  if(!force&&panel._tournamentKey===key)return;
-  panel._tournamentKey=key;
-  const esc=adminEscapeHtml, linked=!!round?.tournament;
-  panel.innerHTML=`<h2>Cross Group Game · 跨組賽</h2><p class="small">本組玩法保持獨立；跨組比較 Gross 與新新 Peoria Net。12 個隱藏洞於結算後公開。</p>
-    ${!linked?`<div class="card"><h3>1. 先設定你這一組</h3><p>${round?'本組：'+round.players.map(esc).join('、')+' · '+esc(round.courseName||''):'建立賽事前，先選擇球場和本組球員，再開始回合。不需要先輸入桿數。'}</p>${!round?`<button onclick="startCrossSetup()">設定球場與本組球員 →</button>`:''}</div>
-    <div class="card"><h3>2. 主辦人：建立新賽事</h3><label for="tournamentName">賽事名稱</label><input id="tournamentName" maxlength="120" placeholder="例如：Fukuoka Invitational" ${!round?'disabled':''}><button onclick="createTournament()" ${!round?'disabled':''}>建立賽事並加入本組</button><p class="small">建立後可邀請其他組別的記分者。</p></div>`:`<p>本組已連結賽事，照常輸入桿數就會自動更新排名。</p>`}
-    <div class="card"><h3>${linked?'查看其他賽事':'其他組別或觀眾：開啟已受邀的賽事'}</h3><p class="small">請先由主辦人邀請你，再從清單選擇賽事；不用輸入賽事代碼。</p><label for="tournamentSelect">已受邀的賽事</label><select id="tournamentSelect"><option value="">正在載入…</option></select><button class="btn2" onclick="openTournament()">查看此賽事</button>${round&&!linked?`<button class="btn2" onclick="linkSelectedTournament()">將本組加入選取的賽事</button><button class="btn2" onclick="restoreSelectedTournament()">載入我已加入的組別</button>`:''}<button class="btn2" onclick="loadTournamentChoices()">重新整理清單</button></div>
-    <div id="tournamentStatus" role="status" aria-live="polite"></div><div id="tournamentBoard"></div>
-    <div id="tournamentManage" class="hidden"><h3>主辦人管理</h3><button class="btn2" onclick="inviteTournamentUser()">邀請其他組別 / 觀眾</button><button class="btn2" onclick="finalizeTournament()">所有人完成後：公布最終排名</button><div id="crossAdminControls"></div></div>
-    ${linked?`<details><summary>同步與本組管理</summary><button class="btn2" onclick="retryTournamentSync()">重試同步</button><button class="btn2" onclick="restoreTournamentGroup()">載入本組雲端桿數</button><button class="btn2" onclick="unlinkTournamentGroup()">退出賽事</button></details>`:''}
-    <details><summary>讓主辦人邀請我</summary><p class="small">將以下個人邀請碼傳給主辦人，主辦人即可邀請你。這不是賽事名稱。</p><code style="overflow-wrap:anywhere">${esc(currentUser?.id||'請先登入')}</code></details>`;
-  loadTournamentChoices();
-  if(linked)tournamentWatching=round.tournament.eventId;
-  if(tournamentWatching)refreshTournament();
+  // Retired UI: existing scoring renderer calls are retained so its markup stays unchanged.
+  document.getElementById('tournamentPanel')?.remove();
 }
 async function loadTournamentChoices(){
   const select=document.getElementById('tournamentSelect');if(!select)return;
