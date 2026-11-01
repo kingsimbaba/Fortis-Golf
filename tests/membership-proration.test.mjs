@@ -1,0 +1,57 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import {createRequire} from 'node:module';
+const require=createRequire(import.meta.url),P=require('../scripts/personal-round-amounts.js');
+const root=new URL('../supabase/migrations/',import.meta.url),read=f=>readFileSync(new URL(f,root),'utf8');
+const cutoff=read('20261101065957_cost_tracking_start_2027.sql'),proration=read('20261101070850_membership_daily_proration.sql');
+const freeze=(sql,at)=>sql.replaceAll('current_timestamp',`timestamptz '${at}'`);
+test('May 22 daily membership accrual honors actual days, 2027 cutoff, renewal boundary, missing cycles and privacy',async()=>{
+ const {PGlite}=await import(process.env.PGLITE_MODULE||'@electric-sql/pglite'),db=new PGlite();
+ const a='00000000-0000-0000-0000-000000000001',b='00000000-0000-0000-0000-000000000002';
+ try{
+  await db.exec(`create role anon;create role authenticated;create schema auth;create table auth.users(id uuid primary key);
+   create function auth.uid() returns uuid language sql stable as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$;
+   grant usage on schema auth to authenticated;grant execute on function auth.uid() to authenticated;
+   create table profiles(id uuid primary key,display_name text);create table fortis_rounds(id bigint primary key,round_name text,course_name text,course_combo text,played_at timestamptz,players jsonb);
+   create table hole_scores(round_id bigint,player_name text);grant select on profiles,fortis_rounds,hole_scores to authenticated;`);
+  await db.query('insert into auth.users values($1),($2)',[a,b]);await db.query("insert into profiles values($1,'Paul'),($2,'Other')",[a,b]);
+  await db.exec(`insert into fortis_rounds(id,played_at,players) values(1,'2027-01-01T00:00:00+08','["Paul"]');`);
+  for(const f of ['20261101062220_personal_round_amounts.sql','20261101063124_personal_green_fees.sql','20261101064031_personal_cost_report.sql','20261101064954_annual_fixed_golf_costs.sql'])await db.exec(read(f));
+  await db.exec(freeze(cutoff,'2027-05-21T23:59:59+08'));await db.exec(freeze(proration,'2027-05-21T23:59:59+08'));
+  const as=async(id,role='authenticated')=>{await db.exec('reset role');await db.query("select set_config('request.jwt.claim.sub',$1,false)",[id]);await db.exec('set role '+role);};
+  const clock=async at=>{await db.exec('reset role');await db.exec(freeze(cutoff.slice(cutoff.indexOf('create or replace function public.golf_personal_cost_summary()')),at));await db.exec(freeze(proration.slice(proration.indexOf('create or replace function public.golf_personal_annual_cost_report()')),at));await as(a);};
+  const report=async()=>(await db.query('select golf_personal_annual_cost_report() r')).rows[0].r;
+  const amount=async(from,until)=>(await db.query('select golf_personal_membership_proration($1,$2) r',[from,until])).rows[0].r;
+  await as(a);await db.query('insert into golf_personal_cost_settings(user_id,start_year,membership_prorated,membership_renewal_month,membership_renewal_day) values($1,2026,true,5,22)',[a]);
+  await db.query('insert into golf_personal_annual_costs(user_id,year,membership_fee,insurance_fee,other_fixed_costs) values($1,2026,36500,9000,null),($1,2027,null,1000,500)',[a]);
+  assert.equal(Number((await amount('2026-05-22','2027-05-22')).recognized_amount),36500);
+  await db.query('update golf_personal_cost_settings set start_year=2027');
+  assert.equal(Number((await amount('2026-05-22','2027-05-22')).recognized_amount),14100,'only Jan 1 through May 21 enters career costs');
+  await db.query('insert into golf_personal_round_amounts(user_id,round_id,green_fee,fortis_amount) values($1,1,3000,1000)',[a]);
+  let r=await report();assert.equal(r.membership_prorated,true);assert.equal(r.ytd.membership_recognized,'14100.00');assert.equal(r.ytd.fixed_total,'15600.00');assert.equal(r.ytd.combined_average,'17600.00');assert.equal(r.ytd.membership_complete,true);
+  const old=r.annual_years.find(x=>x.year===2026);assert.equal(old.membership_period_start,'2026-05-22');assert.equal(old.membership_period_end,'2027-05-21');assert.equal(old.membership_crosses_tracking_start,true);assert.equal(old.recognized_fixed_total,null);
+  await clock('2027-05-22T00:00:00+08');r=await report();assert.equal(r.ytd.membership_complete,false);assert.equal(r.ytd.combined_average,null);assert.equal(r.ytd.cost_average,'2000.00');assert.deepEqual(r.ytd.missing_membership_cycles,[{year:2027,start:'2027-05-22',end:'2028-05-21'}]);
+  await db.query('update golf_personal_annual_costs set membership_fee=73200 where year=2027');
+  assert.equal(Number((await amount('2027-05-22','2028-05-22')).recognized_amount),73200,'366-day cycle');
+  assert.equal(Number((await amount('2028-02-28','2028-03-01')).recognized_amount),400,'leap day included');
+  assert.equal(Number((await amount('2027-05-21','2027-05-23')).recognized_amount),300,'one day in each renewal cycle, no double count');
+  r=await report();assert.equal(r.ytd.membership_complete,true);assert.equal(r.ytd.membership_recognized,'14300.00');assert.equal(r.ytd.combined_average,'17800.00');
+  await db.query('update golf_personal_annual_costs set membership_fee=case year when 2026 then 12000.01 else 24000.02 end');r=await report();assert.equal(r.ytd.membership_recognized,'4701.19');assert.equal(r.ytd.combined_average,'8201.19','round only after adding daily accrual');
+  assert.equal((await amount('2027-05-22','2027-05-22')).recognized_amount,null);assert.equal((await amount('2027-05-23','2027-05-22')).recognized_amount,null);
+  await clock('2026-11-01T12:00:00+08');r=await report();assert.equal(r.all_time.fixed_total,null);assert.equal(r.all_time.combined_average,null);assert.equal(r.all_time.membership_complete,true);
+  await clock('2027-05-22T00:00:00+08');await db.query('update golf_personal_annual_costs set membership_fee=0 where year=2027');r=await report();assert.equal(r.ytd.membership_complete,true,'explicit zero completes a cycle');
+  await assert.rejects(db.query('update golf_personal_cost_settings set membership_renewal_month=13'),/check constraint/);await assert.rejects(db.query('update golf_personal_cost_settings set membership_renewal_month=2,membership_renewal_day=30'),/check constraint/);
+  await as(b);await db.query('insert into golf_personal_cost_settings(user_id,start_year) values($1,2027)',[b]);await db.query('insert into golf_personal_annual_costs(user_id,year,membership_fee,insurance_fee) values($1,2027,2000,500)',[b]);
+  r=await report();assert.equal(r.membership_prorated,false);assert.equal(r.ytd.fixed_total,'2500.00','other account retains full-year basis');assert.equal((await amount('2027-01-01','2027-01-02')).recognized_amount,'2000.00');
+  await as(a);assert.equal((await db.query('select membership_fee from golf_personal_annual_costs where year=2026')).rows[0].membership_fee,'12000.01');
+  await as('','anon');await assert.rejects(db.query("select golf_personal_membership_proration('2027-01-01','2027-05-22')"),/permission denied/);
+ }finally{await db.close();}
+});
+test('UI explains covered membership cycles and offers missing-cycle entry without treating it as zero',()=>{
+ assert.deepEqual(P.membershipPeriod(2026,5,22),{start:'2026-05-22',end:'2027-05-21'});
+ const report={membership_prorated:true,membership_renewal_month:5,membership_renewal_day:22,all_time:{missing_membership_cycles:[{year:2026,start:'2026-05-22',end:'2027-05-21'}]}};
+ const html=P.membershipNoticeHtml(report);assert.match(html,/5 月 22 日/);assert.match(html,/365／366/);assert.match(html,/平均暫不顯示/);assert.match(html,/data-annual-year="2026"/);
+ const years=P.annualYearsHtml({...report,year:2027,tracking_start_date:'2027-01-01',annual_years:[{year:2026,membership_period_start:'2026-05-22',membership_period_end:'2027-05-21',membership_crosses_tracking_start:true}]});
+ assert.match(years,/2026-05-22～2027-05-21/);assert.match(years,/會員跨年部分按涵蓋日期計入/);assert.doesNotMatch(years,/· 不計生涯成本/);
+});
