@@ -8,6 +8,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   
+<script src="/scripts/personal-round-amounts.js?v=2026.11.01.01"></script><link rel="stylesheet" href="/styles/personal-round-amounts.css?v=2026.11.01.01">
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>地獄倒霉鬼</title><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="/scripts/tournament.js?v=2026.10.24.02"></script><script src="/scripts/vegas.js?v=2026.10.24.02"></script><script src="/scripts/cross-group.js?v=2026.10.24.02"></script><script src="/scripts/peoria.js?v=2026.10.26.05"></script><script src="/scripts/peoria-ui.js?v=2026.10.26.05"></script><link rel="stylesheet" href="/styles/peoria.css?v=2026.10.26.05">
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js"></script>
@@ -644,7 +645,7 @@ function courseAdminName(c){
   if(!c) return '';
   return [c.display_name_zh,c.display_name_ja,c.display_name].filter(Boolean).filter((v,i,a)=>a.indexOf(v)===i).join(' / ')||c.course_name;
 }
-const APP_BUILD_VERSION='2026.10.24.02';
+const APP_BUILD_VERSION='2026.11.01.01';
 let fortisUpdateReloading=false;
 
 function showFortisUpdateBanner(serverVersion){
@@ -920,7 +921,7 @@ async function initAuth(){
       showPasswordReset(session);
       return;
     }
-    if(event==='SIGNED_OUT'){window.FortisPeoriaUI?.clearMemory();tournamentWatching=null;document.getElementById('tournamentPanel')?.remove();}
+    if(event==='SIGNED_OUT'){window.FortisPersonalAmounts?.clearMemory();window.FortisPeoriaUI?.clearMemory();tournamentWatching=null;document.getElementById('tournamentPanel')?.remove();}
     if(event==='INITIAL_SESSION') return;
     if(passwordRecoveryMode){
       if(event==='SIGNED_OUT') showPasswordReset(null);
@@ -1014,7 +1015,7 @@ async function leavePasswordReset(){
   }catch(error){msg.textContent=error.message||'請重新整理後再試。';}
 }
 function showAuth(msg=''){
-  currentSession=null;currentUser=null;currentProfile=null;
+  currentSession=null;currentUser=null;currentProfile=null;window.FortisPersonalAmounts?.clearMemory();
   document.querySelector('.nav').classList.add('hidden');
   document.querySelectorAll('.page').forEach(p=>p.classList.add('hidden'));
   document.getElementById('auth').classList.remove('hidden');
@@ -2860,7 +2861,7 @@ function buildRoundAchievements(savedRound, priorScores){
 function showRoundAchievements(data){
   document.getElementById('roundAchievementOverlay')?.remove();
   const overlay=document.createElement('div');overlay.id='roundAchievementOverlay';overlay.className='achievement-overlay';
-  overlay.innerHTML=`<div class="achievement-panel"><h2>🏆 回合獎項</h2><div class="small" style="text-align:center">${adminEscapeHtml(data.title)} · ${adminEscapeHtml(data.course)}</div><div class="achievement-list">${data.awards.map(a=>`<div class="achievement-item ${a.best?'personal-best':''}"><div class="achievement-icon">${a.icon}</div><div><b>${adminEscapeHtml(a.label)}</b><div class="small">${adminEscapeHtml(a.player)}</div></div><div class="achievement-value">${adminEscapeHtml(a.value)}</div></div>`).join('')}</div><div class="achievement-actions"><button class="btn2" onclick="shareRoundAchievements()">📤 分享</button><button onclick="document.getElementById('roundAchievementOverlay').remove()">完成</button></div></div>`;
+  overlay.innerHTML=`<div class="achievement-panel"><h2>🏆 回合獎項</h2><div class="small" style="text-align:center">${adminEscapeHtml(data.title)} · ${adminEscapeHtml(data.course)}</div><div class="achievement-list">${data.awards.map(a=>`<div class="achievement-item ${a.best?'personal-best':''}"><div class="achievement-icon">${a.icon}</div><div><b>${adminEscapeHtml(a.label)}</b><div class="small">${adminEscapeHtml(a.player)}</div></div><div class="achievement-value">${adminEscapeHtml(a.value)}</div></div>`).join('')}</div><div class="achievement-actions">${data.roundId?`<button class="btn2" onclick="openPersonalRoundAmounts('${data.roundId}')">個人收支</button>`:''}<button class="btn2" onclick="shareRoundAchievements()">📤 分享</button><button onclick="document.getElementById('roundAchievementOverlay').remove()">完成</button></div></div>`;
   overlay._achievementData=data;document.body.appendChild(overlay);
 }
 async function shareRoundAchievements(){
@@ -2898,7 +2899,7 @@ if(round.gameMode==='vegas'&&!round.vegasSnapshotSaved){
   await sb('golf_vegas_rounds?on_conflict=owner_id,id',{method:'POST',headers:{Prefer:'resolution=ignore-duplicates,return=representation'},body:JSON.stringify({id:`fortis:${round_id}`,owner_id:currentUser.id,round_data:{...completedRound,fortisRoundId:round_id}})});
   round.vegasSnapshotSaved=true;saveActiveRound();
 }
-const achievements=buildRoundAchievements(completedRound,priorScores);localRounds.push(round);await endActiveScoringSession();await loadAll();clearActiveRound();round=null;renderSummary();showPage('summary');const peoriaStarted=typeof FortisPeoriaUI!=='undefined'&&FortisPeoriaUI.afterSave(completedRound,round_id);if(!peoriaStarted)setTimeout(()=>showRoundAchievements(achievements),120);
+const achievements={...buildRoundAchievements(completedRound,priorScores),roundId:round_id};localRounds.push(round);await endActiveScoringSession();await loadAll();clearActiveRound();round=null;renderSummary();showPage('summary');const peoriaStarted=typeof FortisPeoriaUI!=='undefined'&&FortisPeoriaUI.afterSave(completedRound,round_id);if(!peoriaStarted)setTimeout(()=>showRoundAchievements(achievements),120);
 }catch(e){alert('Save failed: '+e.message)}finally{roundActionPending=false;}}
 function renderHeadToHead(){
   let records={};
@@ -3925,6 +3926,17 @@ async function loadMoreRoundLibrary(){
   renderSummary();
 }
 
+function openPersonalRoundAmounts(roundId){
+  return window.FortisPersonalAmounts.open(String(roundId),{
+    getUserId:()=>currentUser?.id,playerName:getDashboardPlayerName(),api:sb,
+    getRound:async id=>{
+      const found=[...db.rounds,...(roundLibrarySearchResults||[])].find(r=>String(r.id)===id);
+      if(found)return found;
+      const rows=await sb(`fortis_rounds?id=eq.${id}&select=*`);if(!rows[0])throw Error('找不到回合');return rows[0];
+    },
+    getScores:id=>loadPaged(`hole_scores?round_id=eq.${id}&select=*&order=hole_number`)
+  });
+}
 function renderRoundHistory(){
   let html=`<div class="card">
     <div class="summary-card-title"><h2>回合紀錄</h2><span class="premium-badge">PDF · 分享 · 回播</span></div>
@@ -3956,6 +3968,7 @@ function renderRoundHistory(){
         <button onclick="historicalGenerateScorecardPdf('${r.id}','download')">📄 PDF</button>
         <button class="btn2" onclick="historicalGenerateScorecardPdf('${r.id}','share')">📤 分享</button>
         <button class="btn2" onclick="replayRound('${r.id}')">▶ 回播</button>
+        <button class="btn2" onclick="openPersonalRoundAmounts('${r.id}')">個人收支</button>
       </div>
     </div>`;
   });
