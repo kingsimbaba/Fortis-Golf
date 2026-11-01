@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   
-<script src="/scripts/personal-round-amounts.js?v=2026.11.01.03"></script><link rel="stylesheet" href="/styles/personal-round-amounts.css?v=2026.11.01.03">
+<script src="/scripts/personal-round-amounts.js?v=2026.11.01.04"></script><link rel="stylesheet" href="/styles/personal-round-amounts.css?v=2026.11.01.04">
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>地獄倒霉鬼</title><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="/scripts/tournament.js?v=2026.10.24.02"></script><script src="/scripts/vegas.js?v=2026.10.24.02"></script><script src="/scripts/cross-group.js?v=2026.10.24.02"></script><script src="/scripts/peoria.js?v=2026.10.26.05"></script><script src="/scripts/peoria-ui.js?v=2026.10.26.05"></script><link rel="stylesheet" href="/styles/peoria.css?v=2026.10.26.05">
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js"></script>
@@ -47,7 +47,7 @@ button{background:linear-gradient(135deg,#2f855a,#38a169);border:0;font-weight:9
 table{width:100%;border-collapse:collapse;font-size:13px}
 th,td{border-bottom:1px solid var(--line);padding:9px;text-align:center}
 th{color:var(--muted)}
-.nav{position:fixed;bottom:0;left:0;right:0;background:rgba(9,17,31,.96);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(5,1fr);gap:6px;padding:8px;z-index:5}
+.nav{position:fixed;bottom:0;left:0;right:0;background:rgba(9,17,31,.96);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px;padding:8px;z-index:5}
 .nav button{font-size:12px;padding:10px 5px;background:#18243a;min-height:44px}
 .nav button.active{background:#2f855a}
 .ok{color:#68d391}
@@ -522,7 +522,7 @@ th{color:var(--muted)}
 .home-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}.home-kpi{background:#0e1728;border:1px solid var(--line);border-radius:14px;padding:12px;text-align:center}.home-kpi b{display:block;color:#68d391;font-size:23px}.home-kpi span{font-size:10px;color:var(--muted)}
 .home-rank{display:grid;grid-template-columns:36px 1fr auto;gap:8px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}.home-rank:last-child{border-bottom:0}.home-medal{font-size:22px}.home-points{font-weight:900;color:#68d391}
 .home-form{display:flex;gap:8px;overflow:auto;padding-bottom:2px}.home-form-item{min-width:74px;background:#0e1728;border:1px solid var(--line);border-radius:13px;padding:10px;text-align:center}.home-form-item b{display:block;font-size:22px;color:#68d391}
-@media(max-width:760px){.home-actions{grid-template-columns:1fr}.home-grid{grid-template-columns:1fr}.home-card.full{grid-column:auto}.home-kpis{grid-template-columns:repeat(2,1fr)}.nav{grid-template-columns:repeat(5,1fr)}.nav button{font-size:11px;padding:8px 2px}}
+@media(max-width:760px){.home-actions{grid-template-columns:1fr}.home-grid{grid-template-columns:1fr}.home-card.full{grid-column:auto}.home-kpis{grid-template-columns:repeat(2,1fr)}.nav{grid-template-columns:repeat(6,minmax(0,1fr))}.nav button{font-size:11px;padding:8px 2px}}
 
 .scan-wizard-overlay{position:fixed;inset:0;background:rgba(0,0,0,.78);z-index:12000;display:flex;align-items:center;justify-content:center;padding:14px}
 .scan-wizard{width:min(920px,100%);max-height:94vh;overflow:auto;background:var(--panel);border:2px solid #38a169;border-radius:24px;padding:18px;box-shadow:0 28px 90px rgba(0,0,0,.6)}
@@ -615,12 +615,13 @@ th{color:var(--muted)}
 </label><div id="matchupSetup" class="small">請先輸入球員，然後點選載入個人對戰。</div></div></section>
 <section id="scorePage" class="page hidden"><div id="scoreContent"></div></section><section id="liveViewer" class="page hidden">
   <div id="liveViewerContent"></div>
-</section><section id="summary" class="page hidden"><div id="summaryContent"></div></section><section id="data" class="page hidden"><div class="card"><h2>資料庫</h2><button class="btn2" onclick="forceFullSync(this)">重新同步資料</button><div id="dataView" class="small" style="margin-top:10px"></div></div></section><section id="admin" class="page hidden"><div id="adminContent"></div><div id="coursePhotosAdmin" class="card"></div></section></div>
+</section><section id="costs" class="page hidden"><div id="personalCostsContent"></div></section><section id="summary" class="page hidden"><div id="summaryContent"></div></section><section id="data" class="page hidden"><div class="card"><h2>資料庫</h2><button class="btn2" onclick="forceFullSync(this)">重新同步資料</button><div id="dataView" class="small" style="margin-top:10px"></div></div></section><section id="admin" class="page hidden"><div id="adminContent"></div><div id="coursePhotosAdmin" class="card"></div></section></div>
 <input id="fortisRestoreFile" type="file" accept="application/json,.json" class="hidden" onchange="restoreFortisBackup(event)">
 <div class="nav hidden">
   <button id="navHome" class="active" onclick="showPage('home')">🏠<br>首頁</button>
   <button id="navScorePage" onclick="showPage('scorePage')">⛳<br>計分</button>
   <button id="navSummary" onclick="showPage('summary')">📊<br>統計</button>
+  <button id="navCosts" onclick="showPage('costs')">💰<br>打球收支</button>
   <button id="navData" onclick="showPage('data')">🗄️<br>資料</button>
   <button id="navAdmin" class="hidden" onclick="showPage('admin')">🔧<br>管理</button>
 </div>
@@ -645,7 +646,7 @@ function courseAdminName(c){
   if(!c) return '';
   return [c.display_name_zh,c.display_name_ja,c.display_name].filter(Boolean).filter((v,i,a)=>a.indexOf(v)===i).join(' / ')||c.course_name;
 }
-const APP_BUILD_VERSION='2026.11.01.03';
+const APP_BUILD_VERSION='2026.11.01.04';
 let fortisUpdateReloading=false;
 
 function showFortisUpdateBanner(serverVersion){
@@ -1178,7 +1179,7 @@ try{
   db.seasons=[];
 }
 
-localStorage.setItem('fortisLastSuccessfulSync',new Date().toISOString()); updateLastSyncStatus(); setProductionStatus(`資料已更新：${db.scores.length} 筆逐洞成績`); setupCourseSelect(); if(currentPage==='home')renderHome(); document.getElementById('dbStatus').innerHTML=`<span class="ok">Supabase 已連線。</span> Courses: ${db.courses.length}, holes: ${db.holes.length}, matchups: ${db.matchups.length}, rounds: ${db.rounds.length}`; document.getElementById('dataView').innerHTML=`Courses ${db.courses.length}<br>Holes ${db.holes.length}<br>Matchups ${db.matchups.length}<br>Players ${db.players.length}<br>Rounds ${db.rounds.length}<br>History ${db.history.length}<br>Seasons ${db.seasons.length}`;}catch(e){let retry=`<button class="btn2" onclick="loadAll()">重試載入</button>`;document.getElementById('dbStatus').innerHTML='<span class="bad">Supabase error: '+e.message+'</span> '+retry;if(document.getElementById('summaryContent'))document.getElementById('summaryContent').innerHTML=`<div class="card"><h2>資料載入失敗</h2><p class="bad">${e.message}</p>${retry}</div>`;}}
+localStorage.setItem('fortisLastSuccessfulSync',new Date().toISOString()); updateLastSyncStatus(); setProductionStatus(`資料已更新：${db.scores.length} 筆逐洞成績`); setupCourseSelect(); if(currentPage==='home')renderHome();if(currentPage==='costs')renderPersonalCosts(); document.getElementById('dbStatus').innerHTML=`<span class="ok">Supabase 已連線。</span> Courses: ${db.courses.length}, holes: ${db.holes.length}, matchups: ${db.matchups.length}, rounds: ${db.rounds.length}`; document.getElementById('dataView').innerHTML=`Courses ${db.courses.length}<br>Holes ${db.holes.length}<br>Matchups ${db.matchups.length}<br>Players ${db.players.length}<br>Rounds ${db.rounds.length}<br>History ${db.history.length}<br>Seasons ${db.seasons.length}`;}catch(e){let retry=`<button class="btn2" onclick="loadAll()">重試載入</button>`;document.getElementById('dbStatus').innerHTML='<span class="bad">Supabase error: '+e.message+'</span> '+retry;if(document.getElementById('summaryContent'))document.getElementById('summaryContent').innerHTML=`<div class="card"><h2>資料載入失敗</h2><p class="bad">${e.message}</p>${retry}</div>`;}}
 function makePlayers(){
   let n=+(document.getElementById('playerCount')?.value || 4);
   let names=['','','',''];
@@ -3084,11 +3085,10 @@ function renderHome(){
   const active=!!localStorage.getItem('fortisActiveRound');
   const today=new Intl.DateTimeFormat('zh-TW',{year:'numeric',month:'long',day:'numeric',weekday:'long'}).format(new Date());
   box.innerHTML=`<div class="home-hero"><div class="home-welcome"><div><div class="home-greeting">歡迎回來</div><div class="home-name">${adminEscapeHtml(player)}</div><div class="home-date">${today}</div></div>${active?'<div class="home-status">● 回合進行中</div>':''}</div><div class="home-actions">${active?'<button class="home-action primary" onclick="loadActiveRound();renderScore();showPage(\'scorePage\')">繼續未完成回合 →</button>':''}<button class="home-action ${active?'btn2':'primary'}" onclick="openNewRoundFromHome()">＋ 開始新回合</button><button class="home-action btn2" onclick="showPage('summary');setTimeout(()=>document.getElementById('roundLibrarySearch')?.scrollIntoView({behavior:'smooth'}),80)">回合紀錄 ↗</button></div><div class="home-utilities">${currentProfile?.role==='admin'?'<button class="home-action btn2" onclick="openScorecardImportWizard()">匯入球場記分卡</button>':''}<button class="home-action btn2" onclick="refreshFortisAppForUser()">更新應用程式</button></div></div>
-  <div class="home-grid"><section class="card home-card full" id="personalCostSummary"></section><div class="card home-card full"><div class="fg-section-heading"><h2>個人統計</h2></div><div class="home-kpis"><div class="home-kpi"><b>${rounds.length}</b><span>生涯回合</span></div><div class="home-kpi"><b>${seasonRounds}</b><span>本季回合</span></div><div class="home-kpi"><b>${avg}</b><span>平均桿數</span></div><div class="home-kpi"><b>${birdies}</b><span>生涯博蒂</span></div></div></div>
+  <div class="home-grid"><div class="card home-card full"><div class="fg-section-heading"><h2>個人統計</h2></div><div class="home-kpis"><div class="home-kpi"><b>${rounds.length}</b><span>生涯回合</span></div><div class="home-kpi"><b>${seasonRounds}</b><span>本季回合</span></div><div class="home-kpi"><b>${avg}</b><span>平均桿數</span></div><div class="home-kpi"><b>${birdies}</b><span>生涯博蒂</span></div></div></div>
   <div class="card home-card"><div class="fg-section-heading"><h2>地獄倒楣鬼排行榜</h2></div>${leaders.length?leaders.map((r,i)=>`<div class="home-rank"><div class="home-medal">${String(i+1).padStart(2,'0')}</div><div><b>${adminEscapeHtml(r.name)}</b><div class="small">${r.rounds} 回合${r.avg!==null?` · 平均 ${r.avg.toFixed(1)}`:''}</div></div><div class="home-points"><span class="small" style="display:block">地獄倒楣鬼積分</span>${r.points>0?'+':''}${r.points.toFixed(0)}</div></div>`).join(''):'<p class="fg-empty">本季尚無地獄倒楣鬼成績。</p>'}</div>
   <div class="card home-card home-last-round" id="homeLastRound"><div class="fg-section-heading"><h2>最近一場</h2></div>${last?`<div class="home-course"><div class="fg-eyebrow">Course · 球場</div><div class="profile-name">${adminEscapeHtml(last.title||'高爾夫回合')}</div><div class="small" style="margin-top:7px">${adminEscapeHtml(last.course)}${last.combo?` · ${adminEscapeHtml(last.combo)}`:''}</div></div><div class="home-round-result"><div class="score">${last.total}<span>桿</span></div><div class="small">${adminEscapeHtml(last.date||'')}</div></div>`:'<p class="fg-empty">尚無已儲存回合。</p>'}</div>
   <div class="card home-card full"><div class="fg-section-heading"><h2>最近五場成績</h2></div><div class="home-form">${rounds.slice(0,5).map((r,i)=>`<div class="home-form-item" id="homeRecentRound${i}"><b>${r.total}</b><div class="small">${adminEscapeHtml(r.date||'')}</div>${r.title?`<div class="small">${adminEscapeHtml(r.title)}</div>`:''}<div class="small home-form-course">${adminEscapeHtml(r.course)}${r.combo?` · ${adminEscapeHtml(r.combo)}`:''}</div></div>`).join('')||'<p class="fg-empty">尚無最近回合。</p>'}</div></div></div>`;
-  void window.FortisPersonalAmounts?.mountSummary(document.getElementById('personalCostSummary'),{getUserId:()=>currentUser?.id,api:sb});
   const photoItems=rounds.slice(0,5).map((r,i)=>({
     code:db.rounds.find(rec=>String(rec.id)===String(r.id))?.course_name,
     element:document.getElementById('homeRecentRound'+i)
@@ -3927,10 +3927,15 @@ async function loadMoreRoundLibrary(){
   renderSummary();
 }
 
+function renderPersonalCosts(){
+ return window.FortisPersonalAmounts.mountReport(document.getElementById('personalCostsContent'),{
+  getUserId:()=>currentUser?.id,api:sb,onEdit:openPersonalRoundAmounts
+ });
+}
 function openPersonalRoundAmounts(roundId){
   return window.FortisPersonalAmounts.open(String(roundId),{
     getUserId:()=>currentUser?.id,playerName:getDashboardPlayerName(),api:sb,
-    onSaved:()=>{if(currentPage==='home')void window.FortisPersonalAmounts.mountSummary(document.getElementById('personalCostSummary'),{getUserId:()=>currentUser?.id,api:sb});},
+    onSaved:()=>{if(currentPage==='costs')renderPersonalCosts();},
     getRound:async id=>{
       const found=[...db.rounds,...(roundLibrarySearchResults||[])].find(r=>String(r.id)===id);
       if(found)return found;
@@ -4996,6 +5001,7 @@ function showPage(id){
   if(nb) nb.classList.add('active');
 
   if(id==='home') renderHome();
+  if(id==='costs') renderPersonalCosts();
   if(id==='summary') renderSummary();
   if(id==='admin'){
     renderAdmin();

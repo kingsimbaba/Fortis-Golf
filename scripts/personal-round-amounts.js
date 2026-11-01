@@ -61,10 +61,10 @@ async function open(roundId,context){
   refresh();form.elements.namedItem(chosen?'fortis_amount':'player_name').focus();
  }catch(e){if(stillCurrent()){element.querySelector('[role="status"]').textContent='無法讀取個人收支，請檢查連線並關閉後重試。';}}
 }
-function summaryHtml(stats){
+function summaryHtml(stats,{title='我的打球成本',scope='全部歷史 · 僅自己可見',showRules=true}={}){
  const format=(value,signed=false)=>value==null?'—':money(Math.round(Number(value)*100)).replace(signed?/^$/:/^\+/,'');
  const lines=[['果嶺費','fee',false,stats.fee_count],['遊戲贏款','winnings',true,stats.game_count],['遊戲輸款','losses',true,stats.game_count],['遊戲淨輸贏','game',true,stats.game_count],['打球淨成本','cost',false,stats.cost_count]];
- return `<div class="fg-section-heading"><h2>我的打球成本</h2><span class="small">全部歷史 · 僅自己可見</span></div><div class="scroll"><table><thead><tr><th>項目</th><th>累計金額</th><th>每場平均</th><th>已填場數</th></tr></thead><tbody>${lines.map(([label,key,signed,count])=>`<tr><td>${label}</td><td>${format(stats[key+'_total'],signed)}</td><td>${format(stats[key+'_average'],signed)}</td><td>${Number(count)||0}</td></tr>`).join('')}</tbody></table></div><p class="small">淨成本＝果嶺費－遊戲淨輸贏，負數表示淨賺。遊戲贏／輸款依每場淨結果分組，平均以已填遊戲金額的場數計算。淨成本平均只計果嶺費及遊戲金額皆已填的場次；空白不當作 0。</p><p class="small">從「回合紀錄 → 個人收支」補填果嶺費與輸贏，儲存後自動更新。</p>`;
+ return `<div class="fg-section-heading"><h2>${escape(title)}</h2><span class="small">${escape(scope)}</span></div><div class="scroll"><table><thead><tr><th>項目</th><th>累計金額</th><th>每場平均</th><th>已填場數</th></tr></thead><tbody>${lines.map(([label,key,signed,count])=>`<tr><td>${label}</td><td>${format(stats[key+'_total'],signed)}</td><td>${format(stats[key+'_average'],signed)}</td><td>${Number(count)||0}</td></tr>`).join('')}</tbody></table></div>${showRules?`<p class="small">淨成本＝果嶺費－遊戲淨輸贏，負數表示淨賺。遊戲贏／輸款依每場淨結果分組，平均以已填遊戲金額的場數計算。淨成本平均只計果嶺費及遊戲金額皆已填的場次；空白不當作 0。</p><p class="small">從「回合紀錄 → 個人收支」補填果嶺費與輸贏，儲存後自動更新。</p>`:''}`;
 }
 const mounts=new WeakMap();
 async function mountSummary(element,context){
@@ -76,7 +76,23 @@ async function mountSummary(element,context){
   element.innerHTML=summaryHtml(stats);summaries.forEach(el=>{if(!el.isConnected)summaries.delete(el);});
  }catch{if(mounts.get(element)===token&&context.getUserId()===userId&&summaries.has(element))element.innerHTML='<h2>我的打球成本</h2><p role="alert">暫時無法讀取完整收支，請重新整理；未顯示不完整的平均。</p>';}
 }
-const api={cents,decimal,total,greenFee,netCost,money,summary,summaryHtml,mountSummary,payload,open,close,clearMemory};
+function reportHtml(report){
+ const amount=(value,signed=false)=>value==null?'—':money(Math.round(Number(value)*100)).replace(signed?/^$/:/^\+/,'');
+ const recent=Array.isArray(report.recent)?report.recent:[];
+ return `<div class="personal-report-heading"><h1>打球收支</h1><p class="small">僅自己可見 · 截至 ${escape(report.as_of)}（台北時間）</p></div><section class="card"><h2>最近五場</h2><p class="small">依打球日期排序，包含尚未填寫收支的回合。</p>${recent.length?`<div class="scroll"><table class="personal-recent-costs"><thead><tr><th>日期／球局</th><th>果嶺費</th><th>遊戲淨輸贏</th><th>淨成本</th><th></th></tr></thead><tbody>${recent.map(r=>`<tr><td>${escape(r.date||'日期未填')}<br><b>${escape(r.title)}</b><br><span class="small">${escape(r.course)}</span></td><td data-label="果嶺費">${amount(r.green_fee)}</td><td data-label="遊戲淨輸贏">${amount(r.game_total,true)}</td><td data-label="淨成本">${amount(r.net_cost)}</td><td><button class="btn2" data-edit-round="${escape(r.round_id)}">填寫／修改</button></td></tr>`).join('')}</tbody></table></div><p class="small">最近五場中已填完整 ${Number(report.recent_cost_count)||0} 場 · 淨成本合計 ${amount(report.recent_cost_total)} · 每場平均 ${amount(report.recent_cost_average)}</p>`:'<p class="small">尚無對應到你的已儲存回合。請先在個人收支選擇自己的球員名稱，或確認帳號顯示名稱與球員名稱相符。</p>'}</section><div class="personal-report-grid"><section class="card">${summaryHtml(report.ytd,{title:`今年至今（${report.year}）`,scope:'依打球日期 · 台北時間',showRules:false})}</section><section class="card">${summaryHtml(report.all_time,{title:'全部歷史',scope:'所有已填收支紀錄',showRules:false})}</section></div><section class="card small">淨成本＝果嶺費－遊戲淨輸贏；負數表示淨賺。果嶺費、遊戲及淨成本各依已填場數計算平均，空白不當作 0。遊戲贏／輸款依每場淨結果分組，平均使用已填遊戲金額的場數。</section>`;
+}
+async function mountReport(element,context){
+ if(!element)return;const userId=context.getUserId();if(!userId){element.replaceChildren();return;}
+ const token={};mounts.set(element,token);summaries.add(element);element.innerHTML='<h1>打球收支</h1><p role="status">正在整理最近五場、今年及全部歷史收支…</p>';
+ const valid=()=>mounts.get(element)===token&&context.getUserId()===userId&&summaries.has(element);
+ try{
+  const report=await context.api('rpc/golf_personal_cost_report',{method:'POST',body:'{}'});
+  if(!valid())return;element.innerHTML=reportHtml(report);
+  element.querySelectorAll('[data-edit-round]').forEach(button=>{button.onclick=()=>{if(valid()&&/^\d+$/.test(button.dataset.editRound))context.onEdit?.(button.dataset.editRound);};});
+  summaries.forEach(el=>{if(!el.isConnected)summaries.delete(el);});
+ }catch{if(valid())element.innerHTML='<h1>打球收支</h1><p role="alert">暫時無法讀取完整收支，請重新整理；未顯示不完整的平均。</p>';}
+}
+const api={cents,decimal,total,greenFee,netCost,money,summary,summaryHtml,reportHtml,mountReport,mountSummary,payload,open,close,clearMemory};
 if(typeof module!=='undefined'&&module.exports)module.exports=api;
 root.FortisPersonalAmounts=api;
 })(typeof window!=='undefined'?window:globalThis);
