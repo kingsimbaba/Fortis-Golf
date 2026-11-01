@@ -1,9 +1,9 @@
-const CACHE = 'fortis-golf-2026-11-01-06';
+const CACHE = 'fortis-golf-2026-11-01-07';
 
 const ASSETS = [
   '/index.html',
-  '/scripts/personal-round-amounts.js?v=2026.11.01.06',
-  '/styles/personal-round-amounts.css?v=2026.11.01.06',
+  '/scripts/personal-round-amounts.js?v=2026.11.01.07',
+  '/styles/personal-round-amounts.css?v=2026.11.01.07',
   '/scripts/peoria.js?v=2026.10.26.05',
   '/scripts/peoria-ui.js?v=2026.10.26.05',
   '/styles/peoria.css?v=2026.10.26.05',
