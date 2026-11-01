@@ -1,0 +1,52 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import {createRequire} from 'node:module';
+const require=createRequire(import.meta.url),P=require('../scripts/personal-round-amounts.js');
+test('annual entry validates years, nonnegative costs, cents, blank and explicit zero',()=>{
+ assert.deepEqual(P.annualPayload('u',2026,{membership_fee:'12000.50',insurance_fee:'500',other_fixed_costs:''}),{user_id:'u',year:2026,membership_fee:'12000.50',insurance_fee:'500.00',other_fixed_costs:null});
+ assert.equal(P.annualTotal({membership_fee:'12000',insurance_fee:'500',other_fixed_costs:'100'}),1260000);
+ assert.equal(P.annualTotal({}),null);assert.equal(P.annualTotal({insurance_fee:'0'}),0);
+ for(const year of ['2026x','26','2200','1899'])assert.throws(()=>P.annualPayload('u',year,{}));
+ for(const value of ['-1','NaN','1.001','1000000000'])assert.throws(()=>P.annualPayload('u',2026,{membership_fee:value}));
+ assert.throws(()=>P.annualPayload(null,2026,{}));
+ const html=P.annualYearsHtml({year:2026,annual_years:[{year:2026,membership_fee:'1000',insurance_fee:'0',fixed_total:'1000',cost_count:0}]});
+ assert.match(html,/data-annual-year="2026"/);assert.match(html,/會員費 1,000 · 保險 0/);assert.match(html,/完整收支 0 場/);
+});
+test('private annual fees count once, preserve round data, isolate years/accounts and exclude future fees',async()=>{
+ const {PGlite}=await import(process.env.PGLITE_MODULE||'@electric-sql/pglite'),db=new PGlite();
+ const a='00000000-0000-0000-0000-000000000001',b='00000000-0000-0000-0000-000000000002';
+ try{
+  await db.exec(`create role anon;create role authenticated;create schema auth;create table auth.users(id uuid primary key);
+   create function auth.uid() returns uuid language sql stable as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$;
+   grant usage on schema auth to authenticated;grant execute on function auth.uid() to authenticated;
+   create table profiles(id uuid primary key,display_name text);
+   create table fortis_rounds(id bigint primary key,round_name text,course_name text,course_combo text,played_at timestamptz,players jsonb);
+   create table hole_scores(round_id bigint,player_name text);
+   grant select on profiles,fortis_rounds,hole_scores to authenticated;`);
+  await db.query('insert into auth.users values($1),($2)',[a,b]);await db.query("insert into profiles values($1,'Paul'),($2,'Other')",[a,b]);
+  const year=Number((await db.query("select extract(year from current_timestamp at time zone 'Asia/Taipei') y")).rows[0].y);
+  await db.exec(`insert into fortis_rounds values(1,'This year','Course',null,current_timestamp,'["Paul"]'),(2,'Last year','Course',null,(date_trunc('year',current_timestamp at time zone 'Asia/Taipei') at time zone 'Asia/Taipei')-interval '1 day','["Paul"]');`);
+  for(const file of ['20261101062220_personal_round_amounts.sql','20261101063124_personal_green_fees.sql','20261101064031_personal_cost_report.sql','20261101064954_annual_fixed_golf_costs.sql'])await db.exec(readFileSync(new URL('../supabase/migrations/'+file,import.meta.url),'utf8'));
+  const as=async(id,role='authenticated')=>{await db.exec('reset role');await db.query("select set_config('request.jwt.claim.sub',$1,false)",[id]);await db.exec('set role '+role);};
+  const report=async()=>(await db.query('select golf_personal_annual_cost_report() as r')).rows[0].r;
+  const save=async(uid,y,membership,insurance,other=null)=>(await db.query('insert into golf_personal_annual_costs(user_id,year,membership_fee,insurance_fee,other_fixed_costs) values($1,$2,$3,$4,$5) on conflict(user_id,year) do update set membership_fee=excluded.membership_fee,insurance_fee=excluded.insurance_fee,other_fixed_costs=excluded.other_fixed_costs returning total_amount',[uid,y,membership,insurance,other])).rows[0];
+  await as(a);let r=await report();assert.equal(r.ytd.combined_total,null);assert.equal(r.ytd.combined_average,null);
+  await save(a,year,'12000','600');r=await report();assert.equal(r.ytd.fixed_total,'12600.00');assert.equal(r.ytd.combined_total,'12600.00');assert.equal(r.ytd.combined_average,null,'no division by zero before recorded rounds');
+  await db.query("insert into golf_personal_round_amounts(user_id,round_id,player_name,green_fee,fortis_amount) values($1,1,'Paul',3000,1000),($1,2,'Paul',3500,-500)",[a]);
+  await save(a,year-1,'9000','500');await save(a,year+1,'50000','1000');r=await report();
+  assert.equal(r.ytd.cost_total,'2000.00');assert.equal(r.ytd.combined_total,'14600.00');assert.equal(r.ytd.combined_average,'14600.00');
+  assert.equal(r.all_time.cost_total,'6000.00');assert.equal(r.all_time.fixed_total,'22100.00');assert.equal(r.all_time.combined_total,'28100.00');assert.equal(r.all_time.combined_average,'14050.00');
+  assert.deepEqual(r.annual_years.map(x=>x.year),[year+1,year,year-1]);assert.equal(r.annual_years.find(x=>x.year===year-1).combined_average,'13500.00');
+  await save(a,year,'12000','600');assert.equal((await report()).all_time.fixed_total,'22100.00','repeat save is replacement, not another expense');
+  await save(a,year,'13000','600','100');r=await report();assert.equal(r.ytd.fixed_total,'13700.00');assert.equal(r.all_time.combined_total,'29200.00');
+  const raw=(await db.query('select green_fee,total_amount,net_cost from golf_personal_round_amounts where round_id=1')).rows[0];assert.deepEqual(raw,{green_fee:'3000.00',total_amount:'1000.00',net_cost:'2000.00'});
+  await assert.rejects(save(a,year,'-1','0'),/check constraint/);await assert.rejects(save(a,year,'NaN','0'),/check constraint/);await assert.rejects(save(a,2200,'0','0'),/check constraint/);
+  await assert.rejects(save(b,year,'10','10'),/row-level security/);
+  await as(b);r=await report();assert.equal(r.all_time.fixed_total,null);assert.equal((await db.query('select * from golf_personal_annual_costs')).rows.length,0);
+  await save(b,year,'200','0');await assert.rejects(db.query('update golf_personal_annual_costs set user_id=$1',[a]),/row-level security/);
+  await as(a);assert.equal((await report()).ytd.fixed_total,'13700.00');
+  await save(a,year,null,null);r=await report();assert.equal(r.ytd.fixed_total,null);assert.equal(r.ytd.combined_total,'2000.00');await save(a,year,'0',null);assert.equal((await report()).ytd.fixed_total,'0.00');
+  await as('','anon');await assert.rejects(db.query('select * from golf_personal_annual_costs'),/permission denied/);await assert.rejects(db.query('select golf_personal_annual_cost_report()'),/permission denied/);
+ }finally{await db.close();}
+});

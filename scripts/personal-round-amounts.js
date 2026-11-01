@@ -63,7 +63,8 @@ async function open(roundId,context){
 }
 function summaryHtml(stats,{title='我的打球成本',scope='全部歷史 · 僅自己可見',showRules=true}={}){
  const format=(value,signed=false)=>value==null?'—':money(Math.round(Number(value)*100)).replace(signed?/^$/:/^\+/,'');
- const lines=[['果嶺費','fee',false,stats.fee_count],['遊戲贏款','winnings',true,stats.game_count],['遊戲輸款','losses',true,stats.game_count],['遊戲淨輸贏','game',true,stats.game_count],['打球淨成本','cost',false,stats.cost_count]];
+ const lines=[['果嶺費','fee',false,stats.fee_count],['遊戲贏款','winnings',true,stats.game_count],['遊戲輸款','losses',true,stats.game_count],['遊戲淨輸贏','game',true,stats.game_count],['球局淨成本','cost',false,stats.cost_count]];
+ if('fixed_total' in stats)lines.push(['年度固定費用','fixed',false,stats.cost_count],['含已填固定費總成本','combined',false,stats.cost_count]);
  return `<div class="fg-section-heading"><h2>${escape(title)}</h2><span class="small">${escape(scope)}</span></div><div class="scroll"><table><thead><tr><th>項目</th><th>累計金額</th><th>每場平均</th><th>已填場數</th></tr></thead><tbody>${lines.map(([label,key,signed,count])=>`<tr><td>${label}</td><td>${format(stats[key+'_total'],signed)}</td><td>${format(stats[key+'_average'],signed)}</td><td>${Number(count)||0}</td></tr>`).join('')}</tbody></table></div>${showRules?`<p class="small">淨成本＝果嶺費－遊戲淨輸贏，負數表示淨賺。遊戲贏／輸款依每場淨結果分組，平均以已填遊戲金額的場數計算。淨成本平均只計果嶺費及遊戲金額皆已填的場次；空白不當作 0。</p><p class="small">從「回合紀錄 → 個人收支」補填果嶺費與輸贏，儲存後自動更新。</p>`:''}`;
 }
 const mounts=new WeakMap();
@@ -76,23 +77,70 @@ async function mountSummary(element,context){
   element.innerHTML=summaryHtml(stats);summaries.forEach(el=>{if(!el.isConnected)summaries.delete(el);});
  }catch{if(mounts.get(element)===token&&context.getUserId()===userId&&summaries.has(element))element.innerHTML='<h2>我的打球成本</h2><p role="alert">暫時無法讀取完整收支，請重新整理；未顯示不完整的平均。</p>';}
 }
+const ANNUAL_FIELDS=[['membership_fee','會員費（Membership fee）'],['insurance_fee','高爾夫保險（Golf insurance）'],['other_fixed_costs','其他固定費用']];
+function annualPayload(userId,year,values){
+ if(!userId)throw Error('請先登入');
+ if(!/^\d{4}$/.test(String(year))||Number(year)<1900||Number(year)>2199)throw Error('請輸入 1900–2199 年份。');
+ const out={user_id:userId,year:Number(year)};
+ for(const [key] of ANNUAL_FIELDS){const n=cents(values[key]);if(n!==null&&n<0)throw Error('固定費用請填零或正數。');out[key]=decimal(n);}return out;
+}
+function annualTotal(values){const parts=ANNUAL_FIELDS.map(([key])=>cents(values[key]));if(parts.some(n=>n!==null&&n<0))throw Error('固定費用請填零或正數。');return parts.every(n=>n===null)?null:parts.reduce((sum,n)=>sum+(n||0),0);}
+function annualYearsHtml(report){
+ const years=Array.isArray(report.annual_years)&&report.annual_years.length?report.annual_years:[{year:report.year}];
+ const fmt=value=>value==null?'未填':money(Math.round(Number(value)*100)).replace(/^\+/,'');
+ return `<section class="card"><h2>年度固定費用</h2><p class="small">點選年份填寫會員費、保險及其他固定費用。每年只計一次，不會重複加入每場球局。</p><div class="annual-cost-years">${years.map(row=>`<button type="button" class="btn2 annual-cost-year" data-annual-year="${escape(row.year)}"><b>${escape(row.year)} 年</b><span>會員費 ${fmt(row.membership_fee)} · 保險 ${fmt(row.insurance_fee)}</span><span>固定費合計 ${fmt(row.fixed_total)}</span><span class="small">含已填固定費平均 ${fmt(row.combined_average)}／場 · 完整收支 ${Number(row.cost_count)||0} 場${Number(row.year)>Number(report.year)?' · 未來年度':''}</span><span>填寫／修改 →</span></button>`).join('')}</div><form class="annual-cost-add"><label>其他年份<input type="number" name="annual_year" aria-label="其他年份" min="1900" max="2199" step="1" value="${Number(report.year)}" required></label><button class="btn2" type="submit">開啟年份</button></form><p class="small">今年及歷史總成本包含已填的固定費；未來年度暫不納入。平均以已填完整球局收支的場數計算；零場時不顯示平均。</p></section>`;
+}
+async function openAnnual(year,context){
+ if(active){if(active.saving)return;if(active.dirty&&!root.confirm('收支尚未儲存，確定離開？'))return;}
+ const userId=context.getUserId();try{annualPayload(userId,year,{});}catch(e){root.alert(e.message);return;}
+ sequence++;active?.element.remove();active=null;const seq=sequence;
+ const element=document.createElement('div');element.id='personalAnnualCosts';element.className='achievement-overlay';
+ element.innerHTML=`<section class="achievement-panel personal-amount-panel" role="dialog" aria-modal="true" aria-labelledby="annualCostsTitle"><h2 id="annualCostsTitle">${Number(year)} 年固定費用</h2><p role="status">正在讀取…</p><button type="button" data-close>關閉</button></section>`;
+ active={element,dirty:false,saving:false};document.body.appendChild(element);element.querySelector('[data-close]').onclick=close;
+ const valid=()=>active?.element===element&&sequence===seq&&context.getUserId()===userId;
+ try{
+  const rows=await context.api(`golf_personal_annual_costs?user_id=eq.${encodeURIComponent(userId)}&year=eq.${Number(year)}&select=*`);if(!valid())return;
+  const saved=rows[0]||{};
+  element.querySelector('section').innerHTML=`<div class="personal-amount-heading"><h2 id="annualCostsTitle">${Number(year)} 年固定費用</h2><button type="button" class="btn2" data-close>關閉</button></div><p class="small">僅自己可見。填寫該年度總額，無須按月份攤分，也不會自動複製到其他年份。沒有支出請填 0；空白表示未填。</p><form>${ANNUAL_FIELDS.map(([key,label])=>`<label>${label}<input type="text" inputmode="decimal" name="${key}" autocomplete="off" placeholder="請輸入金額" value="${escape(saved[key]??'')}"></label>`).join('')}<div class="personal-amount-total"><span>年度固定費合計</span><output data-total aria-live="polite"></output></div><p class="small" data-status role="status">${rows.length?'已載入儲存紀錄':'尚未儲存'}</p><p class="bad" data-error role="alert"></p><button type="submit">儲存 ${Number(year)} 年固定費用</button></form>`;
+  element.querySelector('[data-close]').onclick=close;
+  const form=element.querySelector('form'),status=element.querySelector('[data-status]'),error=element.querySelector('[data-error]');
+  const values=()=>Object.fromEntries(ANNUAL_FIELDS.map(([key])=>[key,form.elements.namedItem(key).value]));
+  const refresh=()=>{try{const sum=annualTotal(values());element.querySelector('[data-total]').textContent=money(sum).replace(/^\+/,'');error.textContent='';}catch(e){element.querySelector('[data-total]').textContent='請檢查金額';error.textContent=e.message;}};
+  form.oninput=()=>{if(!valid())return;active.dirty=true;status.textContent='尚有未儲存的修改';refresh();};
+  form.onsubmit=async event=>{
+   event.preventDefault();if(!valid()||active.saving)return;
+   try{
+    const body=annualPayload(userId,year,values());active.saving=true;Array.from(form.elements).forEach(e=>e.disabled=true);error.textContent='';status.textContent='儲存中…';
+    const result=await context.api('golf_personal_annual_costs?on_conflict=user_id,year',{method:'POST',headers:{Prefer:'resolution=merge-duplicates,return=representation'},body:JSON.stringify(body)});
+    if(!valid())return;if(!result?.length)throw Error('未能確認儲存，請重試。');
+    active.dirty=false;status.textContent='已儲存，年度與歷史成本已更新。';try{context.onSaved?.();}catch{}
+   }catch(e){if(valid()){error.textContent=e.message?.startsWith('請')||e.message?.startsWith('固定')||e.message?.startsWith('未能')?e.message:'儲存失敗，輸入內容仍保留，請稍後重試。';status.textContent='尚未儲存';}}
+   finally{if(valid()){active.saving=false;Array.from(form.elements).forEach(e=>e.disabled=false);}}
+  };
+  refresh();form.elements.namedItem('membership_fee').focus();
+ }catch{if(valid())element.querySelector('[role="status"]').textContent='無法讀取年度固定費用，請關閉後重試。';}
+}
+
 function reportHtml(report){
  const amount=(value,signed=false)=>value==null?'—':money(Math.round(Number(value)*100)).replace(signed?/^$/:/^\+/,'');
  const recent=Array.isArray(report.recent)?report.recent:[];
- return `<div class="personal-report-heading"><h1>打球收支</h1><p class="small">僅自己可見 · 截至 ${escape(report.as_of)}（台北時間）</p></div><section class="card"><h2>最近五場</h2><p class="small">依打球日期排序，包含尚未填寫收支的回合。</p>${recent.length?`<div class="scroll"><table class="personal-recent-costs"><thead><tr><th>日期／球局</th><th>果嶺費</th><th>遊戲淨輸贏</th><th>淨成本</th><th></th></tr></thead><tbody>${recent.map(r=>`<tr><td>${escape(r.date||'日期未填')}<br><b>${escape(r.title)}</b><br><span class="small">${escape(r.course)}</span></td><td data-label="果嶺費">${amount(r.green_fee)}</td><td data-label="遊戲淨輸贏">${amount(r.game_total,true)}</td><td data-label="淨成本">${amount(r.net_cost)}</td><td><button class="btn2" data-edit-round="${escape(r.round_id)}">填寫／修改</button></td></tr>`).join('')}</tbody></table></div><p class="small">最近五場中已填完整 ${Number(report.recent_cost_count)||0} 場 · 淨成本合計 ${amount(report.recent_cost_total)} · 每場平均 ${amount(report.recent_cost_average)}</p>`:'<p class="small">尚無對應到你的已儲存回合。請先在個人收支選擇自己的球員名稱，或確認帳號顯示名稱與球員名稱相符。</p>'}</section><div class="personal-report-grid"><section class="card">${summaryHtml(report.ytd,{title:`今年至今（${report.year}）`,scope:'依打球日期 · 台北時間',showRules:false})}</section><section class="card">${summaryHtml(report.all_time,{title:'全部歷史',scope:'所有已填收支紀錄',showRules:false})}</section></div><section class="card small">淨成本＝果嶺費－遊戲淨輸贏；負數表示淨賺。果嶺費、遊戲及淨成本各依已填場數計算平均，空白不當作 0。遊戲贏／輸款依每場淨結果分組，平均使用已填遊戲金額的場數。</section>`;
+ return `<div class="personal-report-heading"><h1>打球收支</h1><p class="small">僅自己可見 · 截至 ${escape(report.as_of)}（台北時間）</p></div>${annualYearsHtml(report)}<section class="card"><h2>最近五場</h2><p class="small">依打球日期排序，包含尚未填寫收支的回合。此處為球局成本，年度固定費另計於年度及歷史總成本。</p>${recent.length?`<div class="scroll"><table class="personal-recent-costs"><thead><tr><th>日期／球局</th><th>果嶺費</th><th>遊戲淨輸贏</th><th>淨成本</th><th></th></tr></thead><tbody>${recent.map(r=>`<tr><td>${escape(r.date||'日期未填')}<br><b>${escape(r.title)}</b><br><span class="small">${escape(r.course)}</span></td><td data-label="果嶺費">${amount(r.green_fee)}</td><td data-label="遊戲淨輸贏">${amount(r.game_total,true)}</td><td data-label="淨成本">${amount(r.net_cost)}</td><td><button class="btn2" data-edit-round="${escape(r.round_id)}">填寫／修改</button></td></tr>`).join('')}</tbody></table></div><p class="small">最近五場中已填完整 ${Number(report.recent_cost_count)||0} 場 · 淨成本合計 ${amount(report.recent_cost_total)} · 每場平均 ${amount(report.recent_cost_average)}</p>`:'<p class="small">尚無對應到你的已儲存回合。請先在個人收支選擇自己的球員名稱，或確認帳號顯示名稱與球員名稱相符。</p>'}</section><div class="personal-report-grid"><section class="card">${summaryHtml(report.ytd,{title:`今年至今（${report.year}）`,scope:'依打球日期 · 台北時間',showRules:false})}</section><section class="card">${summaryHtml(report.all_time,{title:'全部歷史',scope:'所有已填收支紀錄',showRules:false})}</section></div><section class="card small">淨成本＝果嶺費－遊戲淨輸贏；負數表示淨賺。果嶺費、遊戲及淨成本各依已填場數計算平均，空白不當作 0。遊戲贏／輸款依每場淨結果分組，平均使用已填遊戲金額的場數。</section>`;
 }
 async function mountReport(element,context){
  if(!element)return;const userId=context.getUserId();if(!userId){element.replaceChildren();return;}
  const token={};mounts.set(element,token);summaries.add(element);element.innerHTML='<h1>打球收支</h1><p role="status">正在整理最近五場、今年及全部歷史收支…</p>';
  const valid=()=>mounts.get(element)===token&&context.getUserId()===userId&&summaries.has(element);
  try{
-  const report=await context.api('rpc/golf_personal_cost_report',{method:'POST',body:'{}'});
+  const report=await context.api('rpc/golf_personal_annual_cost_report',{method:'POST',body:'{}'});
   if(!valid())return;element.innerHTML=reportHtml(report);
   element.querySelectorAll('[data-edit-round]').forEach(button=>{button.onclick=()=>{if(valid()&&/^\d+$/.test(button.dataset.editRound))context.onEdit?.(button.dataset.editRound);};});
+  const editAnnual=year=>openAnnual(year,{getUserId:context.getUserId,api:context.api,onSaved:()=>{if(context.getUserId()===userId&&element.isConnected&&summaries.has(element))void mountReport(element,context);}});
+  element.querySelectorAll('[data-annual-year]').forEach(button=>{button.onclick=()=>{if(valid())editAnnual(button.dataset.annualYear);};});
+  const addYear=element.querySelector('.annual-cost-add');if(addYear)addYear.onsubmit=event=>{event.preventDefault();if(valid())editAnnual(addYear.elements.namedItem('annual_year').value);};
   summaries.forEach(el=>{if(!el.isConnected)summaries.delete(el);});
  }catch{if(valid())element.innerHTML='<h1>打球收支</h1><p role="alert">暫時無法讀取完整收支，請重新整理；未顯示不完整的平均。</p>';}
 }
-const api={cents,decimal,total,greenFee,netCost,money,summary,summaryHtml,reportHtml,mountReport,mountSummary,payload,open,close,clearMemory};
+const api={cents,decimal,total,greenFee,netCost,money,summary,summaryHtml,annualPayload,annualTotal,annualYearsHtml,openAnnual,reportHtml,mountReport,mountSummary,payload,open,close,clearMemory};
 if(typeof module!=='undefined'&&module.exports)module.exports=api;
 root.FortisPersonalAmounts=api;
 })(typeof window!=='undefined'?window:globalThis);
