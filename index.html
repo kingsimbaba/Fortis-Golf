@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   
-<script src="/scripts/personal-round-amounts.js?v=2026.11.01.02"></script><link rel="stylesheet" href="/styles/personal-round-amounts.css?v=2026.11.01.01">
+<script src="/scripts/personal-round-amounts.js?v=2026.11.01.03"></script><link rel="stylesheet" href="/styles/personal-round-amounts.css?v=2026.11.01.03">
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>地獄倒霉鬼</title><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="/scripts/tournament.js?v=2026.10.24.02"></script><script src="/scripts/vegas.js?v=2026.10.24.02"></script><script src="/scripts/cross-group.js?v=2026.10.24.02"></script><script src="/scripts/peoria.js?v=2026.10.26.05"></script><script src="/scripts/peoria-ui.js?v=2026.10.26.05"></script><link rel="stylesheet" href="/styles/peoria.css?v=2026.10.26.05">
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js"></script>
@@ -645,7 +645,7 @@ function courseAdminName(c){
   if(!c) return '';
   return [c.display_name_zh,c.display_name_ja,c.display_name].filter(Boolean).filter((v,i,a)=>a.indexOf(v)===i).join(' / ')||c.course_name;
 }
-const APP_BUILD_VERSION='2026.11.01.02';
+const APP_BUILD_VERSION='2026.11.01.03';
 let fortisUpdateReloading=false;
 
 function showFortisUpdateBanner(serverVersion){
@@ -3084,10 +3084,11 @@ function renderHome(){
   const active=!!localStorage.getItem('fortisActiveRound');
   const today=new Intl.DateTimeFormat('zh-TW',{year:'numeric',month:'long',day:'numeric',weekday:'long'}).format(new Date());
   box.innerHTML=`<div class="home-hero"><div class="home-welcome"><div><div class="home-greeting">歡迎回來</div><div class="home-name">${adminEscapeHtml(player)}</div><div class="home-date">${today}</div></div>${active?'<div class="home-status">● 回合進行中</div>':''}</div><div class="home-actions">${active?'<button class="home-action primary" onclick="loadActiveRound();renderScore();showPage(\'scorePage\')">繼續未完成回合 →</button>':''}<button class="home-action ${active?'btn2':'primary'}" onclick="openNewRoundFromHome()">＋ 開始新回合</button><button class="home-action btn2" onclick="showPage('summary');setTimeout(()=>document.getElementById('roundLibrarySearch')?.scrollIntoView({behavior:'smooth'}),80)">回合紀錄 ↗</button></div><div class="home-utilities">${currentProfile?.role==='admin'?'<button class="home-action btn2" onclick="openScorecardImportWizard()">匯入球場記分卡</button>':''}<button class="home-action btn2" onclick="refreshFortisAppForUser()">更新應用程式</button></div></div>
-  <div class="home-grid"><div class="card home-card full"><div class="fg-section-heading"><h2>個人統計</h2></div><div class="home-kpis"><div class="home-kpi"><b>${rounds.length}</b><span>生涯回合</span></div><div class="home-kpi"><b>${seasonRounds}</b><span>本季回合</span></div><div class="home-kpi"><b>${avg}</b><span>平均桿數</span></div><div class="home-kpi"><b>${birdies}</b><span>生涯博蒂</span></div></div></div>
+  <div class="home-grid"><section class="card home-card full" id="personalCostSummary"></section><div class="card home-card full"><div class="fg-section-heading"><h2>個人統計</h2></div><div class="home-kpis"><div class="home-kpi"><b>${rounds.length}</b><span>生涯回合</span></div><div class="home-kpi"><b>${seasonRounds}</b><span>本季回合</span></div><div class="home-kpi"><b>${avg}</b><span>平均桿數</span></div><div class="home-kpi"><b>${birdies}</b><span>生涯博蒂</span></div></div></div>
   <div class="card home-card"><div class="fg-section-heading"><h2>地獄倒楣鬼排行榜</h2></div>${leaders.length?leaders.map((r,i)=>`<div class="home-rank"><div class="home-medal">${String(i+1).padStart(2,'0')}</div><div><b>${adminEscapeHtml(r.name)}</b><div class="small">${r.rounds} 回合${r.avg!==null?` · 平均 ${r.avg.toFixed(1)}`:''}</div></div><div class="home-points"><span class="small" style="display:block">地獄倒楣鬼積分</span>${r.points>0?'+':''}${r.points.toFixed(0)}</div></div>`).join(''):'<p class="fg-empty">本季尚無地獄倒楣鬼成績。</p>'}</div>
   <div class="card home-card home-last-round" id="homeLastRound"><div class="fg-section-heading"><h2>最近一場</h2></div>${last?`<div class="home-course"><div class="fg-eyebrow">Course · 球場</div><div class="profile-name">${adminEscapeHtml(last.title||'高爾夫回合')}</div><div class="small" style="margin-top:7px">${adminEscapeHtml(last.course)}${last.combo?` · ${adminEscapeHtml(last.combo)}`:''}</div></div><div class="home-round-result"><div class="score">${last.total}<span>桿</span></div><div class="small">${adminEscapeHtml(last.date||'')}</div></div>`:'<p class="fg-empty">尚無已儲存回合。</p>'}</div>
   <div class="card home-card full"><div class="fg-section-heading"><h2>最近五場成績</h2></div><div class="home-form">${rounds.slice(0,5).map((r,i)=>`<div class="home-form-item" id="homeRecentRound${i}"><b>${r.total}</b><div class="small">${adminEscapeHtml(r.date||'')}</div>${r.title?`<div class="small">${adminEscapeHtml(r.title)}</div>`:''}<div class="small home-form-course">${adminEscapeHtml(r.course)}${r.combo?` · ${adminEscapeHtml(r.combo)}`:''}</div></div>`).join('')||'<p class="fg-empty">尚無最近回合。</p>'}</div></div></div>`;
+  void window.FortisPersonalAmounts?.mountSummary(document.getElementById('personalCostSummary'),{getUserId:()=>currentUser?.id,api:sb});
   const photoItems=rounds.slice(0,5).map((r,i)=>({
     code:db.rounds.find(rec=>String(rec.id)===String(r.id))?.course_name,
     element:document.getElementById('homeRecentRound'+i)
@@ -3929,6 +3930,7 @@ async function loadMoreRoundLibrary(){
 function openPersonalRoundAmounts(roundId){
   return window.FortisPersonalAmounts.open(String(roundId),{
     getUserId:()=>currentUser?.id,playerName:getDashboardPlayerName(),api:sb,
+    onSaved:()=>{if(currentPage==='home')void window.FortisPersonalAmounts.mountSummary(document.getElementById('personalCostSummary'),{getUserId:()=>currentUser?.id,api:sb});},
     getRound:async id=>{
       const found=[...db.rounds,...(roundLibrarySearchResults||[])].find(r=>String(r.id)===id);
       if(found)return found;
