@@ -1,4 +1,4 @@
-const CACHE = 'fortis-golf-2026-11-01-07';
+const CACHE = 'fortis-golf-2026-11-03-unlucky-trend';
 
 const ASSETS = [
   '/index.html',
@@ -177,3 +177,4 @@ self.addEventListener('fetch', event => {
   })());
 
 });
+

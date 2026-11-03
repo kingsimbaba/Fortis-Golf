@@ -557,6 +557,8 @@ th{color:var(--muted)}
 .admin-issues{display:grid;gap:8px;margin-top:12px}.admin-issue{display:grid;grid-template-columns:34px 1fr auto;gap:10px;align-items:center;padding:11px;border:1px solid var(--line);border-radius:12px;background:#0e1728}.admin-issue-icon{font-size:22px}.admin-issue button{width:auto;min-height:36px;padding:7px 10px}
 .admin-shortcuts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:12px}.admin-shortcuts button{min-height:58px;font-size:13px}
 @media(max-width:760px){.admin-dashboard{grid-template-columns:repeat(2,1fr)}.admin-shortcuts{grid-template-columns:repeat(2,1fr)}.admin-health{align-items:flex-start;flex-wrap:wrap}.admin-health-actions{width:100%}.admin-health-actions button{flex:1}.admin-issue{grid-template-columns:30px 1fr}.admin-issue button{grid-column:2}}
+.unlucky-trend{margin-top:12px;padding-top:10px;border-top:1px solid var(--line);text-align:left;color:var(--text,#e5e7eb)}
+.unlucky-trend h3{font-size:14px;margin:0 0 5px}.unlucky-trend svg{display:block;width:100%;max-width:450px;margin:4px auto;height:auto;max-height:174px;overflow:visible}.unlucky-trend svg text{fill:currentColor;font:10px sans-serif}.unlucky-legend{display:flex;gap:6px 14px;flex-wrap:wrap;font-size:12px;font-weight:700}
 </style>
 <link rel="stylesheet" href="styles/fortis-design.css?v=2026.10.03.02">
 </head><body>
@@ -2827,6 +2829,40 @@ html+=`
   html+='</div>';
   return html;
 }
+function buildUnluckyTrend(r){
+  if(!r||![3,4].includes(r.players?.length)||r.course?.length!==18)return null;
+  if(r.scores?.length!==18||r.scores.some(row=>row.length!==r.players.length||row.some(v=>v===''||v==null||!Number.isFinite(+v)||+v<=0)))return null;
+  const result=calcFortis(r),lowest=Math.min(...result.totals);
+  if(lowest===0&&result.totals.every(v=>v===0))return {tied:true,series:[]};
+  const order=Array.from({length:18},(_,i)=>((r.startHoleIndex||0)+i)%18);
+  const series=r.players.map((name,i)=>({name,i})).filter(p=>result.totals[p.i]===lowest).map(p=>{
+    let total=0;const points=[{step:0,hole:null,value:0}];
+    order.forEach((h,k)=>{const row=result.rows[h],diff=row.t1-row.t2;
+      total+=row.team1.includes(p.i)?diff:-diff*(row.team2.length===1?2:1);
+      points.push({step:k+1,hole:h+1,value:total});
+    });
+    return {name:p.name,final:result.totals[p.i],points};
+  });
+  return {tied:false,series};
+}
+function renderUnluckyTrend(data){
+  if(!data)return '';
+  const title='本日地獄倒楣鬼戰況走勢';
+  if(data.tied)return `<section class="unlucky-trend"><h3>${title}</h3><p class="small">本場平手，沒有倒楣鬼。</p></section>`;
+  const colors=['#ff8c69','#c084fc','#38bdf8','#facc15'];
+  const values=data.series.flatMap(s=>s.points.map(p=>p.value));
+  const low=Math.min(0,...values),high=Math.max(0,...values),span=Math.max(1,high-low);
+  const x=step=>42+step*390/18,y=value=>20+(high-value)*112/span;
+  const signed=n=>(n>0?'+':'')+n;
+  const legend=data.series.map((s,i)=>`<span style="color:${colors[i]}">${adminEscapeHtml(s.name)} · ${signed(s.final)} 分</span>`).join('');
+  const lines=data.series.map((s,i)=>{
+    const bottom=s.points.reduce((a,p)=>p.value<a.value?p:a,s.points[1]);
+    return `<polyline fill="none" stroke="${colors[i]}" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" ${i?'stroke-dasharray="5 3"':''} points="${s.points.map(p=>`${x(p.step)},${y(p.value)}`).join(' ')}"/>`+
+      s.points.slice(1).map(p=>`<circle cx="${x(p.step)}" cy="${y(p.value)}" r="${p===bottom||p.step===18?3.5:2}" fill="${colors[i]}"><title>${adminEscapeHtml(s.name)} · 第 ${p.step} 洞（球場 ${p.hole} 號洞）：${signed(p.value)} 分${p===bottom?' · 最低點':''}</title></circle>`).join('');
+  }).join('');
+  const ticks=[0,6,12,18].map(step=>`<text x="${x(step)}" y="155" text-anchor="middle">${step===0?'開局':step}</text>`).join('');
+  return `<section class="unlucky-trend"><h3>${title}</h3><div class="unlucky-legend">${legend}</div><svg viewBox="0 0 450 174" role="img" aria-label="${adminEscapeHtml(title+'：'+data.series.map(s=>s.name+'，最終'+signed(s.final)+'分').join('；'))}"><desc>各洞累計8421積分，依實際開球順序排列；圓點標示最低點與最終結果。</desc><line x1="42" x2="432" y1="${y(0)}" y2="${y(0)}" stroke="currentColor" opacity=".45" stroke-dasharray="3 4"/><text x="33" y="${y(0)+4}" text-anchor="end">0</text>${low<0?`<text x="33" y="136" text-anchor="end">${low}</text>`:''}${high>0?`<text x="33" y="24" text-anchor="end">+${high}</text>`:''}${lines}${ticks}<text x="237" y="172" text-anchor="middle">出發後洞序 · 累計8421積分</text></svg><div class="small">${data.series.map(s=>adminEscapeHtml(s.name)+' 最低 '+signed(Math.min(...s.points.map(p=>p.value)))+' 分').join(' · ')}</div></section>`;
+}
 function buildRoundAchievements(savedRound, priorScores){
   const players=savedRound.players||[];
   const gross=players.map((p,i)=>savedRound.scores.reduce((t,row)=>t+(row[i]===''?0:+row[i]),0));
@@ -2857,12 +2893,12 @@ function buildRoundAchievements(savedRound, priorScores){
     if(!priorGross.length || gross[i]<Math.min(...priorGross)) awards.push({icon:'🎉',label:'生涯新低桿',player:p,value:`${gross[i]} 桿`,best:true});
     if(birdies[i]>0 && (!priorBirdies.length || birdies[i]>Math.max(...priorBirdies))) awards.push({icon:'🌟',label:'單回合博蒂新紀錄',player:p,value:`${birdies[i]} 個`,best:true});
   });
-  return {title:savedRound.note||'本回合獎項',course:`${savedRound.courseName||''}${savedRound.combo?' '+savedRound.combo:''}`,awards};
+  return {unluckyTrend:buildUnluckyTrend(savedRound),title:savedRound.note||'本回合獎項',course:`${savedRound.courseName||''}${savedRound.combo?' '+savedRound.combo:''}`,awards};
 }
 function showRoundAchievements(data){
   document.getElementById('roundAchievementOverlay')?.remove();
   const overlay=document.createElement('div');overlay.id='roundAchievementOverlay';overlay.className='achievement-overlay';
-  overlay.innerHTML=`<div class="achievement-panel"><h2>🏆 回合獎項</h2><div class="small" style="text-align:center">${adminEscapeHtml(data.title)} · ${adminEscapeHtml(data.course)}</div><div class="achievement-list">${data.awards.map(a=>`<div class="achievement-item ${a.best?'personal-best':''}"><div class="achievement-icon">${a.icon}</div><div><b>${adminEscapeHtml(a.label)}</b><div class="small">${adminEscapeHtml(a.player)}</div></div><div class="achievement-value">${adminEscapeHtml(a.value)}</div></div>`).join('')}</div><div class="achievement-actions">${data.roundId?`<button class="btn2" onclick="openPersonalRoundAmounts('${data.roundId}')">個人收支</button>`:''}<button class="btn2" onclick="shareRoundAchievements()">📤 分享</button><button onclick="document.getElementById('roundAchievementOverlay').remove()">完成</button></div></div>`;
+  overlay.innerHTML=`<div class="achievement-panel"><h2>🏆 回合獎項</h2><div class="small" style="text-align:center">${adminEscapeHtml(data.title)} · ${adminEscapeHtml(data.course)}</div><div class="achievement-list">${data.awards.map(a=>`<div class="achievement-item ${a.best?'personal-best':''}"><div class="achievement-icon">${a.icon}</div><div><b>${adminEscapeHtml(a.label)}</b><div class="small">${adminEscapeHtml(a.player)}</div></div><div class="achievement-value">${adminEscapeHtml(a.value)}</div></div>`).join('')}</div>${renderUnluckyTrend(data.unluckyTrend)}<div class="achievement-actions">${data.roundId?`<button class="btn2" onclick="openPersonalRoundAmounts('${data.roundId}')">個人收支</button>`:''}<button class="btn2" onclick="shareRoundAchievements()">📤 分享</button><button onclick="document.getElementById('roundAchievementOverlay').remove()">完成</button></div></div>`;
   overlay._achievementData=data;document.body.appendChild(overlay);
 }
 async function shareRoundAchievements(){
@@ -3156,7 +3192,7 @@ function renderLatestRoundHighlight(){
        +s.gross_score === 1
   ).length;
   let bestAchievement=holesInOne?`一桿進洞 ${holesInOne}`:albatrosses?`信天翁 ${albatrosses}`:eagles?`老鷹 ${eagles}`:birdies?`博蒂 ${birdies}`:'—';
-  return `<div class="card summary-highlight"><h2>最近一場精華</h2><div class="summary-highlight-grid"><div class="summary-stat"><span>日期</span><b>${String(r.played_at||r.created_at||'').slice(0,10)||'-'}</b></div><div class="summary-stat"><span>球場</span><b>${courseNameZh(r.course_name||r.course||'-')}</b></div><div class="summary-stat"><span>最大贏家</span><b>${leader}${leaderPoints===null?'':` (${leaderPoints>0?'+':''}${leaderPoints})`}</b></div><div class="summary-stat"><span>最佳成績</span><b>${bestAchievement}</b></div></div></div>`;
+  return `<div class="card summary-highlight"><h2>最近一場精華</h2><div class="summary-highlight-grid"><div class="summary-stat"><span>日期</span><b>${String(r.played_at||r.created_at||'').slice(0,10)||'-'}</b></div><div class="summary-stat"><span>球場</span><b>${courseNameZh(r.course_name||r.course||'-')}</b></div><div class="summary-stat"><span>最大贏家</span><b>${leader}${leaderPoints===null?'':` (${leaderPoints>0?'+':''}${leaderPoints})`}</b></div><div class="summary-stat"><span>最佳成績</span><b>${bestAchievement}</b></div></div>${renderUnluckyTrend(buildUnluckyTrend(savedRound))}</div>`;
 }
 function courseNameZh(name){
   const value=String(name||'').trim();
@@ -5477,3 +5513,4 @@ async function refreshTournament(){
 setInterval(()=>{if(document.visibilityState==='visible')refreshTournament();},10000);
 
 </script></body></html>
+
