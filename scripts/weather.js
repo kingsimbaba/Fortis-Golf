@@ -55,6 +55,8 @@ window.FortisWeather = (() => {
       '<label>預計開球時間<select id="fgWeatherTime">'+Array.from({length:15},(_,i)=>{const h=String(i+5).padStart(2,'0')+':00';return '<option value="'+h+'"'+(h===time?' selected':'')+'>'+h+'</option>'}).join('')+'</select></label></div>'+
       '<div class="fg-weather-days" role="group" aria-label="預報日期">'+[['today','今天'],['tomorrow','明天'],['after','後天'],['week','7 天預報']].map(([v,l])=>'<button type="button" data-day="'+v+'" class="fg-weather-day'+(v==='tomorrow'?' selected':'')+'">'+l+'</button>').join('')+'</div>'+
       '<div id="fgWeatherResult" class="fg-weather-result" aria-live="polite">讀取球場氣象中…</div>'+
+      '<div class="fg-weather-map-links"><a id="fgWeatherRadar" href="https://www.windy.com/" target="_blank" rel="noopener noreferrer">🌧️ 即時降雨雷達 ↗</a><a id="fgWeatherClouds" href="https://www.windy.com/" target="_blank" rel="noopener noreferrer">☁️ 未來雲層預報 ↗</a></div>'+
+      '<div class="fg-weather-map-note">雷達顯示近期降雨；雲層預報可移動時間軸查看明天及未來天氣。</div>'+
       '<div class="fg-weather-footer"><span id="fgWeatherUpdated">預報來源：Open-Meteo</span><button type="button" id="fgWeatherRefresh" aria-label="重新整理天氣">↻ 更新</button></div></section>';
     const select = host.querySelector('#fgWeatherCourse');
     const timeSelect = host.querySelector('#fgWeatherTime');
@@ -112,6 +114,22 @@ window.FortisWeather = (() => {
       }
       host.querySelector('#fgWeatherUpdated').textContent = (data.source||'Open-Meteo')+' · 球場當地時間 '+(data.timezone_abbreviation||'')+' · 約每 30 分鐘更新';
     }
+    function updateMapLinks() {
+      const selected=all.find(c=>String(c.id)===select.value);
+      const coords=coordinates(selected);
+      const radar=host.querySelector('#fgWeatherRadar');
+      const clouds=host.querySelector('#fgWeatherClouds');
+      if (!coords) {
+        [radar,clouds].forEach(link=>{link.removeAttribute('href');link.setAttribute('aria-disabled','true');link.title='請先在球場管理設定 GPS 座標';});
+        return;
+      }
+      const lat=coords.lat.toFixed(5),lng=coords.lng.toFixed(5);
+      // Windy's documented coordinates/overlay link format.
+      radar.href='https://www.windy.com/?radar,'+lat+','+lng+',10';
+      clouds.href='https://www.windy.com/?clouds,'+lat+','+lng+',10';
+      [radar,clouds].forEach(link=>{link.removeAttribute('aria-disabled');link.removeAttribute('title');});
+    }
+    updateMapLinks();
     async function load(force = false) {
       const course=all.find(c=>String(c.id)===select.value),coords=coordinates(course);
       if (!coords) {status('此球場尚未設定 GPS 座標。請由管理員在球場管理中補上經緯度。');return;}
@@ -136,7 +154,7 @@ window.FortisWeather = (() => {
         }
       } finally {clearTimeout(timer);}
     }
-    select.addEventListener('change',()=>{localStorage.setItem(STORAGE_COURSE,select.value);load();});
+    select.addEventListener('change',()=>{localStorage.setItem(STORAGE_COURSE,select.value);updateMapLinks();load();});
     timeSelect.addEventListener('change',()=>{localStorage.setItem(STORAGE_TIME,timeSelect.value);load();});
     host.querySelectorAll('[data-day]').forEach(button=>button.addEventListener('click',()=>{
       day=button.dataset.day;
