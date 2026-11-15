@@ -1,0 +1,39 @@
+
+/* GPS course forecast: Home only. */
+.fg-weather{margin:12px 0 16px;overflow:hidden;border-color:var(--fg-border,var(--line))}
+.fg-weather-header{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:14px}
+.fg-weather-header h2{margin:4px 0 0;font-size:19px}
+.fg-weather-eyebrow{font-size:10px;letter-spacing:1.4px;color:var(--fg-gold,#dac293);font-weight:800}
+.fg-weather-live{font-size:11px;color:var(--fg-emerald,#87c3aa);white-space:nowrap}
+.fg-weather-controls{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr);gap:12px}
+.fg-weather-controls label{margin:0;min-width:0}
+.fg-weather-controls select{margin-top:5px;font-size:14px;padding:11px;width:100%;min-width:0;background:var(--fg-inset,#121c27);color:var(--fg-text,var(--text));border:1px solid var(--fg-border,var(--line))}
+.fg-weather-days{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin:15px 0}
+.fg-weather-day{font-size:13px;min-height:39px;padding:8px 3px;background:var(--fg-inset,#121c27);color:var(--fg-text,var(--text));border:1px solid var(--fg-border,var(--line));border-radius:12px}
+.fg-weather-day.selected{background:linear-gradient(135deg,#174f42,#246f56);border-color:#7bbd9a;color:white}
+.fg-weather-result{border-radius:17px;padding:17px;background:linear-gradient(125deg,#153d35,#112b32);color:#f3f7f3;min-height:100px}
+.fg-weather-status{color:#dfebe6;text-align:center;padding:22px 4px;font-size:13px;margin:0}
+.fg-weather-main{display:flex;justify-content:space-between;gap:20px;align-items:center}
+.fg-weather-sub{font-size:12px;color:#d1e5dc}
+.fg-weather-temp{display:flex;align-items:center;gap:8px;margin:8px 0 3px}
+.fg-weather-temp span{font-size:36px}
+.fg-weather-temp strong{font-size:36px;letter-spacing:-2px}
+.fg-weather-description{font-size:13px;color:#e7eee8}
+.fg-weather-metrics{display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:12px;min-width:200px}
+.fg-weather-metrics div{display:flex;flex-direction:column;gap:3px;color:#c6dfd5}
+.fg-weather-metrics b{color:white;font-size:14px}
+.fg-weather-hours{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;margin-top:17px}
+.fg-weather-hours>div{border-radius:10px;background:#ffffff16;display:flex;flex-direction:column;align-items:center;gap:5px;padding:9px 2px}
+.fg-weather-hours span{font-size:22px}
+.fg-weather-hours small{color:#dae9e2;font-size:10px}
+.fg-weather-hours b{font-size:14px}
+.fg-weather-tip{margin-top:13px;padding-top:12px;border-top:1px solid #ffffff30;color:#deefe5;font-size:12px;line-height:1.5}
+.fg-weather-week{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
+.fg-weather-weekday{background:#ffffff16;border-radius:10px;display:flex;flex-direction:column;text-align:center;gap:7px;padding:10px 3px;font-size:11px}
+.fg-weather-weekday .fg-weather-emoji{font-size:22px}
+.fg-weather-weekday strong{white-space:nowrap;font-size:11px}
+.fg-weather-weekday small{color:#e0ece6}
+.fg-weather-note{font-size:11px;color:#deeee7;margin:12px 0 0}
+.fg-weather-footer{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-top:10px;color:var(--fg-muted,var(--muted));font-size:11px}
+.fg-weather-footer button{width:auto;min-height:30px;padding:5px 10px;font-size:12px;background:transparent;color:var(--fg-text,var(--text));border:1px solid var(--fg-border,var(--line))}
+@media(max-width:580px){.fg-weather{padding:14px}.fg-weather-header{align-items:start}.fg-weather-live{font-size:10px}.fg-weather-main{gap:10px}.fg-weather-metrics{min-width:130px;gap:8px}.fg-weather-temp strong{font-size:30px}.fg-weather-temp span{font-size:28px}.fg-weather-result{padding:12px}.fg-weather-week{overflow-x:auto;grid-template-columns:repeat(7,minmax(70px,1fr))}.fg-weather-controls{grid-template-columns:minmax(0,1.5fr) minmax(0,1fr)}.fg-weather-hours{gap:3px}}
