@@ -50,8 +50,8 @@ window.FortisWeather = (() => {
     const chosen = all.find(c=>String(c.id)===remembered) || all.find(c=>coordinates(c)) || all[0];
     const time = localStorage.getItem(STORAGE_TIME) || '08:00';
     host.innerHTML = '<section class="fg-weather card" aria-label="球場天氣預報">'+
-      '<div class="fg-weather-header"><div><span class="fg-weather-eyebrow">FORTIS GOLF · COURSE WEATHER</span><h2>⛳ 球場天氣預報</h2></div><span class="fg-weather-live">GPS 球場定位</span></div>'+
-      '<div class="fg-weather-controls"><label>選擇球場<select id="fgWeatherCourse">'+all.map(c=>'<option value="'+escapeHtml(c.id)+'"'+(c===chosen?' selected':'')+'>'+escapeHtml(courseName(c))+(c.course_name && courseName(c)!==c.course_name?' · '+escapeHtml(c.course_name):'')+'</option>').join('')+'</select></label>'+
+      '<div class="fg-weather-header"><div><h2>⛳ 球場天氣預報</h2></div><span class="fg-weather-live">GPS 球場定位</span></div>'+
+      '<div class="fg-weather-controls"><label>選擇球場<select id="fgWeatherCourse">'+all.map(c=>'<option value="'+escapeHtml(c.id)+'"'+(c===chosen?' selected':'')+'>'+escapeHtml(c.display_name_zh || courseName(c))+'</option>').join('')+'</select></label>'+
       '<label>預計開球時間<select id="fgWeatherTime">'+Array.from({length:15},(_,i)=>{const h=String(i+5).padStart(2,'0')+':00';return '<option value="'+h+'"'+(h===time?' selected':'')+'>'+h+'</option>'}).join('')+'</select></label></div>'+
       '<div class="fg-weather-days" role="group" aria-label="預報日期">'+[['today','今天'],['tomorrow','明天'],['after','後天'],['week','7 天預報']].map(([v,l])=>'<button type="button" data-day="'+v+'" class="fg-weather-day'+(v==='tomorrow'?' selected':'')+'">'+l+'</button>').join('')+'</div>'+
       '<div id="fgWeatherResult" class="fg-weather-result" aria-live="polite">讀取球場氣象中…</div>'+
