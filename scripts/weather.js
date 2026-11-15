@@ -40,7 +40,7 @@ window.FortisWeather = (() => {
     if ([51,53,55,56,57,61,63,65,66,67,80,81,82].includes(code)) return '降雨';
     return '天氣預報';
   };
-  const round = value => Number.isFinite(+value) ? Math.round(+value) : '—';
+  const round = value => value != null && value !== '' && Number.isFinite(Number(value)) ? Math.round(Number(value)) : '—';
   function mount({courses = []} = {}) {
     const host = document.getElementById('fortisHomeWeather');
     if (!host) return;
@@ -89,7 +89,11 @@ window.FortisWeather = (() => {
         if (!date) {status('暫無該日期的預報。');return;}
         const teeHour = timeSelect.value.slice(0,2);
         const hours = hourly.time || [];
-        const selectedIndex = hours.findIndex(t=>t===date+'T'+teeHour+':00');
+        let selectedIndex = hours.findIndex(t=>t===date+'T'+teeHour+':00');
+        if (selectedIndex<0) {
+          let closest=Infinity;
+          hours.forEach((t,i)=>{if(t.slice(0,10)!==date)return;const diff=Math.abs(Number(t.slice(11,13))-Number(teeHour));if(diff<closest){closest=diff;selectedIndex=i;}});
+        }
         if (selectedIndex<0) {status('選定時間暫無逐時預報。');return;}
         const weather = hourly.weather_code?.[selectedIndex];
         const temp = hourly.temperature_2m?.[selectedIndex];
@@ -99,11 +103,14 @@ window.FortisWeather = (() => {
         const bearing = hourly.wind_direction_10m?.[selectedIndex];
         const direction = Number.isFinite(+bearing)?['北','東北','東','東南','南','西南','西','西北'][Math.round(+bearing/45)%8]+'風':'—';
         const next = Array.from({length:5},(_,i)=>selectedIndex+i).filter(i=>hours[i] && hours[i].slice(0,10)===date);
-        result.innerHTML='<div class="fg-weather-main"><div><span class="fg-weather-sub">'+escapeHtml(date)+' · '+escapeHtml(timeSelect.value)+' 開球</span><div class="fg-weather-temp"><span>'+icon(weather)+'</span><strong>'+fmt(temp,'°C')+'</strong></div><div class="fg-weather-description">'+description(weather)+'</div></div><div class="fg-weather-metrics"><div>☂ 降雨 <b>'+fmt(rain,'%')+'</b></div><div>➤ 風速 <b>'+fmt(wind,' km/h')+'</b></div><div>↗ 陣風 <b>'+fmt(gust,' km/h')+'</b></div><div>🧭 風向 <b>'+direction+'</b></div></div></div>'+
-          '<div class="fg-weather-hours">'+next.map(i=>'<div><small>'+escapeHtml(hours[i].slice(11,16))+'</small><span>'+icon(hourly.weather_code?.[i])+'</span><b>'+fmt(hourly.temperature_2m?.[i],'°')+'</b><small>☂ '+fmt(hourly.precipitation_probability?.[i],'%')+'</small></div>').join('')+'</div>'+
+        const metFallback=data.source==='MET Norway';
+        const precipLabel=metFallback && rain==null ? '降雨量' : '降雨機率';
+        const precipValue=metFallback && rain==null ? fmt(hourly.precipitation_amount?.[selectedIndex],' mm') : fmt(rain,'%');
+        result.innerHTML='<div class="fg-weather-main"><div><span class="fg-weather-sub">'+escapeHtml(date)+' · '+escapeHtml(hours[selectedIndex].slice(11,16))+(hours[selectedIndex].slice(11,16)!==timeSelect.value?'（最近預報時間）':'')+' 開球參考</span><div class="fg-weather-temp"><span>'+icon(weather)+'</span><strong>'+fmt(temp,'°C')+'</strong></div><div class="fg-weather-description">'+description(weather)+'</div></div><div class="fg-weather-metrics"><div>☂ '+precipLabel+' <b>'+precipValue+'</b></div><div>➤ 風速 <b>'+fmt(wind,' km/h')+'</b></div><div>↗ 陣風 <b>'+fmt(gust,' km/h')+'</b></div><div>🧭 風向 <b>'+direction+'</b></div></div></div>'+
+          '<div class="fg-weather-hours">'+next.map(i=>'<div><small>'+escapeHtml(hours[i].slice(11,16))+'</small><span>'+icon(hourly.weather_code?.[i])+'</span><b>'+fmt(hourly.temperature_2m?.[i],'°')+'</b><small>☂ '+(metFallback && hourly.precipitation_probability?.[i]==null ? fmt(hourly.precipitation_amount?.[i],' mm') : fmt(hourly.precipitation_probability?.[i],'%'))+'</small></div>').join('')+'</div>'+
           '<div class="fg-weather-tip">'+alert(rain,wind,gust,weather)+'</div>';
       }
-      host.querySelector('#fgWeatherUpdated').textContent = 'Open-Meteo · 球場當地時間 '+(data.timezone_abbreviation||'')+' · 約每 30 分鐘更新';
+      host.querySelector('#fgWeatherUpdated').textContent = (data.source||'Open-Meteo')+' · 球場當地時間 '+(data.timezone_abbreviation||'')+' · 約每 30 分鐘更新';
     }
     async function load(force = false) {
       const course=all.find(c=>String(c.id)===select.value),coords=coordinates(course);
@@ -113,11 +120,10 @@ window.FortisWeather = (() => {
       const cached=cache.get(key);
       if (!force && cached && Date.now()-cached.time<TTL) {show(cached.data);return;}
       status('正在讀取 '+courseName(course)+' 的天氣預報…');
-      const params=new URLSearchParams({latitude:String(coords.lat),longitude:String(coords.lng),timezone:'auto',forecast_days:'8',temperature_unit:'celsius',wind_speed_unit:'kmh',current:'temperature_2m',hourly:'temperature_2m,precipitation_probability,weather_code,wind_speed_10m,wind_gusts_10m,wind_direction_10m',daily:'weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max'});
       const controller=new AbortController();
-      const timer=setTimeout(()=>controller.abort(),12000);
+      const timer=setTimeout(()=>controller.abort(),17000);
       try {
-        const response=await fetch('https://api.open-meteo.com/v1/forecast?'+params.toString(),{signal:controller.signal});
+        const response=await fetch('/api/weather?lat='+encodeURIComponent(coords.lat)+'&lng='+encodeURIComponent(coords.lng),{signal:controller.signal});
         if (!response.ok) throw new Error('HTTP '+response.status);
         const data=await response.json();
         if (!data.hourly?.time?.length || !data.daily?.time?.length) throw new Error('Missing forecast');
@@ -126,7 +132,7 @@ window.FortisWeather = (() => {
       } catch (err) {
         if (run===requestId && host.isConnected) {
           if (cached) {show(cached.data);host.querySelector('#fgWeatherUpdated').textContent='無法更新，顯示上次取得的預報';}
-          else status('目前無法取得氣象資料，請檢查網路後再試。');
+          else status('氣象服務暫時無法連線，請點「更新」重試。若持續失敗，請確認球場 GPS 座標。');
         }
       } finally {clearTimeout(timer);}
     }
