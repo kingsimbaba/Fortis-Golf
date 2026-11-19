@@ -605,6 +605,7 @@ th{color:var(--muted)}
   <option value="4" selected>4 位球員</option>
   <option value="3">3 位球員</option>
   <option value="2">2 位球員</option>
+  <option value="1">1 位球員（個人計分）</option>
 </select><h2>球員 + 第一洞開球距離</h2><div class="grid4" id="playerInputs"></div><div class="grid" style="margin-top:12px"><button class="btn2" onclick="loadLastGroup()">載入上一場</button><button class="btn2" onclick="renderMatchups()">載入個人對戰</button><button onclick="startRound()">開始回合</button></div><p class="small">地獄倒楣鬼永遠開啟,不需要個人對戰可關閉.</p></div>
 <div class="card"><h2>個人對戰</h2><label class="toggle">
   <input type="checkbox" id="useIndividualMatchups" checked onchange="toggleIndividualMatchups(this.checked)">
@@ -1185,7 +1186,14 @@ try{
 localStorage.setItem('fortisLastSuccessfulSync',new Date().toISOString()); updateLastSyncStatus(); setProductionStatus(`資料已更新：${db.scores.length} 筆逐洞成績`); setupCourseSelect(); if(currentPage==='home')renderHome();if(currentPage==='costs')renderPersonalCosts(); document.getElementById('dbStatus').innerHTML=`<span class="ok">Supabase 已連線。</span> Courses: ${db.courses.length}, holes: ${db.holes.length}, matchups: ${db.matchups.length}, rounds: ${db.rounds.length}`; document.getElementById('dataView').innerHTML=`Courses ${db.courses.length}<br>Holes ${db.holes.length}<br>Matchups ${db.matchups.length}<br>Players ${db.players.length}<br>Rounds ${db.rounds.length}<br>History ${db.history.length}<br>Seasons ${db.seasons.length}`;}catch(e){let retry=`<button class="btn2" onclick="loadAll()">重試載入</button>`;document.getElementById('dbStatus').innerHTML='<span class="bad">Supabase error: '+e.message+'</span> '+retry;if(document.getElementById('summaryContent'))document.getElementById('summaryContent').innerHTML=`<div class="card"><h2>資料載入失敗</h2><p class="bad">${e.message}</p>${retry}</div>`;}}
 function makePlayers(){
   let n=+(document.getElementById('playerCount')?.value || 4);
+  const solo=n===1;
+  const mode=document.getElementById('gameMode');
+  if(solo){mode.value='individual8421';document.getElementById('vegasDrawSetup').hidden=true;}
+  mode.disabled=solo;
+  document.getElementById('useIndividualMatchups').disabled=solo;
+  document.getElementById('countPar3Strokes').disabled=solo;
   let names=['','','',''];
+  if(solo){const name=getDashboardPlayerName();if(name!=='尚未對應球員')names[0]=adminEscapeHtml(name);}
   let box=document.getElementById('playerInputs');
   box.innerHTML='';
 
@@ -1744,7 +1752,7 @@ function currentPlayers(){
 function loadLastGroup(){let rid=db.rounds?.[0]?.id; if(!rid)return alert('找不到上一場回合。'); let names=[...new Set(db.scores.filter(s=>s.round_id===rid).map(s=>s.player_name))].slice(0,4); if(names.length<4)return alert('無法從上一場找到 4 位球員。'); names.forEach((n,i)=>document.getElementById('p'+i).value=n); renderMatchups(); alert('已載入上一組球員：'+names.join(', '));}
 function pairKey(a,b){return [a,b].sort().join('___')}
 function findMatchup(a,b){let rec=db.matchups.find(m=>pairKey(m.giver,m.receiver)===pairKey(a,b)); if(rec) return {id:rec.id,a,b,active:true,giver:rec.giver,receiver:rec.receiver,strokes:+rec.holes_given||0}; return {id:null,a,b,active:true,giver:a,receiver:b,strokes:0};}
-function renderMatchups(){if(!useIndividualMatchups){
+function renderMatchups(){if(currentPlayers().length===1){document.getElementById('matchupSetup').textContent='單人計分不使用個人對戰。';return;}if(!useIndividualMatchups){
   document.getElementById('matchupSetup').innerHTML =
     '<p class="small">Individual matchups are OFF for this round.</p>';
   return;
@@ -1949,14 +1957,14 @@ const pendingLiveSyncs=new Set();
 function syncLiveRound(){
   if(!round || roundActionPending) return Promise.resolve();
   if(round.tournament) queueTournamentSync();
-  if(['vegas','crossGroup'].includes(round.gameMode)||round.tournament?.gameKind==='cross')return Promise.resolve();
+  if(['vegas','crossGroup','solo'].includes(round.gameMode)||round.tournament?.gameKind==='cross')return Promise.resolve();
   const request=writeLiveRound();
   pendingLiveSyncs.add(request);
   request.finally(()=>pendingLiveSyncs.delete(request));
   return request;
 }
   async function writeLiveRound(){
-  if(!round||['vegas','crossGroup'].includes(round.gameMode)||round.tournament?.gameKind==='cross') return;
+  if(!round||['vegas','crossGroup','solo'].includes(round.gameMode)||round.tournament?.gameKind==='cross') return;
 
   try{
     const sharedRound={...round,_presence:activeRecorderDetails()};
@@ -1987,7 +1995,7 @@ async function cancelLiveRound(){
     // Finish any earlier upload before closing, so it cannot reactivate this round.
     await Promise.allSettled([...pendingLiveSyncs]);
     if(!currentSession) throw new Error('請先登入，再取消即時回合。');
-    if(!['vegas','crossGroup'].includes(round.gameMode)){
+    if(!['vegas','crossGroup','solo'].includes(round.gameMode)){
     const closed=await sb(`live_rounds?id=eq.${encodeURIComponent(round.id)}`,{
       method:'PATCH',
       body:JSON.stringify({active:false,updated_at:new Date().toISOString()})
@@ -2007,7 +2015,7 @@ async function cancelLiveRound(){
 }
 
 async function endActiveScoringSession(){
-  if(!round?.id||!currentSession||['vegas','crossGroup'].includes(round.gameMode)||round.tournament?.gameKind==='cross')return;
+  if(!round?.id||!currentSession||['vegas','crossGroup','solo'].includes(round.gameMode)||round.tournament?.gameKind==='cross')return;
   try{
     await sb(`live_rounds?id=eq.${encodeURIComponent(round.id)}`,{
       method:'PATCH',
@@ -2099,7 +2107,7 @@ document.getElementById('liveViewerContent').innerHTML = `
 }
 async function copyLiveLink(){
   if(!round) return;
-  if(['vegas','crossGroup'].includes(round.gameMode)||round.tournament?.gameKind==='cross'){alert('此回合不提供公開即時分享；儲存後可查看回合紀錄。');return;}
+  if(['vegas','crossGroup','solo'].includes(round.gameMode)||round.tournament?.gameKind==='cross'){alert('此回合不提供公開即時分享；儲存後可查看回合紀錄。');return;}
 
   await syncLiveRound();
 
@@ -2168,13 +2176,13 @@ let selected組合=
     ? document.getElementById('combo').value
     : null;
 
-  const gameMode=document.getElementById('gameMode')?.value||'individual8421';
+  const gameMode=n===1?'solo':document.getElementById('gameMode')?.value||'individual8421';
   let vegasDraw;
   if(gameMode==='vegas'){
     try{if(currentPlayers().length!==4)throw Error('Vegas 需要四位球員。');vegasDraw=[0,1,2,3].map(i=>Number(document.getElementById('vegasDraw'+i).value));FortisVegas.drawOrder(vegasDraw);}catch(e){alert(e.message);return;}
   }
   round={
-    crossGroupEnabled:document.getElementById('enableCrossGroup')?.checked===true || gameMode==='crossGroup',
+    crossGroupEnabled:n>1&&(document.getElementById('enableCrossGroup')?.checked===true || gameMode==='crossGroup'),
     gameMode,vegasDraw,...(gameMode==='vegas'?{vegasRules:{...FortisVegas.RULES}}:{}),
     id:Date.now(),
     note:document.getElementById('roundNote').value,
@@ -2182,8 +2190,8 @@ let selected組合=
     combo:selected組合,
     players:currentPlayers(),
     initialRanks:currentPlayers().map((_,i)=>+document.getElementById('r'+i).value),
-    matchups:readMatchups(),
-    larryMode:document.getElementById('countPar3Strokes')?.checked===true,
+    matchups:n===1?[]:readMatchups(),
+    larryMode:n>1&&document.getElementById('countPar3Strokes')?.checked===true,
     course,
     scores:Array.from({length:18},()=>Array(currentPlayers().length).fill('')),
     putts:Array.from({length:18},()=>Array(currentPlayers().length).fill(2)),
@@ -2207,8 +2215,8 @@ roundHole = startHoleIndex;
 function playerPoint(score,par){let d=score-par; if(d<=-3)return 32; if(d===-2)return 16; if(d===-1)return 8; if(d===0)return 4; if(d===1)return 2; if(d===2)return 1; return 0;}
 function calcFortis(r){
   let n=r.players.length;
-  if(n===2){
-    return {totals:[0,0], rows:[]};
+  if(n<=2){
+    return {totals:Array(n).fill(0), rows:[]};
   }
 
   let totals=Array(n).fill(0), rows=[];
@@ -2673,15 +2681,15 @@ round.players.forEach((p,i)=>{
 html+=`
     </div>
     <div>
-      <h2>即時排行榜</h2>`;
+      <h2>${round.players.length===1?'目前總推桿':'即時排行榜'}</h2>`;
 
 round.players.map((_,i)=>i)
   .sort((a,b)=>c.totals[b]-c.totals[a])
   .forEach((i,k)=>{
     html+=`
       <div class="leader-row" style="padding:8px 10px;margin:5px 0">
-        <div>${k+1}. <b>${round.players[i]}</b></div>
-        <div class="score" style="font-size:22px">${c.totals[i]}</div>
+        <div>${round.players.length===1?'':(k+1)+'. '}<b>${round.players[i]}</b></div>
+        <div class="score" style="font-size:22px">${round.players.length===1?round.scores.reduce((sum,row,h)=>sum+(row[i]===''?0:Number(round.putts?.[h]?.[i]??2)),0):c.totals[i]}</div>
       </div>`;
   });
 
@@ -2765,7 +2773,7 @@ if(round.players.length > 2 && row){
       </div>
     </div>
   </div>`;
-}else{
+}else if(round.players.length===2){
   html+=`
     <div class="card">
       <h2>雙人對戰</h2>
@@ -2773,7 +2781,7 @@ if(round.players.length > 2 && row){
     </div>`;
 }
 
-  html+=individualHtml();
+  if(round.players.length>1)html+=individualHtml();
   document.getElementById('scoreContent').innerHTML=html;
   mountTournamentPanel();
 }
@@ -2876,17 +2884,18 @@ function buildRoundAchievements(savedRound, priorScores){
   const awards=[];
   const mvp=maxIdx(fortis), unlucky=minIdx(fortis), low=minIdx(gross), bird=maxIdx(birdies), eagle=maxIdx(eagles), alb=maxIdx(albatrosses), ace=maxIdx(hio);
   if(alb>=0&&albatrosses[alb]>0) awards.push({icon:'🏆',label:'信天翁王者',player:players[alb],value:`${albatrosses[alb]} 個`});
-  if(mvp>=0) awards.push({icon:'🏆',label:'本回合 MVP',player:players[mvp],value:`${fortis[mvp]>=0?'+':''}${fortis[mvp]} 分`});
+  if(players.length>1&&mvp>=0) awards.push({icon:'🏆',label:'本回合 MVP',player:players[mvp],value:`${fortis[mvp]>=0?'+':''}${fortis[mvp]} 分`});
   if(bird>=0&&birdies[bird]>0) awards.push({icon:'🔥',label:'博蒂機器',player:players[bird],value:`${birdies[bird]} 個`});
   if(eagle>=0&&eagles[eagle]>0) awards.push({icon:'🦅',label:'老鷹獵人',player:players[eagle],value:`${eagles[eagle]} 個`});
   if(ace>=0&&hio[ace]>0) awards.push({icon:'🎯',label:'一桿進洞',player:players[ace],value:`${hio[ace]} 個`});
-  if(low>=0) awards.push({icon:'⭐',label:'最低總桿',player:players[low],value:`${gross[low]} 桿`});
+  if(low>=0) awards.push({icon:'⭐',label:players.length===1?'本回合總桿':'最低總桿',player:players[low],value:`${gross[low]} 桿`});
   if(unlucky>=0&&unlucky!==mvp) awards.push({icon:'😈',label:'地獄倒楣鬼',player:players[unlucky],value:`${fortis[unlucky]>=0?'+':''}${fortis[unlucky]} 分`});
 
   const priorByPlayer={};
   priorScores.forEach(x=>{if(!priorByPlayer[x.player_name])priorByPlayer[x.player_name]={};let r=priorByPlayer[x.player_name];if(!r[x.round_id])r[x.round_id]=[];r[x.round_id].push(x)});
   players.forEach((p,i)=>{
-    const rounds=Object.values(priorByPlayer[p]||{});
+    const playedCount=savedRound.scores.filter(row=>row[i]!=='').length;
+    const rounds=Object.values(priorByPlayer[p]||{}).filter(arr=>players.length!==1||arr.length===playedCount);
     const priorGross=rounds.map(arr=>arr.reduce((t,x)=>t+(+x.gross_score||0),0)).filter(Boolean);
     const priorBirdies=rounds.map(arr=>arr.filter(x=>['Birdie','博蒂'].includes(x.score_type)).length);
     const priorAlbatrosses=rounds.map(arr=>arr.filter(x=>['Albatross','信天翁'].includes(x.score_type)).length);
@@ -2924,6 +2933,7 @@ if(!round_id){
 let rr=await sb('fortis_rounds',{method:'POST',body:JSON.stringify({round_name:round.note,course_name:round.courseName,course_combo:round.combo,played_at:new Date().toISOString(),season_id:activeSeason?.id||null,players:round.players,initial_ranks:round.initialRanks,matchups:round.matchups,course_data:persistedCourseData,start_hole_index:round.startHoleIndex||0})});
 round_id=rr[0].id;let scores=[];
 for(let h=0;h<=lastPlayedHole;h++)for(let i=0;i<round.players.length;i++){
+ if(round.players.length===1&&round.scores[h][i]==='')continue;
  const hole=round.course[h];let gross=round.scores[h][i]===''?hole.par:+round.scores[h][i],diff=gross-hole.par,scoreType='';
  if(hole.par===3&&gross===1)scoreType='一桿進洞';else if(diff<=-3)scoreType='信天翁';else if(diff===-2)scoreType='老鷹';else if(diff===-1)scoreType='博蒂';else if(diff===0)scoreType='標準桿';else if(diff===1)scoreType='柏忌';else if(diff===2)scoreType='雙柏忌';else if(diff===3)scoreType='三柏忌';else scoreType='+'+diff;
  const putts=Number.isInteger(+round.putts?.[h]?.[i])?Math.max(0,Math.min(9,+round.putts[h][i])):2;
@@ -2937,7 +2947,7 @@ if(round.gameMode==='vegas'&&!round.vegasSnapshotSaved){
   await sb('golf_vegas_rounds?on_conflict=owner_id,id',{method:'POST',headers:{Prefer:'resolution=ignore-duplicates,return=representation'},body:JSON.stringify({id:`fortis:${round_id}`,owner_id:currentUser.id,round_data:{...completedRound,fortisRoundId:round_id}})});
   round.vegasSnapshotSaved=true;saveActiveRound();
 }
-const achievements={...buildRoundAchievements(completedRound,priorScores),roundId:round_id};localRounds.push(round);await endActiveScoringSession();await loadAll();clearActiveRound();round=null;renderSummary();showPage('summary');const peoriaStarted=typeof FortisPeoriaUI!=='undefined'&&FortisPeoriaUI.afterSave(completedRound,round_id);if(!peoriaStarted)setTimeout(()=>showRoundAchievements(achievements),120);
+const achievements={...buildRoundAchievements(completedRound,priorScores),roundId:round_id};localRounds.push(round);await endActiveScoringSession();await loadAll();clearActiveRound();round=null;renderSummary();showPage('summary');const peoriaStarted=completedRound.players.length>1&&typeof FortisPeoriaUI!=='undefined'&&FortisPeoriaUI.afterSave(completedRound,round_id);if(!peoriaStarted)setTimeout(()=>showRoundAchievements(achievements),120);
 }catch(e){alert('Save failed: '+e.message)}finally{roundActionPending=false;}}
 function renderHeadToHead(){
   let records={};
@@ -3195,7 +3205,7 @@ function renderLatestRoundHighlight(){
        +s.gross_score === 1
   ).length;
   let bestAchievement=holesInOne?`一桿進洞 ${holesInOne}`:albatrosses?`信天翁 ${albatrosses}`:eagles?`老鷹 ${eagles}`:birdies?`博蒂 ${birdies}`:'—';
-  return `<div class="card summary-highlight"><h2>最近一場精華</h2><div class="summary-highlight-grid"><div class="summary-stat"><span>日期</span><b>${String(r.played_at||r.created_at||'').slice(0,10)||'-'}</b></div><div class="summary-stat"><span>球場</span><b>${courseNameZh(r.course_name||r.course||'-')}</b></div><div class="summary-stat"><span>最大贏家</span><b>${leader}${leaderPoints===null?'':` (${leaderPoints>0?'+':''}${leaderPoints})`}</b></div><div class="summary-stat"><span>最佳成績</span><b>${bestAchievement}</b></div></div>${renderUnluckyTrend(buildUnluckyTrend(savedRound))}</div>`;
+  return `<div class="card summary-highlight"><h2>最近一場精華</h2><div class="summary-highlight-grid"><div class="summary-stat"><span>日期</span><b>${String(r.played_at||r.created_at||'').slice(0,10)||'-'}</b></div><div class="summary-stat"><span>球場</span><b>${courseNameZh(r.course_name||r.course||'-')}</b></div><div class="summary-stat"><span>${players.length===1?'個人總桿':'最大贏家'}</span><b>${players.length===1?roundScores.reduce((sum,x)=>sum+Number(x.gross_score),0)+' 桿':leader+(leaderPoints===null?'':` (${leaderPoints>0?'+':''}${leaderPoints})`)}</b></div><div class="summary-stat"><span>最佳成績</span><b>${bestAchievement}</b></div></div>${renderUnluckyTrend(buildUnluckyTrend(savedRound))}</div>`;
 }
 function courseNameZh(name){
   const value=String(name||'').trim();
@@ -5155,12 +5165,12 @@ function showReplayPanel() {
   const holeData = replayScores.filter(x => Number(x.hole_number) === holeNo);
   const row = replayCalc.rows[h];
 
-  const isTwoPlayerReplay = replayRoundObj.players.length === 2;
+  const isTwoPlayerReplay = replayRoundObj.players.length <= 2;
 
   let pairingText = '';
 
   if (isTwoPlayerReplay) {
-    pairingText = `${replayRoundObj.players[0]} vs ${replayRoundObj.players[1]}`;
+    pairingText = replayRoundObj.players.length===1?'個人計分':`${replayRoundObj.players[0]} vs ${replayRoundObj.players[1]}`;
   } else {
     pairingText = `Team 1: ${row.team1.map(i=>replayRoundObj.players[i]).join(' + ')}
       vs Team 2: ${row.team2.map(i=>replayRoundObj.players[i]).join(' + ')}${row.team2.length===1?' x2':''}`;
