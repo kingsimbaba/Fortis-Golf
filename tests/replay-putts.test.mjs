@@ -2,6 +2,8 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
+import {createRequire} from 'node:module';
+const M=createRequire(import.meta.url)('../scripts/game-modes.js');
 
 const source=readFileSync(new URL('../index.html',import.meta.url),'utf8');
 const renderer=source.slice(source.indexOf('function showReplayPanel()'),source.indexOf('function closeReplay()'));
@@ -9,7 +11,7 @@ const renderer=source.slice(source.indexOf('function showReplayPanel()'),source.
 test('replay shows recorded putts per player and hole, including zero and missing history',()=>{
   const box={innerHTML:'',scrollIntoView(){}};
   const context=vm.createContext({
-    document:{getElementById:()=>box},
+    FortisGameModes:M,document:{getElementById:()=>box},
     replayRoundObj:{players:['A','B'],course:[{par:4},{par:4}]},
     replayHoles:[1,2],replayIndex:0,
     replayCalc:{rows:[{},{}]},
