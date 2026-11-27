@@ -1,7 +1,9 @@
-const CACHE = 'fortis-golf-2026-11-03-unlucky-trend';
+const CACHE = 'fortis-golf-2026-11-27-high-low';
 
 const ASSETS = [
   '/index.html',
+  '/scripts/high-low.js?v=2026.11.27.01',
+  '/scripts/high-low-ui.js?v=2026.11.27.01',
   '/scripts/personal-round-amounts.js?v=2026.11.01.07',
   '/styles/personal-round-amounts.css?v=2026.11.01.07',
   '/scripts/peoria.js?v=2026.10.26.05',

@@ -44,7 +44,7 @@ test('Larry mode preserves odd-stroke start-hole-10 allocation',()=>{
 });
 
 test('round state is the single source of truth and is persisted',()=>{
-  assert.match(source,/larryMode:document\.getElementById\('countPar3Strokes'\)\?\.checked===true/);
+  assert.match(source,/larryMode:!standaloneHighLow&&n>1&&document\.getElementById\('countPar3Strokes'\)\?\.checked===true/);
   assert.match(source,/eligibleStrokeHoles\(r\.course,\+m\.strokes\|\|0,r\.startHoleIndex\|\|0,r\.larryMode===true\)/);
   assert.match(source,/let isLarryMode = r\.larryMode === true/);
   assert.match(source,/round\.larryMode=round\.larryMode===true/);

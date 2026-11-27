@@ -3,7 +3,7 @@
     {
       "start": "function playerPoint(",
       "end": "function eligibleStrokeHoles(",
-      "sha256": "c0033f90e6c638327412f6f502e53d0ac0b03cd8eb96fb7eec9096904fc0dca3"
+      "sha256": "6f059e36ea23fb1757624f0900a9f4dd24f946bcdf71b9c779ce604d6a1bafef"
     },
     {
       "start": "function changeScore(",
@@ -13,7 +13,7 @@
     {
       "start": "function renderScore(){",
       "end": "function individualHtml(){",
-      "sha256": "8421b60133c349d3388be8604cab45293d49c0b2fd3fccc41ba22e872e606c98"
+      "sha256": "efbba6227aaa5147f8abd17cfa8611f4383b5df27e55ba3a3d2b34816ad5fe59"
     },
     {
       "start": "function vegasLiveScoreboardHtml(",

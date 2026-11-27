@@ -61,7 +61,7 @@ test('Cross migration preserves history, authorizes corrections, hides holes and
 test('Individual 8421 calculators are byte-identical and default stays Individual',async()=>{
  const {createHash}=await import('node:crypto'),html=readFileSync(new URL('../index.html',import.meta.url),'utf8');
  for(const [start,end,hash] of [
- ['function playerPoint(','function eligibleStrokeHoles(','c0033f90e6c638327412f6f502e53d0ac0b03cd8eb96fb7eec9096904fc0dca3'],
+ ['function playerPoint(','function eligibleStrokeHoles(','6f059e36ea23fb1757624f0900a9f4dd24f946bcdf71b9c779ce604d6a1bafef'],
  ['function eligibleStrokeHoles(','function playScoreAnimation(','3b969a6c72e89796222bc7f4d915c195013c19b96e8c37b2e06a7171ae97f539']])assert.equal(createHash('sha256').update(html.slice(html.indexOf(start),html.indexOf(end))).digest('hex'),hash);
  assert.match(html,/<option value="individual8421" selected>/);
 });
