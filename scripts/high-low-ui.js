@@ -55,12 +55,25 @@ function score(h,i,input){
  input.setCustomValidity('');round.scores[h][i]=v;saveActiveRound();if(typeof syncLiveRound==='function')syncLiveRound();document.getElementById('sharedGrossBoard').innerHTML=gross(round);document.getElementById('highLowBoard').innerHTML=allBoards(round,roundHole);document.getElementById('individualBattleBoard').innerHTML=battles(round);
 }
 function inputsValid(){return [...document.querySelectorAll('[data-high-low-score]')].every(e=>e.reportValidity());}
-function next(){
- if(roundActionPending||!round)return;
+async function next(){
+ if(roundActionPending||!round||scoreAnimationPlaying)return;
+ if(round.vegasFortisRoundId){alert('總桿與個人對戰已儲存，請再次按儲存以完成玩法紀錄。');return;}
+ if(round.tournament?.locked){alert('賽事已結算並鎖定。');return;}
  if(!inputsValid()||!round.scores[roundHole].every(Number.isInteger)){alert('請先完成本洞四位球員的桿數。');return;}
- const holes=G().playOrder(round),p=holes.indexOf(roundHole);
- if(p<17)roundHole=holes[p+1];else alert('本洞已完成；請按儲存回合，保存本玩法的結果。');
- saveActiveRound();render();
+ const activeRound=round,h=roundHole,holes=G().playOrder(round),p=holes.indexOf(h),par=round.course[h].par;
+ const results=round.players.map((player,i)=>({player,score:+round.scores[h][i],diff:+round.scores[h][i]-par}));
+ const goodScores=results.filter(r=>r.diff<0);
+ // Match the existing 8421 gross-score selection, independent of game points or handicaps.
+ const animationResult=goodScores.length?goodScores.sort((a,b)=>a.score-b.score)[0]:results.sort((a,b)=>b.score-a.score)[0];
+ scoreAnimationPlaying=true;
+ try{
+  const completion=playScoreAnimation(animationResult);
+  saveActiveRound();if(typeof syncLiveRound==='function')syncLiveRound();
+  if(completion)await completion;else await new Promise(resolve=>setTimeout(resolve,2200));
+  if(round!==activeRound)return;
+  if(p<17)roundHole=holes[p+1];else alert('本洞已完成；請按儲存回合，保存本玩法的結果。');
+  saveActiveRound();if(typeof syncLiveRound==='function')syncLiveRound();render();
+ }catch(e){alert('動畫播放失敗，桿數已保留，請再次確認本洞。');}finally{scoreAnimationPlaying=false;}
 }
 async function save(){
  if(roundActionPending||!round)return;

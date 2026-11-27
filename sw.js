@@ -1,9 +1,9 @@
-const CACHE = 'fortis-golf-2026-11-27-multiple-games';
+const CACHE = 'fortis-golf-2026-11-27-all-game-videos';
 
 const ASSETS = [
   '/index.html',
   '/scripts/high-low.js?v=2026.11.27.01',
-  '/scripts/high-low-ui.js?v=2026.11.27.03',
+  '/scripts/high-low-ui.js?v=2026.11.27.04',
   '/scripts/game-modes.js?v=2026.11.27.03',
   '/scripts/personal-round-amounts.js?v=2026.11.01.07',
   '/styles/personal-round-amounts.css?v=2026.11.01.07',
