@@ -8,12 +8,12 @@
     {
       "start": "function changeScore(",
       "end": "function renderScore(){",
-      "sha256": "8dea371775d8f0b11e981f56d1c613e65702d24a851a54be133126ef2ad61db5"
+      "sha256": "93cd597e99ffe4158514dc1a9e932b4cd3870d7eb3b78991efa8f6f7574995ce"
     },
     {
       "start": "function renderScore(){",
       "end": "function individualHtml(){",
-      "sha256": "efbba6227aaa5147f8abd17cfa8611f4383b5df27e55ba3a3d2b34816ad5fe59"
+      "sha256": "b801d057b3b592a8b854d1b6c3f40a48d8a887cbf0c4277dbb24f7e3ade32135"
     },
     {
       "start": "function vegasLiveScoreboardHtml(",
