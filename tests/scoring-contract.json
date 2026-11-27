@@ -13,7 +13,7 @@
     {
       "start": "function renderScore(){",
       "end": "function individualHtml(){",
-      "sha256": "b801d057b3b592a8b854d1b6c3f40a48d8a887cbf0c4277dbb24f7e3ade32135"
+      "sha256": "9c2477e409e9181cbfb5b62d9ee11ba0b9705f499879140909db798b0e13a963"
     },
     {
       "start": "function vegasLiveScoreboardHtml(",

@@ -3,12 +3,12 @@ import assert from 'node:assert/strict';
 import vm from 'node:vm';
 import {readFileSync} from 'node:fs';
 import {createRequire} from 'node:module';
-const require=createRequire(import.meta.url),V=require('../scripts/vegas.js');
+const require=createRequire(import.meta.url),V=require('../scripts/vegas.js'),M=require('../scripts/game-modes.js');
 const html=readFileSync(new URL('../index.html',import.meta.url),'utf8');
 const slice=(a,b)=>html.slice(html.indexOf(a),html.indexOf(b));
 const fixture=mode=>({id:123,gameMode:mode,players:['A','B','C','D'],initialRanks:[1,2,3,4],matchups:[],vegasDraw:[1,2,3,4],course:Array.from({length:18},(_,i)=>({par:4,hcp:i+1,display:'Hole '+(i+1)})),scores:Array.from({length:18},()=>[4,5,6,7])});
 test('Vegas adds a separate scoreboard while original score UI and default putts stay identical',()=>{
- const box={innerHTML:''};const ctx=vm.createContext({roundHole:0,db:{courses:[],course_combos:[]},document:{getElementById:()=>box},courseLocalizedName:()=>'',individualHtml:()=>'',mountTournamentPanel(){},calcFortis:()=>({totals:[1,2,3,4],rows:[]})});
+ const box={innerHTML:''};const ctx=vm.createContext({FortisGameModes:M,roundHole:0,db:{courses:[],course_combos:[]},document:{getElementById:()=>box},courseLocalizedName:()=>'',individualHtml:()=>'',mountTournamentPanel(){},calcFortis:()=>({totals:[1,2,3,4],rows:[]})});
  ctx.FortisVegas=V;ctx.adminEscapeHtml=String;
  vm.runInContext(slice('function vegasLiveScoreboardHtml(','function vegasScoreboardHtml('),ctx);
  vm.runInContext(slice('function renderScore(){','function individualHtml(){'),ctx);
@@ -18,7 +18,7 @@ test('Vegas adds a separate scoreboard while original score UI and default putts
 });
 test('Vegas saves normal scores and putts plus a separate results snapshot; retry does not repeat completed legacy writes',async()=>{
  const writes=[],alerts=[];let fail=true;const r=fixture('vegas');r.putts=Array.from({length:18},()=>[0,1,2,3]);
- const ctx=vm.createContext({round:r,roundActionPending:false,db:{seasons:[],scores:[]},currentUser:{id:'u'},FortisVegas:V,localRounds:[],sb:async(path,opts)=>{writes.push({path,data:JSON.parse(opts.body)});if(path.startsWith('golf_vegas_rounds')&&fail){fail=false;throw Error('temporary');}return [{id:42}];},calcIndividual:()=>[],saveActiveRound(){},buildRoundAchievements:()=>({}),endActiveScoringSession:async()=>{},loadAll:async()=>{},clearActiveRound(){},renderSummary(){},showPage(){},showRoundAchievements(){},setTimeout(){},alert:m=>alerts.push(m)});
+ const ctx=vm.createContext({FortisGameModes:M,round:r,roundActionPending:false,db:{seasons:[],scores:[]},currentUser:{id:'u'},FortisVegas:V,localRounds:[],sb:async(path,opts)=>{writes.push({path,data:JSON.parse(opts.body)});if(path.startsWith('golf_vegas_rounds')&&fail){fail=false;throw Error('temporary');}return [{id:42}];},calcIndividual:()=>[],saveActiveRound(){},buildRoundAchievements:()=>({}),endActiveScoringSession:async()=>{},loadAll:async()=>{},clearActiveRound(){},renderSummary(){},showPage(){},showRoundAchievements(){},setTimeout(){},alert:m=>alerts.push(m)});
  vm.runInContext(slice('async function saveRound(){','function renderHeadToHead(){'),ctx);
  await ctx.saveRound();assert.equal(ctx.round,r);assert.equal(alerts.length,1);
  await ctx.saveRound();assert.equal(ctx.round,null);
@@ -26,12 +26,12 @@ test('Vegas saves normal scores and putts plus a separate results snapshot; retr
  const snapshot=writes.at(-1).data.round_data;assert.deepEqual(snapshot.scores,r.scores);assert.equal(snapshot.fortisRoundId,42);assert.deepEqual(V.calculate(snapshot).totals,V.calculate(r).totals);
 });
 test('cross-group panel does nothing for an unlinked Individual or Vegas round',()=>{
- for(const mode of ['individual8421','vegas']){let removed=0;const ctx=vm.createContext({round:fixture(mode),document:{getElementById:()=>({remove(){removed++;}}),createElement(){throw Error('unexpected panel');}}});
+ for(const mode of ['individual8421','vegas']){let removed=0;const ctx=vm.createContext({FortisGameModes:M,round:fixture(mode),document:{getElementById:()=>({remove(){removed++;}}),createElement(){throw Error('unexpected panel');}}});
  vm.runInContext(slice('function mountTournamentPanel(','async function loadTournamentChoices('),ctx);ctx.mountTournamentPanel();assert.equal(removed,1);}
 });
 
 test('live Vegas scoreboard shows drawn pairing before entry, completed points and score-based next pairing',()=>{
- const ctx=vm.createContext({FortisVegas:V,adminEscapeHtml:String});
+ const ctx=vm.createContext({FortisGameModes:M,FortisVegas:V,adminEscapeHtml:String});
  vm.runInContext(slice('function vegasLiveScoreboardHtml(','function vegasScoreboardHtml('),ctx);
  const r=fixture('vegas');r.scores=Array.from({length:18},()=>['','','','']);
  const pending=ctx.vegasLiveScoreboardHtml(r,0);assert.match(pending,/本洞配對：<\/b>A \+ D vs B \+ C/);assert.match(pending,/本洞點數待定/);assert.doesNotMatch(pending,/0 \(0\)/);
@@ -45,7 +45,7 @@ test('live Vegas scoreboard shows drawn pairing before entry, completed points a
 test('real score buttons and hole confirmation update 8421 and Vegas concurrently over four holes',async()=>{
  const box={innerHTML:''},r=fixture('vegas');r.scores=Array.from({length:18},()=>['','','','']);
  r.course.forEach((c,i)=>c.par=[4,3,3,5][i]||4);
- const ctx=vm.createContext({round:r,roundHole:0,scoreAnimationPlaying:false,FortisVegas:V,adminEscapeHtml:String,db:{courses:[],course_combos:[]},document:{getElementById:()=>box},courseLocalizedName:()=>'',individualHtml:()=>'',mountTournamentPanel(){},saveActiveRound(){},syncLiveRound(){},playScoreAnimation:()=>Promise.resolve(),alert:m=>{throw Error(m);}});
+ const ctx=vm.createContext({FortisGameModes:M,round:r,roundHole:0,scoreAnimationPlaying:false,FortisVegas:V,adminEscapeHtml:String,db:{courses:[],course_combos:[]},document:{getElementById:()=>box},courseLocalizedName:()=>'',individualHtml:()=>'',mountTournamentPanel(){},saveActiveRound(){},syncLiveRound(){},playScoreAnimation:()=>Promise.resolve(),alert:m=>{throw Error(m);}});
  vm.runInContext(slice('function playerPoint(','function eligibleStrokeHoles('),ctx);
  vm.runInContext(slice('function vegasLiveScoreboardHtml(','function vegasScoreboardHtml('),ctx);
  vm.runInContext(slice('function changeScore(','function renderScore(){'),ctx);
@@ -66,20 +66,20 @@ test('real score buttons and hole confirmation update 8421 and Vegas concurrentl
 });
 
 test('compact live Vegas view exposes totals and pairing while all hole details start collapsed',()=>{
- const ctx=vm.createContext({FortisVegas:V,adminEscapeHtml:String});vm.runInContext(slice('function vegasLiveScoreboardHtml(','function vegasScoreboardHtml('),ctx);
+ const ctx=vm.createContext({FortisGameModes:M,FortisVegas:V,adminEscapeHtml:String});vm.runInContext(slice('function vegasLiveScoreboardHtml(','function vegasScoreboardHtml('),ctx);
  const rendered=ctx.vegasLiveScoreboardHtml(fixture('vegas'),2),visible=rendered.split('<details>')[0];
  assert.match(visible,/Vegas 累計點數/);assert.match(visible,/本洞配對/);assert.equal((visible.match(/class="leader-row"/g)||[]).length,4);
  assert.doesNotMatch(visible,/<table|組合數|本洞點數（累計）/);assert.match(rendered,/<details><summary>查看本洞與逐洞明細/);assert.doesNotMatch(rendered,/<details[^>]*\bopen\b/);
 });
 
 test('8421 can correctly tie a hole while Vegas awards points from the same strokes',()=>{
- const ctx=vm.createContext({});vm.runInContext(slice('function playerPoint(','function eligibleStrokeHoles('),ctx);
+ const ctx=vm.createContext({FortisGameModes:M,});vm.runInContext(slice('function playerPoint(','function eligibleStrokeHoles('),ctx);
  const r=fixture('vegas');r.scores=Array.from({length:18},()=>['','','','']);r.scores[0]=[4,5,5,7];
  assert.deepEqual(Array.from(ctx.calcFortis(r).totals),[0,0,0,0]);assert.deepEqual(V.calculate(r).totals,[8,-8,-8,8]);
 });
 
 test('reported mock strokes reconcile hole gains with cumulative 8421 totals',()=>{
- const ctx=vm.createContext({});vm.runInContext(slice('function playerPoint(','function eligibleStrokeHoles('),ctx);
+ const ctx=vm.createContext({FortisGameModes:M,});vm.runInContext(slice('function playerPoint(','function eligibleStrokeHoles('),ctx);
  const r=fixture('vegas');r.scores=Array.from({length:18},()=>['','','','']);r.course[0].par=4;r.course[1].par=4;r.course[2].par=3;
  const strokes=[[4,5,4,7],[3,4,4,4],[3,2,3,3]],expected=[[-2,2,2,-2],[2,-2,-2,2],[-2,2,2,-2]];
  strokes.forEach((row,h)=>{r.scores[h]=row;const calculated=ctx.calcFortis(r);assert.deepEqual(Array.from(calculated.totals),expected[h]);if(h===1)assert.equal(calculated.rows[h].t1-calculated.rows[h].t2,4);});
