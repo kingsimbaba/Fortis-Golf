@@ -10,7 +10,7 @@
   
 <script src="/scripts/weather.js?v=2026.11.15.04"></script><link rel="stylesheet" href="/styles/weather.css?v=2026.11.15.02">
 <script src="/scripts/personal-round-amounts.js?v=2026.11.01.07"></script><link rel="stylesheet" href="/styles/personal-round-amounts.css?v=2026.11.01.07">
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>地獄倒霉鬼</title><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="/scripts/tournament.js?v=2026.10.24.02"></script><script src="/scripts/game-modes.js?v=2026.11.27.03"></script><script src="/scripts/high-low.js?v=2026.11.27.01"></script><script src="/scripts/high-low-ui.js?v=2026.11.27.04"></script><script src="/scripts/vegas.js?v=2026.10.24.02"></script><script src="/scripts/cross-group.js?v=2026.10.24.02"></script><script src="/scripts/peoria.js?v=2026.10.26.05"></script><script src="/scripts/peoria-ui.js?v=2026.10.26.05"></script><link rel="stylesheet" href="/styles/peoria.css?v=2026.10.26.05">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>地獄倒霉鬼</title><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="/scripts/tournament.js?v=2026.10.24.02"></script><script src="/scripts/game-modes.js?v=2026.11.27.05"></script><script src="/scripts/high-low.js?v=2026.11.27.01"></script><script src="/scripts/high-low-ui.js?v=2026.11.27.05"></script><script src="/scripts/vegas.js?v=2026.10.24.02"></script><script src="/scripts/cross-group.js?v=2026.10.24.02"></script><script src="/scripts/peoria.js?v=2026.10.26.05"></script><script src="/scripts/peoria-ui.js?v=2026.10.26.05"></script><link rel="stylesheet" href="/styles/peoria.css?v=2026.10.26.05">
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
@@ -600,13 +600,13 @@ th{color:var(--muted)}
 <select id="course"></select>
 <button class="btn2" style="margin-top:10px" onclick="detectNearbyCourse()">📍 偵測附近球場</button>
 <div id="gpsCourseStatus" class="gps-status small">尚未使用 GPS 偵測。</div></div><div id="comboBox" class="hidden"><label id="comboLabel">組合</label><select id="combo"></select></div><div><label>備註</label><input id="roundNote" placeholder="週日球局"></div></div><p class="small">球場有超過18個洞，請選擇擊球的兩個場地.</p></div>
-<div class="card"><fieldset id="gameChoices"><legend>本組玩法（可複選）</legend><label class="toggle"><input type="checkbox" data-game-choice value="individual8421" checked onchange="FortisHighLowUI.setup()">8421（預設）</label><label class="toggle"><input type="checkbox" data-game-choice value="vegas" onchange="FortisHighLowUI.setup()">Vegas</label><label class="toggle"><input type="checkbox" data-game-choice value="highLowTotal" onchange="FortisHighLowUI.setup()">High-Low-Total</label><label class="toggle"><input type="checkbox" data-game-choice value="highLow" onchange="FortisHighLowUI.setup()">High-Low</label></fieldset><select id="gameMode" hidden aria-hidden="true" onchange="FortisHighLowUI.setup()"><option value="individual8421" selected>8421（預設）</option><option value="vegas">Vegas</option><option value="highLowTotal">High-Low-Total（獨立）</option><option value="highLow">High-Low（獨立）</option></select><div id="vegasDrawSetup" hidden><p>依下方球員順序輸入實際抽籤號碼，各一次 1–4。Vegas 從第 1 洞開始。</p><label for="vegasDraw0">球員 1 抽籤號碼</label><input id="vegasDraw0" type="number" min="1" max="4" step="1"><label for="vegasDraw1">球員 2 抽籤號碼</label><input id="vegasDraw1" type="number" min="1" max="4" step="1"><label for="vegasDraw2">球員 3 抽籤號碼</label><input id="vegasDraw2" type="number" min="1" max="4" step="1"><label for="vegasDraw3">球員 4 抽籤號碼</label><input id="vegasDraw3" type="number" min="1" max="4" step="1"><p>數字合併低桿在前；10+ 在前；Birdie ×2、Eagle ×5、一桿進洞 ×10。勝方取最高倍數，不疊加、不翻轉。</p></div><label>球員人數</label>
+<div class="card"><fieldset id="gameChoices"><legend>本組玩法（可複選）</legend><label class="toggle"><input type="checkbox" data-game-choice value="individual8421" checked onchange="FortisHighLowUI.setup()">8421（預設）</label><label class="toggle"><input type="checkbox" data-game-choice value="vegas" onchange="FortisHighLowUI.setup()">Vegas</label><label class="toggle"><input type="checkbox" data-game-choice value="highLowTotal" onchange="FortisHighLowUI.setup()">High-Low-Total</label><label class="toggle"><input type="checkbox" data-game-choice value="highLow" onchange="FortisHighLowUI.setup()">High-Low</label></fieldset><select id="gameMode" hidden aria-hidden="true" onchange="FortisHighLowUI.setup()"><option value="individual8421" selected>8421（預設）</option><option value="vegas">Vegas</option><option value="highLowTotal">High-Low-Total（獨立）</option><option value="highLow">High-Low（獨立）</option></select><div id="vegasDrawSetup" hidden><div id="vegasPairingChoice"><label for="vegasPairingMethod">Vegas 第一洞配對方式</label><select id="vegasPairingMethod" onchange="FortisHighLowUI.pairingSetup()"><option value="distance" selected>開球距離</option><option value="draw">抽籤（手動配對）</option></select></div><div id="vegasManualPairing" hidden><p>抽籤後選擇第一隊的兩位球員，另外兩位自動成為第二隊。</p><label for="vegasTeamA0">第一隊 · 球員 1</label><select id="vegasTeamA0" onchange="FortisHighLowUI.pairingSetup()"><option value="">請選擇球員</option></select><label for="vegasTeamA1">第一隊 · 球員 2</label><select id="vegasTeamA1" onchange="FortisHighLowUI.pairingSetup()"><option value="">請選擇球員</option></select><p id="vegasTeamB" aria-live="polite">第二隊：選好第一隊後顯示</p><p class="small">抽籤僅適用 Vegas 單獨玩法，不需再填開球距離。</p></div><p id="vegasDistanceNote">依下方開球距離順序 1+4 對 2+3，不需抽籤。Vegas 從第 1 洞開始。</p></div><label>球員人數</label>
 <select id="playerCount" onchange="makePlayers(); renderMatchups();">
   <option value="4" selected>4 位球員</option>
   <option value="3">3 位球員</option>
   <option value="2">2 位球員</option>
   <option value="1">1 位球員（個人計分）</option>
-</select><h2>球員 + 第一洞開球距離</h2><div class="grid4" id="playerInputs"></div><div class="grid" style="margin-top:12px"><button class="btn2" onclick="loadLastGroup()">載入上一場</button><button class="btn2" onclick="renderMatchups()">載入個人對戰</button><button onclick="startRound()">開始回合</button></div><p class="small"><span id="gameModeNote">可同時勾選四種玩法；只輸入一次桿數，各玩法分開計分，個人對戰只計算一次。</span></p></div>
+</select><h2 id="playerSetupHeading">球員 + 第一洞開球距離</h2><div class="grid4" id="playerInputs"></div><div class="grid" style="margin-top:12px"><button class="btn2" onclick="loadLastGroup()">載入上一場</button><button class="btn2" onclick="renderMatchups()">載入個人對戰</button><button onclick="startRound()">開始回合</button></div><p class="small"><span id="gameModeNote">可同時勾選四種玩法；只輸入一次桿數，各玩法分開計分，個人對戰只計算一次。</span></p></div>
 <div class="card" id="individualMatchupCard"><h2>個人對戰</h2><label class="toggle">
   <input type="checkbox" id="useIndividualMatchups" checked onchange="toggleIndividualMatchups(this.checked)">
   使用個人對戰
@@ -1202,14 +1202,15 @@ function makePlayers(){
     box.insertAdjacentHTML('beforeend',`
       <div>
         <label>球員 ${i+1}</label>
-        <input id="p${i}" value="${names[i]||''}">
-        <label>第一洞開球距離</label>
+        <input id="p${i}" value="${names[i]||''}" oninput="FortisHighLowUI.pairingSetup()">
+        <div data-driving-distance><label for="r${i}">第一洞開球距離</label>
         <select id="r${i}">
           ${[1,2,3,4].slice(0,n).map(x=>`<option>${x}</option>`).join('')}
-        </select>
+        </select></div>
       </div>
     `);
   }
+  FortisHighLowUI.pairingSetup();
 }
 function getRecentCourses(){
   try{
@@ -1750,7 +1751,7 @@ function currentPlayers(){
       document.getElementById('p'+i).value.trim() || `球員 ${i+1}`
     );
 }
-function loadLastGroup(){let rid=db.rounds?.[0]?.id; if(!rid)return alert('找不到上一場回合。'); let names=[...new Set(db.scores.filter(s=>s.round_id===rid).map(s=>s.player_name))].slice(0,4); if(names.length<4)return alert('無法從上一場找到 4 位球員。'); names.forEach((n,i)=>document.getElementById('p'+i).value=n); renderMatchups(); alert('已載入上一組球員：'+names.join(', '));}
+function loadLastGroup(){let rid=db.rounds?.[0]?.id; if(!rid)return alert('找不到上一場回合。'); let names=[...new Set(db.scores.filter(s=>s.round_id===rid).map(s=>s.player_name))].slice(0,4); if(names.length<4)return alert('無法從上一場找到 4 位球員。'); names.forEach((n,i)=>document.getElementById('p'+i).value=n); FortisHighLowUI.pairingSetup(); renderMatchups(); alert('已載入上一組球員：'+names.join(', '));}
 function pairKey(a,b){return [a,b].sort().join('___')}
 function findMatchup(a,b){let rec=db.matchups.find(m=>pairKey(m.giver,m.receiver)===pairKey(a,b)); if(rec) return {id:rec.id,a,b,active:true,giver:rec.giver,receiver:rec.receiver,strokes:+rec.holes_given||0}; return {id:null,a,b,active:true,giver:a,receiver:b,strokes:0};}
 function renderMatchups(){if(currentPlayers().length===1){document.getElementById('matchupSetup').textContent='單人計分不使用個人對戰。';return;}if(!useIndividualMatchups){
@@ -2161,6 +2162,16 @@ function startRound(){
  let n=currentPlayers().length;
 let ranks=[...Array(n).keys()].map(i=>+document.getElementById('r'+i).value);
 const selectedGames=FortisGameModes.choices(document);
+const vegasPairingMethod=selectedGames.includes('vegas')?(selectedGames.length===1?(document.getElementById('vegasPairingMethod')?.value||'distance'):'distance'):null;
+let vegasDraw;
+if(selectedGames.includes('vegas')){
+ try{
+  if(n!==4||new Set(currentPlayers()).size!==4)throw Error('Vegas 需要四位不同球員。');
+  vegasDraw=FortisGameModes.initialVegasDraw(vegasPairingMethod,ranks,[document.getElementById('vegasTeamA0')?.value,document.getElementById('vegasTeamA1')?.value]);
+  FortisVegas.drawOrder(vegasDraw);
+  if(vegasPairingMethod==='draw')ranks=[...vegasDraw];
+ }catch(e){alert(e.message);return;}
+}
 if(n>1&&!selectedGames.length){alert('請至少選擇一種玩法。');return;}
 
 if(selectedGames.some(m=>['individual8421','highLowTotal','highLow'].includes(m))&&new Set(ranks).size!==n){
@@ -2183,19 +2194,15 @@ let selected組合=
   const gameMode=n===1?'solo':selectedGames[0];
   const standaloneHighLow=selectedGames.some(m=>['highLowTotal','highLow'].includes(m));
   if(standaloneHighLow&&(n!==4||new Set(currentPlayers()).size!==4||ranks.some(v=>!Number.isInteger(v)||v<1||v>4))){alert('此玩法需要四位球員，距離順序各填一次 1–4。');return;}
-  let vegasDraw;
-  if(selectedGames.includes('vegas')){
-    try{if(currentPlayers().length!==4)throw Error('Vegas 需要四位球員。');vegasDraw=[0,1,2,3].map(i=>Number(document.getElementById('vegasDraw'+i).value));FortisVegas.drawOrder(vegasDraw);}catch(e){alert(e.message);return;}
-  }
   round={
     crossGroupEnabled:n>1&&(document.getElementById('enableCrossGroup')?.checked===true || gameMode==='crossGroup'),
-    gameMode,...(n>1?{selectedGames}:{}),...(gameMode==='vegas'?{separateGame:true}:{}),...(standaloneHighLow?{standaloneId:crypto.randomUUID(),highLowRules:{...FortisHighLow.RULES}}:{}),vegasDraw,...(selectedGames.includes('vegas')?{vegasRules:{...FortisVegas.RULES}}:{}),
+    gameMode,...(n>1?{selectedGames}:{}),...(gameMode==='vegas'?{separateGame:true}:{}),...(standaloneHighLow?{standaloneId:crypto.randomUUID(),highLowRules:{...FortisHighLow.RULES}}:{}),vegasDraw,vegasPairingMethod,...(selectedGames.includes('vegas')?{vegasRules:{...FortisVegas.RULES}}:{}),
     id:Date.now(),
     note:document.getElementById('roundNote').value,
     courseName:selectedCourseType,
     combo:selected組合,
     players:currentPlayers(),
-    initialRanks:currentPlayers().map((_,i)=>+document.getElementById('r'+i).value),
+    initialRanks:ranks,
     matchups:n===1?[]:readMatchups(),
     larryMode:n>1&&document.getElementById('countPar3Strokes')?.checked===true,
     course,
@@ -2937,7 +2944,7 @@ if(lastPlayedHole<0){alert('No scores entered yet.');return;}
 if(round.tournament){try{await flushTournamentSync();}catch(e){throw Error(FortisTournament.errorMessage(e));}}
 const completedRound=JSON.parse(JSON.stringify(round));
 const priorScores=[...db.scores];
-let persistedCourseData=round.course.map(h=>({...h,larryMode:round.larryMode===true,...(round.selectedGames||round.separateGame||['highLowTotal','highLow'].includes(round.gameMode)?{gameMode:round.gameMode,separateGame:round.separateGame===true,vegasDraw:round.vegasDraw,...(round.selectedGames?{selectedGames:round.selectedGames}:{})}:{} )}));
+let persistedCourseData=round.course.map(h=>({...h,larryMode:round.larryMode===true,...(round.selectedGames||round.separateGame||['highLowTotal','highLow'].includes(round.gameMode)?{gameMode:round.gameMode,separateGame:round.separateGame===true,vegasDraw:round.vegasDraw,vegasPairingMethod:round.vegasPairingMethod,...(round.selectedGames?{selectedGames:round.selectedGames}:{})}:{} )}));
 let round_id=round.vegasFortisRoundId||null;
 if(!round_id){
 let rr=await sb('fortis_rounds',{method:'POST',body:JSON.stringify({round_name:round.note,course_name:round.courseName,course_combo:round.combo,played_at:new Date().toISOString(),season_id:activeSeason?.id||null,players:round.players,initial_ranks:round.initialRanks,matchups:round.matchups,course_data:persistedCourseData,start_hole_index:round.startHoleIndex||0})});
@@ -5048,6 +5055,8 @@ if(!activeSeason && db.seasons.length){
 function openNewRoundFromHome(){
   const mode=document.getElementById('gameMode');if(mode)mode.value='individual8421';
   document.querySelectorAll('[data-game-choice]').forEach(e=>{e.checked=e.value==='individual8421';e.disabled=false;});
+  const pairingMethod=document.getElementById('vegasPairingMethod');if(pairingMethod)pairingMethod.value='distance';
+  for(const id of ['vegasTeamA0','vegasTeamA1']){const input=document.getElementById(id);if(input)input.value='';}
   const draw=document.getElementById('vegasDrawSetup');if(draw)draw.hidden=true;
   const cross=document.getElementById('enableCrossGroup');if(cross)cross.checked=false;
   FortisHighLowUI.setup();

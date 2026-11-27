@@ -86,15 +86,15 @@ test('retry after last game snapshot failure preserves IDs and never repeats pre
  for(const path of ['fortis_rounds','hole_scores','matchups?id=eq.17','matchup_history'])assert.equal(writes.filter(w=>w.path===path).length,1,path);
  assert.equal(writes.filter(w=>w.path.startsWith('golf_vegas_rounds')).length,1);assert.equal(writes.filter(w=>w.data.game_kind==='highLowTotal').length,1);assert.equal(writes.filter(w=>w.data.game_kind==='highLow').length,2);
 });
-test('actual round setup starts every selected combination, validates no games, and shows Vegas draw when selected',()=>{
+test('actual round setup starts every selected combination, validates no games, and uses driving distance when Vegas is selected with other games',()=>{
  for(const games of [...combinations,[]]){
   const choices=modes.map(m=>({value:m,checked:games.includes(m)})),elements={gameMode:{value:'individual8421'},playerCount:{value:'4'},vegasDrawSetup:{},individualMatchupCard:{},useIndividualMatchups:{checked:true},course:{value:'TEST'},comboBox:{classList:{contains:()=>true}},roundNote:{value:'Test'},countPar3Strokes:{checked:true},enableCrossGroup:{checked:false},matchupSetup:{querySelector:()=>true}};
   [1,2,3,4].forEach((v,i)=>{elements['r'+i]={value:String(v)};elements['vegasDraw'+i]={value:String(5-v)};});
   const errors=[],{ctx}=context(null);Object.assign(ctx,{document:{getElementById:id=>elements[id],querySelectorAll:()=>choices},currentPlayers:()=>['A','B','C','D'],buildCourse:()=>Array.from({length:18},()=>({par:4})),readMatchups:()=>[{active:true,a:'A',b:'B'}],crypto:{randomUUID:()=> 'new-game'},alert:m=>errors.push(m),prompt:()=> '10',saveRecentCourse(){},syncLiveRound(){},renderScore(){},showPage(){}});
-  ctx.FortisHighLowUI.setup();assert.equal(elements.vegasDrawSetup.hidden,!games.includes('vegas'));
+  ctx.FortisHighLowUI.setup();assert.equal(elements.vegasDrawSetup.hidden,!(games.length===1&&games[0]==='vegas'));
   vm.runInContext(slice('function startRound(){','function playerPoint('),ctx);ctx.startRound();
   if(!games.length){assert.equal(ctx.round,null);assert.equal(errors.length,1);continue;}
   assert.deepEqual(Array.from(ctx.round.selectedGames),games);assert.equal(ctx.round.gameMode,games[0]);assert.equal(ctx.round.matchups.length,1);assert.equal(ctx.round.startHoleIndex,games.includes('vegas')?0:9);assert.equal(errors.length,0);
-  if(games.includes('vegas'))assert.deepEqual(Array.from(ctx.round.vegasDraw),[4,3,2,1]);
+  if(games.includes('vegas'))assert.deepEqual(Array.from(ctx.round.vegasDraw),[1,2,3,4]);
  }
 });
