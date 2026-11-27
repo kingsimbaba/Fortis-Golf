@@ -75,3 +75,9 @@ test('signout clears standalone results and rejects late history responses',asyn
  const pending=ctx.FortisHighLowUI.history('highLow');ctx.FortisHighLowUI.clearMemory();finish([]);await pending;
  assert.equal(boxes.highLowHistory.innerHTML,'');
 });
+test('mode setup preserves solo restrictions and restores legacy checkbox choices',()=>{
+ const {ctx}=uiHarness();const elements={gameMode:{value:'individual8421'},vegasDrawSetup:{},individualMatchupCard:{},playerCount:{value:'1'},useIndividualMatchups:{checked:true},countPar3Strokes:{checked:true},enableCrossGroup:{checked:false}};
+ ctx.document.getElementById=id=>elements[id];ctx.FortisHighLowUI.setup();assert.equal(elements.useIndividualMatchups.disabled,true);
+ elements.playerCount.value='4';elements.gameMode.value='highLow';ctx.FortisHighLowUI.setup();assert.equal(elements.playerCount.disabled,true);assert.equal(elements.individualMatchupCard.hidden,true);
+ elements.gameMode.value='individual8421';ctx.FortisHighLowUI.setup();assert.equal(elements.playerCount.disabled,false);assert.equal(elements.useIndividualMatchups.disabled,false);assert.equal(elements.useIndividualMatchups.checked,true);assert.equal(elements.countPar3Strokes.checked,true);
+});

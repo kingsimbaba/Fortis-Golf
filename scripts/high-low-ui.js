@@ -9,9 +9,9 @@ function setup(){
  const mode=document.getElementById('gameMode').value,standalone=G().isMode(mode);
  document.getElementById('vegasDrawSetup').hidden=mode!=='vegas';
  document.getElementById('individualMatchupCard').hidden=standalone;
- for(const id of ['useIndividualMatchups','countPar3Strokes','enableCrossGroup']){const e=document.getElementById(id);if(e){e.disabled=standalone;if(standalone&&id==='enableCrossGroup')e.checked=false;}}
  const count=document.getElementById('playerCount');
  if(standalone&&count.value!=='4'){count.value='4';makePlayers();renderMatchups();}
+ for(const id of ['useIndividualMatchups','countPar3Strokes','enableCrossGroup']){const e=document.getElementById(id);if(e){e.disabled=standalone||count.value==='1';if(standalone&&id==='enableCrossGroup')e.checked=false;}}
  count.disabled=standalone;
 }
 function board(r,h){
