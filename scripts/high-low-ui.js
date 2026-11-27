@@ -17,6 +17,21 @@ function setup(){
  if(standalone&&count.value!=='4'){count.value='4';makePlayers();renderMatchups();}
  for(const id of ['useIndividualMatchups','countPar3Strokes','enableCrossGroup']){const e=document.getElementById(id);if(e){e.disabled=count.value==='1'||(standalone&&id==='enableCrossGroup');if(standalone&&id==='enableCrossGroup')e.checked=false;}}
  count.disabled=standalone;
+ pairingSetup();
+}
+function pairingSetup(){
+ const selected=root.FortisGameModes.choices(document),vegas=selected.includes('vegas');
+ const methodSelect=document.getElementById('vegasPairingMethod'),soloVegas=vegas&&selected.length===1;
+ if(!soloVegas&&methodSelect)methodSelect.value='distance';
+ const method=methodSelect?.value||'distance',drawing=soloVegas&&method==='draw';
+ const toggle=(id,hidden)=>{const e=document.getElementById(id);if(e)e.hidden=hidden;};
+ toggle('vegasDrawSetup',!soloVegas);toggle('vegasPairingChoice',!soloVegas);toggle('vegasManualPairing',!drawing);toggle('vegasDistanceNote',drawing);
+ document.querySelectorAll('[data-driving-distance]').forEach(e=>{e.hidden=drawing;});
+ const heading=document.getElementById('playerSetupHeading');if(heading)heading.textContent=drawing?'球員':'球員 + 第一洞開球距離';
+ const names=[0,1,2,3].map(i=>document.getElementById('p'+i)?.value?.trim()||'球員 '+(i+1));
+ for(const id of ['vegasTeamA0','vegasTeamA1']){const select=document.getElementById(id);if(!select)continue;const value=select.value||'';select.innerHTML='<option value="">請選擇球員</option>'+names.map((name,i)=>`<option value="${i}">${esc(name)}</option>`).join('');select.value=value;}
+ const a=[document.getElementById('vegasTeamA0')?.value,document.getElementById('vegasTeamA1')?.value],teamB=document.getElementById('vegasTeamB');
+ if(teamB)teamB.textContent=a.every(v=>v!==''&&v!=null)&&a[0]!==a[1]?'第二隊：'+names.filter((_,i)=>!a.includes(String(i))).join(' + '):'第二隊：選好第一隊後顯示';
 }
 function board(r,h){
  if(r.gameMode==='individual8421'){const c=calcFortis(r),row=c.rows[h],names=t=>t.map(i=>esc(r.players[i])).join(' + ');return `<h2>8421 點數</h2><div class="grid">${r.players.map((p,i)=>`<div><b>${esc(p)}</b><div class="score">${sign(c.totals[i])}</div></div>`).join('')}</div>${row?`<p>本洞配對：${names(row.team1)} vs ${names(row.team2)}</p>`:''}`;}
@@ -88,5 +103,5 @@ async function history(mode){
   document.getElementById('highLowHistory').innerHTML=`<h2>${G().title(mode)} 回合紀錄</h2>`+(rows.map(rec=>`<div class="card"><h3>${esc(rec.round_data.note||G().title(mode))}</h3><p>${esc(rec.round_data.created)} · ${esc(rec.round_data.courseName)} ${esc(rec.round_data.combo||'')}</p>${gross(rec.round_data)}${board(rec.round_data,G().playOrder(rec.round_data).at(-1))}${battles(rec.round_data)}</div>`).join('')||'<p>尚無此玩法的已儲存回合。</p>');
  }catch(e){alert('無法讀取回合紀錄：'+e.message);}
 }
-root.FortisHighLowUI={setup,board,allBoards,render,adjust,score,next,save,history,clearMemory};
+root.FortisHighLowUI={setup,pairingSetup,board,allBoards,render,adjust,score,next,save,history,clearMemory};
 })(window);

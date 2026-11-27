@@ -16,7 +16,7 @@ Validation includes independent calculator fixtures, source routing and save-iso
 
 ## Four game menu
 
-8421 is selected by default. All four games use independent checkboxes, so any nonempty combination is supported. 8421 runs only when selected. Selecting Vegas exposes its draw inputs and starts the shared round at hole 1; other combinations support any starting hole. Each mode can use the existing individual-battle toggle, per-pair settings, handicaps and Larry-mode option. The High-Low team calculations still use gross strokes regardless of those individual settings. Gross totals and entered-hole counts are shown above the selected games, and the same score entries update individual battles immediately.
+8421 is selected by default. All four games use independent checkboxes, so any nonempty combination is supported. 8421 runs only when selected. Selecting Vegas starts the shared round at hole 1. Vegas alone offers driving distance (default) or manual drawn teams; multiple games always use driving distance; other combinations support any starting hole. Each mode can use the existing individual-battle toggle, per-pair settings, handicaps and Larry-mode option. The High-Low team calculations still use gross strokes regardless of those individual settings. Gross totals and entered-hole counts are shown above the selected games, and the same score entries update individual battles immediately.
 
 New non-8421 rounds also record putts through visible controls. Saved team snapshots retain their matchups and a linked normal statistics round ID. Previous standalone High-Low histories remain viewable; prior entries are not retroactively inserted into personal statistics or used to update handicaps.
 
@@ -29,3 +29,7 @@ Live scoring, the completed-round recap, shared recap text and round replay show
 ## Gross-score videos
 
 Confirming a hole in the shared game screen now triggers the same existing score video as 8421, once per hole regardless of how many games were selected. Selection uses actual gross strokes relative to that hole’s par: the best under-par score if present, otherwise the highest gross score. Game points and individual handicaps never affect the video. Double/triple bogey completion and media-failure fallbacks are inherited from the existing player; the last played hole remains on its result screen. Blank scores do not trigger a video or advance.
+
+## Vegas first-hole pairing
+
+Vegas alone offers driving distance (default) or manual drawn teams. Distance uses the existing 1+4 versus 2+3 ranks; drawing selects two members of team A and automatically assigns the remaining players to team B, hiding the distance inputs. Selecting more than one game forces driving distance and hides all drawing controls. Start-time validation enforces this even if stale drawing fields remain. Both choices feed the existing Vegas calculator through vegasDraw; drawn teams use a stable order (A1, B1, B2, A2) for subsequent ties. Existing scoring, videos, and individual battles are unchanged. The pairing method and derived order persist in draft/saved metadata.
