@@ -1,10 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import vm from 'node:vm';
+import {createRequire} from 'node:module';
+const M=createRequire(import.meta.url)('../scripts/game-modes.js');
 import {readFileSync} from 'node:fs';
 const html=readFileSync(new URL('../index.html',import.meta.url),'utf8');
 const slice=(a,b)=>html.slice(html.indexOf(a),html.indexOf(b));
-const ctx=vm.createContext({adminEscapeHtml:v=>String(v).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('"','&quot;')});
+const ctx=vm.createContext({FortisGameModes:M,adminEscapeHtml:v=>String(v).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('"','&quot;')});
 vm.runInContext(slice('function playerPoint(','function eligibleStrokeHoles(')+slice('function buildUnluckyTrend(','function buildRoundAchievements('),ctx);
 const fixture=(n=4,start=0)=>({players:['A','B','C','D'].slice(0,n),initialRanks:[1,2,3,4].slice(0,n),startHoleIndex:start,course:Array.from({length:18},(_,i)=>({par:4,display:'Hole '+(i+1)})),scores:Array.from({length:18},(_,h)=>Array.from({length:n},(_,i)=>4+(h*3+i*2)%5))});
 test('trend follows existing 8421 row results for 3/4 players and every start hole',()=>{
