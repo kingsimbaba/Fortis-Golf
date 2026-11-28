@@ -3157,11 +3157,12 @@ function renderHome(){
   const active=!!localStorage.getItem('fortisActiveRound');
   const today=new Intl.DateTimeFormat('zh-TW',{year:'numeric',month:'long',day:'numeric',weekday:'long'}).format(new Date());
   box.innerHTML=`<div class="home-hero"><div class="home-welcome"><div><div class="home-greeting">歡迎回來</div><div class="home-name">${adminEscapeHtml(player)}</div><div class="home-date">${today}</div></div>${active?'<div class="home-status">● 回合進行中</div>':''}</div><div class="home-actions">${active?'<button class="home-action primary" onclick="loadActiveRound();renderScore();showPage(\'scorePage\')">繼續未完成回合 →</button>':''}<button class="home-action ${active?'btn2':'primary'}" onclick="openNewRoundFromHome()">＋ 開始新回合</button><button class="home-action btn2" onclick="showPage('summary');setTimeout(()=>document.getElementById('roundLibrarySearch')?.scrollIntoView({behavior:'smooth'}),80)">回合紀錄 ↗</button></div><div class="home-utilities">${currentProfile?.role==='admin'?'<button class="home-action btn2" onclick="openScorecardImportWizard()">匯入球場記分卡</button>':''}<button class="home-action btn2" onclick="refreshFortisAppForUser()">更新應用程式</button></div></div>
-  <div id="fortisHomeWeather"></div>
+  <div id="fortisHomeWeather"></div>${currentProfile?.role==='admin'?'<div id="homePlayerWarnings"></div>':''}
   <div class="home-grid"><div class="card home-card full"><div class="fg-section-heading"><h2>個人統計</h2></div><div class="home-kpis"><div class="home-kpi"><b>${rounds.length}</b><span>生涯回合</span></div><div class="home-kpi"><b>${seasonRounds}</b><span>本季回合</span></div><div class="home-kpi"><b>${avg}</b><span>平均桿數</span></div><div class="home-kpi"><b>${birdies}</b><span>生涯博蒂</span></div></div></div>
   <div class="card home-card"><div class="fg-section-heading"><h2>地獄倒楣鬼排行榜</h2></div>${leaders.length?leaders.map((r,i)=>`<div class="home-rank"><div class="home-medal">${String(i+1).padStart(2,'0')}</div><div><b>${adminEscapeHtml(r.name)}</b><div class="small">${r.rounds} 回合${r.avg!==null?` · 平均 ${r.avg.toFixed(1)}`:''}</div></div><div class="home-points"><span class="small" style="display:block">地獄倒楣鬼積分</span>${r.points>0?'+':''}${r.points.toFixed(0)}</div></div>`).join(''):'<p class="fg-empty">本季尚無地獄倒楣鬼成績。</p>'}</div>
   <div class="card home-card home-last-round" id="homeLastRound"><div class="fg-section-heading"><h2>最近一場</h2></div>${last?`<div class="home-course"><div class="fg-eyebrow">Course · 球場</div><div class="profile-name">${adminEscapeHtml(last.title||'高爾夫回合')}</div><div class="small" style="margin-top:7px">${adminEscapeHtml(last.course)}${last.combo?` · ${adminEscapeHtml(last.combo)}`:''}</div></div><div class="home-round-result"><div class="score">${last.total}<span>桿</span></div><div class="small">${adminEscapeHtml(last.date||'')}</div></div>`:'<p class="fg-empty">尚無已儲存回合。</p>'}</div>
   <div class="card home-card full"><div class="fg-section-heading"><h2>最近五場成績</h2></div><div class="home-form">${rounds.slice(0,5).map((r,i)=>`<div class="home-form-item" id="homeRecentRound${i}"><b>${r.total}</b><div class="small">${adminEscapeHtml(r.date||'')}</div>${r.title?`<div class="small">${adminEscapeHtml(r.title)}</div>`:''}<div class="small home-form-course">${adminEscapeHtml(r.course)}${r.combo?` · ${adminEscapeHtml(r.combo)}`:''}</div></div>`).join('')||'<p class="fg-empty">尚無最近回合。</p>'}</div></div></div>`;
+  if(currentProfile?.role==='admin')void refreshPlayerWarnings("homePlayerWarnings");
   window.FortisWeather?.mount({courses:db.courses});
   const photoItems=rounds.slice(0,5).map((r,i)=>({
     code:db.rounds.find(rec=>String(rec.id)===String(r.id))?.course_name,
@@ -4077,6 +4078,7 @@ function renderAdmin(){
   <div class="card"><div class="summary-card-title"><h2>🛠️ 管理中心</h2><span class="premium-badge">Mission Control</span></div><div id="adminDashboard"></div></div>
   <div class="card"><div class="summary-card-title"><h2>🟢 目前正在計分</h2><button class="btn2" style="width:auto;min-height:38px;padding:8px 12px" onclick="loadActiveScorers()">重新整理</button></div><div id="activeScorers"><div class="active-scorer-empty">正在檢查…</div></div><p class="small">最近 90 秒內仍在回報的計分裝置會顯示於此。有人計分時，系統會阻止重設所有成績。</p></div>
   <div class="card"><h2>帳號與球員對應</h2><button class="btn2" onclick="loadAdminUsers()">重新載入帳號</button><div id="adminUsers" class="small" style="margin-top:10px">正在載入帳號…</div><p class="small">每個登入帳號必須對應一位球員。首頁與個人統計只會顯示該帳號所對應的球員資料。</p></div>
+  <div id="adminPlayerWarnings"></div>
   <div class="card"><h2>Add Player</h2><div class="grid"><div><label>球員 Name</label><input id="admPlayer" placeholder="Ralf"></div><div><label>&nbsp;</label><button onclick="adminAddPlayer()">Add Player</button></div></div></div>
   <div class="card">
     <h2>🏌️ 球場管理 — 新增球場</h2>
@@ -4146,6 +4148,7 @@ function renderAdmin(){
   </div>
   <div class="card"><h2>Current Players</h2><div class="scroll"><table><tr><th>Name</th><th>Active</th></tr>${db.players.map(p=>`<tr><td>${p.name}</td><td>${p.active}</td></tr>`).join('')}</table></div></div><div class="card"><h2>Current Matchups</h2><div class="scroll"><table><tr><th>Giver</th><th>Receiver</th><th>Holes</th></tr>${db.matchups.map(m=>`<tr><td>${m.giver}</td><td>${m.receiver}</td><td>${m.holes_given}</td></tr>`).join('')}</table></div></div>`;
   renderAdminDashboard();
+  void refreshPlayerWarnings("adminPlayerWarnings");
   loadActiveScorers();
   clearInterval(adminPresenceTimer);
   adminPresenceTimer=setInterval(()=>{if(currentPage==='admin')loadActiveScorers(false);},15000);
@@ -4514,6 +4517,13 @@ async function adminUpdateUser(id){
     const display_name=document.getElementById('name_'+id).value.trim();
     const role=document.getElementById('role_'+id).value;
     const active=document.getElementById('active_'+id).value==='true';
+    if(role==='player'&&display_name){
+      const profiles=await loadPaged('profiles?select=id,display_name,role,active&order=id');
+      if(profiles.some(p=>p.id!==id&&p.active!==false&&p.role==='player'&&playerNameKey(p.display_name)===playerNameKey(display_name))){
+        alert('⚠️ 此球員已對應另一個 Player 帳號，請確認後再操作。');return;
+      }
+      if(!db.players.some(p=>p.name===display_name)&&!confirm('此帳號尚未對應正式球員，儲存後管理中心將提醒。是否繼續？'))return;
+    }
     let r=await fetch('/api/update-user',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id,display_name,role,active})});
     let data=await r.json();
     if(!r.ok) throw new Error(JSON.stringify(data));
@@ -4523,11 +4533,82 @@ async function adminUpdateUser(id){
     if(currentUser?.id===id){currentProfile={...(currentProfile||{}),display_name,role,active};}
     alert('帳號已對應至：'+(display_name||'尚未對應'));
     await loadAdminUsers();
+    void refreshPlayerWarnings("adminPlayerWarnings");
   }catch(e){alert('Update user failed: '+e.message);}
 }
 
 function adminLogin(){renderAdmin();}
-async function adminAddPlayer(){try{let name=document.getElementById('admPlayer').value.trim(); if(!name) return alert('Enter player name'); await sb('players',{method:'POST',body:JSON.stringify({name,active:true})}); alert('球員 added'); document.getElementById('admPlayer').value=''; await loadAll(); renderAdmin();}catch(e){alert('Add player failed: '+e.message)}}
+function playerNameKey(name){return String(name||'').trim().toLowerCase();}
+function playerNamesSimilar(a,b){
+  a=playerNameKey(a);b=playerNameKey(b);
+  if(a===b||Math.min(a.length,b.length)<3||Math.abs(a.length-b.length)>1)return false;
+  if(a.length===b.length)return [...a].filter((v,i)=>v!==b[i]).length===1;
+  if(a.length>b.length)[a,b]=[b,a];
+  return [...b].some((_,i)=>b.slice(0,i)+b.slice(i+1)===a);
+}
+function playerGuestKeys(){
+  try{return new Set(JSON.parse(localStorage.getItem('fortisReviewedGuests:'+currentUser.id)||'[]'));}catch(e){return new Set();}
+}
+async function refreshPlayerWarnings(target){
+  const box=document.getElementById(target);
+  if(!box||currentProfile?.role!=='admin')return;
+  box.innerHTML='<div class="card small">正在檢查球員資料…</div>';
+  try{
+    const [players, scores, profiles]=await Promise.all([
+      loadPaged('players?select=id,name,active&order=id'),
+      loadPaged('hole_scores?select=id,player_name,round_id&order=id'),
+      loadPaged('profiles?select=id,display_name,role,active&order=id')
+    ]);
+    if(!box.isConnected||currentProfile?.role!=='admin')return;
+    const registered=new Map(), missing=new Map(), accounts=new Map(), guests=playerGuestKeys();
+    players.forEach(p=>{const k=playerNameKey(p.name);if(k){if(!registered.has(k))registered.set(k,[]);registered.get(k).push(p.name);}});
+    function entry(name){const k=playerNameKey(name);if(!k)return null;if(!missing.has(name))missing.set(name,{name,rounds:new Set(),scores:0,account:false,variant:registered.has(k)});return missing.get(name);}
+    const exact=new Set(players.map(p=>p.name));
+    scores.forEach(s=>{if(!s.player_name||exact.has(s.player_name))return;const x=entry(s.player_name);if(x){x.rounds.add(s.round_id);x.scores++;}});
+    profiles.filter(p=>p.active!==false&&p.role==='player').forEach(p=>{
+      const k=playerNameKey(p.display_name);
+      if(k){accounts.set(k,(accounts.get(k)||0)+1);if(!exact.has(p.display_name)){const x=entry(p.display_name);if(x)x.account=true;}}
+    });
+    const rows=[...missing.values()].filter(x=>x.account||!guests.has(playerNameKey(x.name)));
+    const duplicates=[...registered.values()].filter(x=>x.length>1);
+    const duplicateAccounts=[...accounts].filter(([k,n])=>n>1);
+    if(!rows.length&&!duplicates.length&&!duplicateAccounts.length){box.innerHTML='';return;}
+    box.innerHTML='<div class="card"><h2>⚠️ 球員資料異常提醒</h2><p class="small">未登錄球員、帳號與球員資料不一致或重複名稱。歷史成績不會自動合併。</p></div>';
+    const card=box.firstElementChild;
+    duplicates.forEach(names=>{const p=document.createElement('p');p.textContent='重複球員名稱：'+names.join('、');card.append(p);});
+    duplicateAccounts.forEach(([k,n])=>{const p=document.createElement('p');p.textContent='重複帳號對應：'+k+'（'+n+' 個帳號）';card.append(p);});
+    rows.forEach(x=>{
+      const row=document.createElement('div');row.className='admin-issue';
+      const info=document.createElement('div');
+      const title=document.createElement('b');title.textContent=x.name;info.append(title);
+      const details=document.createElement('div');details.className='small';
+      const similar=players.filter(p=>playerNamesSimilar(p.name,x.name)||playerNameKey(p.name)===playerNameKey(x.name)).map(p=>p.name);
+      details.textContent=(x.account?'已註冊 Player 帳號 · ':'')+x.rounds.size+' 場 / '+x.scores+' 洞'+(similar.length?' · 可能相同球員：'+similar.slice(0,5).join('、'):'');
+      info.append(details);row.append(info);
+      const add=document.createElement('button');add.className='btn2';add.textContent='加入球員資料庫';add.onclick=()=>adminRegisterPlayer(x.name);row.append(add);
+      if(!x.account){const guest=document.createElement('button');guest.className='btn2';guest.textContent='保留為訪客';guest.onclick=()=>{const keys=playerGuestKeys();keys.add(playerNameKey(x.name));localStorage.setItem('fortisReviewedGuests:'+currentUser.id,JSON.stringify([...keys]));void refreshPlayerWarnings(target);};row.append(guest);}
+      card.append(row);
+    });
+    const reset=document.createElement('button');reset.className='btn2';reset.textContent='重新檢查已確認訪客';reset.onclick=()=>{localStorage.removeItem('fortisReviewedGuests:'+currentUser.id);void refreshPlayerWarnings(target);};card.append(reset);
+  }catch(e){box.textContent='球員資料檢查失敗：'+e.message;}
+}
+async function adminRegisterPlayer(raw){
+  if(currentProfile?.role!=='admin')return;
+  const name=String(raw||'').trim();if(!name)return alert('請輸入球員名稱');
+  try{
+    const players=await loadPaged('players?select=id,name,active&order=id');
+    const existing=players.find(p=>playerNameKey(p.name)===playerNameKey(name));
+    if(existing){alert('⚠️ 球員名稱已存在：'+existing.name+'。請使用現有球員或修改名稱。');return;}
+    const similar=players.filter(p=>playerNamesSimilar(p.name,name));
+    if(similar.length&&!confirm('可能相同球員：'+similar.map(p=>p.name).slice(0,5).join('、')+'。確定新增「'+name+'」？'))return;
+    if(!confirm('確認加入球員資料庫：'+name+'？'))return;
+    await sb('players',{method:'POST',body:JSON.stringify({name,active:true})});
+    alert('球員已加入：'+name);
+    await loadAll();if(currentPage==='admin')renderAdmin();else if(currentPage==='home')renderHome();
+  }catch(e){alert('新增球員失敗：'+e.message);}
+}
+async function adminAddPlayer(){await adminRegisterPlayer(document.getElementById('admPlayer')?.value);}
+
 async function adminAddCourse(){
   try{
     const course_name=document.getElementById('admCourse').value.trim().toUpperCase();
